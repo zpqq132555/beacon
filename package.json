@@ -1,9 +1,9 @@
 {
-  "name": "@rpamis/comet",
-  "version": "0.3.9",
-  "description": "Agent Skill Harness Phase-Guarded Automation From Idea To Archive",
+  "name": "beacon",
+  "version": "0.4.0",
+  "description": "Private Beacon workflow automation for OpenSpec and Superpowers",
   "keywords": [
-    "comet",
+    "beacon",
     "openspec",
     "superpowers",
     "skills",
@@ -16,7 +16,7 @@
     "access": "public"
   },
   "bin": {
-    "comet": "./bin/comet.js"
+    "beacon": "./bin/beacon.js"
   },
   "files": [
     "dist",

@@ -1,37 +1,37 @@
 {
-  "version": "0.3.8",
+  "version": "0.4.0",
   "skills": [
-    "comet/SKILL.md",
-    "comet/reference/auto-transition.md",
-    "comet/reference/comet-yaml-fields.md",
-    "comet/reference/context-recovery.md",
-    "comet/reference/debug-gate.md",
-    "comet/reference/decision-point.md",
-    "comet/reference/dirty-worktree.md",
-    "comet/reference/file-structure.md",
-    "comet/reference/subagent-dispatch.md",
-    "comet/scripts/comet-env.sh",
-    "comet/scripts/comet-guard.sh",
-    "comet/scripts/comet-state.sh",
-    "comet/scripts/comet-handoff.sh",
-    "comet/scripts/comet-archive.sh",
-    "comet/scripts/comet-yaml-validate.sh",
-    "comet/scripts/comet-hook-guard.sh",
-    "comet-open/SKILL.md",
-    "comet-design/SKILL.md",
-    "comet-build/SKILL.md",
-    "comet-verify/SKILL.md",
-    "comet-archive/SKILL.md",
-    "comet-hotfix/SKILL.md",
-    "comet-tweak/SKILL.md"
+    "beacon/SKILL.md",
+    "beacon/reference/auto-transition.md",
+    "beacon/reference/beacon-yaml-fields.md",
+    "beacon/reference/context-recovery.md",
+    "beacon/reference/debug-gate.md",
+    "beacon/reference/decision-point.md",
+    "beacon/reference/dirty-worktree.md",
+    "beacon/reference/file-structure.md",
+    "beacon/reference/subagent-dispatch.md",
+    "beacon/scripts/beacon-env.sh",
+    "beacon/scripts/beacon-guard.sh",
+    "beacon/scripts/beacon-state.sh",
+    "beacon/scripts/beacon-handoff.sh",
+    "beacon/scripts/beacon-archive.sh",
+    "beacon/scripts/beacon-yaml-validate.sh",
+    "beacon/scripts/beacon-hook-guard.sh",
+    "beacon-open/SKILL.md",
+    "beacon-design/SKILL.md",
+    "beacon-build/SKILL.md",
+    "beacon-verify/SKILL.md",
+    "beacon-archive/SKILL.md",
+    "beacon-hotfix/SKILL.md",
+    "beacon-tweak/SKILL.md"
   ],
   "rules": [
-    "comet/rules/comet-phase-guard.md"
+    "beacon/rules/beacon-phase-guard.md"
   ],
   "hooks": {
-    "comet/scripts/comet-hook-guard.sh": {
+    "beacon/scripts/beacon-hook-guard.sh": {
       "matcher": "Write|Edit",
-      "description": "Block code writes in wrong Comet phase (open/design/archive)"
+      "description": "Block code writes in wrong Beacon phase (open/design/archive)"
     }
   },
   "languages": [

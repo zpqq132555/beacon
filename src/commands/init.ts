@@ -4,9 +4,9 @@ import { checkbox, select } from '@inquirer/prompts';
 import { PLATFORMS, getPlatformSkillsDir, type Platform } from '../core/platforms.js';
 import { detectPlatforms, hasSkills, getBaseDir, type InstallScope } from '../core/detect.js';
 import {
-  copyCometSkillsForPlatform,
-  copyCometRulesForPlatform,
-  installCometHooksForPlatform,
+  copyBeaconSkillsForPlatform,
+  copyBeaconRulesForPlatform,
+  installBeaconHooksForPlatform,
   createWorkingDirs,
   type LanguageConfig,
 } from '../core/skills.js';
@@ -37,7 +37,7 @@ interface PlatformResult {
   platform: Platform;
   openspec: InstallStatus;
   superpowers: InstallStatus;
-  comet: InstallStatus;
+  beacon: InstallStatus;
   codegraph: InstallStatus;
 }
 
@@ -52,7 +52,7 @@ const LANGUAGES: LanguageConfig[] = [
   { id: 'zh', name: '中文', skillsDir: 'skills-zh' },
 ];
 
-const COMET_BANNER = [
+const BEACON_BANNER = [
   `   ██████╗ ██████╗ ███╗   ███╗███████╗████████╗`,
   `  ██╔════╝██╔═══██╗████╗ ████║██╔════╝╚══██╔══╝`,
   `  ██║     ██║   ██║██╔████╔██║█████╗     ██║   `,
@@ -239,21 +239,21 @@ function displaySummary(results: PlatformResult[], scope: InstallScope, lang: st
     (r) =>
       r.openspec === 'installed' ||
       r.superpowers === 'installed' ||
-      r.comet === 'installed' ||
+      r.beacon === 'installed' ||
       r.codegraph === 'installed',
   );
   const skipped = results.filter(
     (r) =>
       r.openspec === 'skipped' &&
       r.superpowers === 'skipped' &&
-      r.comet === 'skipped' &&
+      r.beacon === 'skipped' &&
       r.codegraph === 'skipped',
   );
   const failed = results.filter(
     (r) =>
       r.openspec === 'failed' ||
       r.superpowers === 'failed' ||
-      r.comet === 'failed' ||
+      r.beacon === 'failed' ||
       r.codegraph === 'failed',
   );
 
@@ -275,7 +275,7 @@ function displaySummary(results: PlatformResult[], scope: InstallScope, lang: st
   }
 
   console.log(`\n  ${t(lang, 'getStarted')}`);
-  console.log(`    ${t(lang, 'getStartedComet')}`);
+  console.log(`    ${t(lang, 'getStartedBeacon')}`);
   console.log(`    ${t(lang, 'getStartedHotfix')}`);
   console.log(`    ${t(lang, 'getStartedTweak')}\n`);
 }
@@ -284,7 +284,7 @@ export async function initCommand(targetPath: string, options: InitOptions = {})
   const projectPath = path.resolve(targetPath);
   const log = options.json ? () => undefined : console.log;
 
-  log(`\n${COMET_BANNER}\n`);
+  log(`\n${BEACON_BANNER}\n`);
   if (!options.json) {
     await printVersionInfo(log);
   }
@@ -334,7 +334,7 @@ export async function initCommand(targetPath: string, options: InitOptions = {})
   for (const platform of selectedPlatforms) {
     const hasOS = await hasSkills(baseDir, platform, 'openspec', selectedPlatforms, scope);
     const hasSP = await hasSkills(baseDir, platform, 'superpowers', selectedPlatforms, scope);
-    const hasCM = await hasSkills(baseDir, platform, 'comet', selectedPlatforms, scope);
+    const hasCM = await hasSkills(baseDir, platform, 'beacon', selectedPlatforms, scope);
 
     let osAction = resolveAction(hasOS, options);
     let spAction = resolveAction(hasSP, options);
@@ -344,7 +344,7 @@ export async function initCommand(targetPath: string, options: InitOptions = {})
       const existingComponents = [
         hasOS && osAction === 'install' ? 'OpenSpec' : null,
         hasSP && spAction === 'install' ? 'Superpowers' : null,
-        hasCM && cmAction === 'install' ? 'Comet' : null,
+        hasCM && cmAction === 'install' ? 'Beacon' : null,
       ].filter((component): component is string => Boolean(component));
 
       if (existingComponents.length > 1) {
@@ -365,7 +365,7 @@ export async function initCommand(targetPath: string, options: InitOptions = {})
         spAction = await promptOverwriteChoice('Superpowers', platform.name, lang);
       }
       if (cmAction === 'install' && hasCM) {
-        cmAction = await promptOverwriteChoice('Comet', platform.name, lang);
+        cmAction = await promptOverwriteChoice('Beacon', platform.name, lang);
       }
     }
 
@@ -424,7 +424,7 @@ export async function initCommand(targetPath: string, options: InitOptions = {})
 
     let cmStatus: InstallStatus = 'skipped';
     if (cmAction !== 'skip') {
-      const { copied } = await copyCometSkillsForPlatform(
+      const { copied } = await copyBeaconSkillsForPlatform(
         baseDir,
         platform,
         cmAction === 'overwrite',
@@ -432,29 +432,29 @@ export async function initCommand(targetPath: string, options: InitOptions = {})
         scope,
       );
       cmStatus = copied > 0 ? 'installed' : 'skipped';
-      log(`  Comet -> ${platform.name}: ${cmStatus} (${copied} files) -> ${skillsPath}`);
+      log(`  Beacon -> ${platform.name}: ${cmStatus} (${copied} files) -> ${skillsPath}`);
     } else {
-      log(`  Comet -> ${platform.name}: skipped (${t(lang, 'alreadyExists')})`);
+      log(`  Beacon -> ${platform.name}: skipped (${t(lang, 'alreadyExists')})`);
     }
 
     if (cmAction !== 'skip') {
-      const { copied: ruleCopied } = await copyCometRulesForPlatform(
+      const { copied: ruleCopied } = await copyBeaconRulesForPlatform(
         baseDir,
         platform,
         cmAction === 'overwrite',
         scope,
       );
       if (ruleCopied > 0) {
-        log(`  Comet rules -> ${platform.name}: ${ruleCopied} ${t(lang, 'rulesInstalled')}`);
+        log(`  Beacon rules -> ${platform.name}: ${ruleCopied} ${t(lang, 'rulesInstalled')}`);
       }
     }
 
     if (cmAction !== 'skip' && platform.supportsHooks) {
-      const { installed, reason } = await installCometHooksForPlatform(baseDir, platform, scope);
+      const { installed, reason } = await installBeaconHooksForPlatform(baseDir, platform, scope);
       if (installed) {
-        log(`  Comet hooks -> ${platform.name}: ${t(lang, 'hooksInstalled')}`);
+        log(`  Beacon hooks -> ${platform.name}: ${t(lang, 'hooksInstalled')}`);
       } else if (reason) {
-        log(`  Comet hooks -> ${platform.name}: ${t(lang, 'hooksSkipped')} (${reason})`);
+        log(`  Beacon hooks -> ${platform.name}: ${t(lang, 'hooksSkipped')} (${reason})`);
       }
     }
 
@@ -462,7 +462,7 @@ export async function initCommand(targetPath: string, options: InitOptions = {})
       platform,
       openspec: osToolIds.includes(platform.openspecToolId) ? osGlobalStatus : 'skipped',
       superpowers: plan.spAction !== 'skip' ? spGlobalStatus : 'skipped',
-      comet: cmStatus,
+      beacon: cmStatus,
       codegraph: 'skipped',
     });
   }
@@ -505,7 +505,7 @@ export async function initCommand(targetPath: string, options: InitOptions = {})
             platformName: result.platform.name,
             openspec: result.openspec,
             superpowers: result.superpowers,
-            comet: result.comet,
+            beacon: result.beacon,
             codegraph: result.codegraph,
           })),
           workingDirsCreated: scope === 'project',

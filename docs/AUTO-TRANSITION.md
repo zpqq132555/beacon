@@ -1,19 +1,19 @@
 # 自动流转（Auto Transition）
 
-> 版本状态：Stable（`.comet/config.yaml` 中 `auto_transition: true` 为默认值）
+> 版本状态：Stable（`.beacon/config.yaml` 中 `auto_transition: true` 为默认值）
 
 ## 概述
 
-`auto_transition` 控制 Comet 工作流在阶段完成后是否自动调用下一个 Skill，还是暂停等待用户手动触发。
+`auto_transition` 控制 Beacon 工作流在阶段完成后是否自动调用下一个 Skill，还是暂停等待用户手动触发。
 
-**关键区分**：`auto_transition` 不控制阶段推进本身。阶段推进（更新 `.comet.yaml` 中的 `phase` 字段）由 `comet-guard.sh --apply` 执行，无论 `auto_transition` 如何设置都会发生。该配置仅控制阶段推进后是否自动调用下一个 Skill。
+**关键区分**：`auto_transition` 不控制阶段推进本身。阶段推进（更新 `.beacon.yaml` 中的 `phase` 字段）由 `beacon-guard.sh --apply` 执行，无论 `auto_transition` 如何设置都会发生。该配置仅控制阶段推进后是否自动调用下一个 Skill。
 
 ## 工作原理
 
 ### 执行流程
 
 ```text
-comet-guard.sh --apply                comet-state next <change>
+beacon-guard.sh --apply                beacon-state next <change>
 ┌──────────────────────┐              ┌──────────────────────┐
 │ 校验阶段前置条件       │              │ 读取 phase、workflow  │
 │ 更新 phase 字段       │ ──────────► │ 读取 auto_transition  │
@@ -21,7 +21,7 @@ comet-guard.sh --apply                comet-state next <change>
 └──────────────────────┘              └──────────────────────┘
 ```
 
-`comet-state next` 的输出协议：
+`beacon-state next` 的输出协议：
 
 ```text
 NEXT: auto|manual|done
@@ -60,26 +60,26 @@ auto_transition: false
 
 | 层级 | 位置 | 说明 |
 |------|------|------|
-| 环境变量 | `COMET_AUTO_TRANSITION` | 最高优先级，适合 CI/CD 或临时覆盖 |
-| 项目级 | `.comet/config.yaml` | 项目默认值，所有 change 继承 |
-| Change 级 | `openspec/changes/<name>/.comet.yaml` | 单个 change 的覆盖值，最高运行时优先级 |
+| 环境变量 | `BEACON_AUTO_TRANSITION` | 最高优先级，适合 CI/CD 或临时覆盖 |
+| 项目级 | `.beacon/config.yaml` | 项目默认值，所有 change 继承 |
+| Change 级 | `openspec/changes/<name>/.beacon.yaml` | 单个 change 的覆盖值，最高运行时优先级 |
 
 解析逻辑：
 
-1. 读取 change 的 `.comet.yaml` 中的 `auto_transition`
-2. 若为 `null` 或空，回退到 `.comet/config.yaml` 的项目级默认
+1. 读取 change 的 `.beacon.yaml` 中的 `auto_transition`
+2. 若为 `null` 或空，回退到 `.beacon/config.yaml` 的项目级默认
 3. 若项目级也未设置，回退到 `true`
 
 ### 配置示例
 
-#### 项目级配置（`.comet/config.yaml`）
+#### 项目级配置（`.beacon/config.yaml`）
 
 ```yaml
 auto_transition: false        # 本项目所有 change 默认手动转场
 context_compression: off
 ```
 
-#### Change 级配置（`openspec/changes/<name>/.comet.yaml`）
+#### Change 级配置（`openspec/changes/<name>/.beacon.yaml`）
 
 ```yaml
 workflow: full
@@ -91,24 +91,24 @@ auto_transition: true         # 覆盖项目级，此 change 使用自动转场
 
 ```bash
 # 临时启用自动转场（优先级最高）
-export COMET_AUTO_TRANSITION=true
+export BEACON_AUTO_TRANSITION=true
 ```
 
 ### 初始化时的行为
 
-运行 `comet-state init` 创建新 change 时，`auto_transition` 会从项目级默认值解析并写入 change 的 `.comet.yaml`。之后可以单独修改该 change 的值而不影响其他 change。
+运行 `beacon-state init` 创建新 change 时，`auto_transition` 会从项目级默认值解析并写入 change 的 `.beacon.yaml`。之后可以单独修改该 change 的值而不影响其他 change。
 
 ## 工作流映射
 
-`comet-state next` 根据当前 phase 和 workflow 类型决定下一个 Skill：
+`beacon-state next` 根据当前 phase 和 workflow 类型决定下一个 Skill：
 
 | Phase | Full 工作流 | Hotfix 工作流 | Tweak 工作流 |
 |-------|------------|--------------|-------------|
-| `open` | comet-open | comet-open | comet-open |
-| `design` | comet-design | — | — |
-| `build` | comet-build | comet-hotfix | comet-tweak |
-| `verify` | comet-verify | comet-verify | comet-verify |
-| `archive` | comet-archive | comet-archive | comet-archive |
+| `open` | beacon-open | beacon-open | beacon-open |
+| `design` | beacon-design | — | — |
+| `build` | beacon-build | beacon-hotfix | beacon-tweak |
+| `verify` | beacon-verify | beacon-verify | beacon-verify |
+| `archive` | beacon-archive | beacon-archive | beacon-archive |
 
 ## 与上下文压缩的关系
 
@@ -132,15 +132,15 @@ export COMET_AUTO_TRANSITION=true
 
 ### Q: 设为 `false` 后阶段还会推进吗？
 
-会。`auto_transition: false` 仅暂停 Skill 调用，`comet-guard.sh --apply` 仍然会更新 `phase` 字段。暂停后用户需要手动运行下一个 Skill（如 `/comet-build`）继续流程。
+会。`auto_transition: false` 仅暂停 Skill 调用，`beacon-guard.sh --apply` 仍然会更新 `phase` 字段。暂停后用户需要手动运行下一个 Skill（如 `/beacon-build`）继续流程。
 
 ### Q: 可以中途切换吗？
 
-可以。在任意时刻修改 change 的 `.comet.yaml` 中的 `auto_transition` 字段即可。下一次 `comet-state next` 调用会使用新值。
+可以。在任意时刻修改 change 的 `.beacon.yaml` 中的 `auto_transition` 字段即可。下一次 `beacon-state next` 调用会使用新值。
 
 ### Q: 环境变量和配置文件冲突时以谁为准？
 
-环境变量 `COMET_AUTO_TRANSITION` 优先级最高，会覆盖项目级和 change 级配置。
+环境变量 `BEACON_AUTO_TRANSITION` 优先级最高，会覆盖项目级和 change 级配置。
 
 ### Q: Hotfix / Tweak 工作流也支持吗？
 

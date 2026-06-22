@@ -2,7 +2,7 @@ import path from 'path';
 import { fileExists, readDir } from '../utils/file-system.js';
 import { promises as fs } from 'fs';
 
-type CometState = Record<string, string>;
+type BeaconState = Record<string, string>;
 
 interface ChangeStatus {
   name: string;
@@ -22,15 +22,15 @@ interface ChangeStatus {
 function getNextCommand(phase: string): string | null {
   switch (phase) {
     case 'open':
-      return '/comet-open';
+      return '/beacon-open';
     case 'design':
-      return '/comet-design';
+      return '/beacon-design';
     case 'build':
-      return '/comet-build';
+      return '/beacon-build';
     case 'verify':
-      return '/comet-verify';
+      return '/beacon-verify';
     case 'archive':
-      return '/comet-archive';
+      return '/beacon-archive';
     default:
       return null;
   }
@@ -45,11 +45,14 @@ async function countTasks(tasksPath: string): Promise<{ done: number; total: num
   return { done, total };
 }
 
-async function readCometState(changesDir: string, changeName: string): Promise<CometState | null> {
-  const yamlPath = path.join(changesDir, changeName, '.comet.yaml');
+async function readBeaconState(
+  changesDir: string,
+  changeName: string,
+): Promise<BeaconState | null> {
+  const yamlPath = path.join(changesDir, changeName, '.beacon.yaml');
   if (!(await fileExists(yamlPath))) return null;
   const raw = await fs.readFile(yamlPath, 'utf-8');
-  const state: CometState = {};
+  const state: BeaconState = {};
   for (const line of raw.split('\n')) {
     const stripped = line.replace(/\s+#.*$/, '');
     const match = stripped.match(/^(\w[\w_]*):\s*(.*)/);
@@ -70,7 +73,7 @@ async function getActiveChanges(projectPath: string): Promise<ChangeStatus[]> {
     const stat = await fs.stat(changeDir);
     if (!stat.isDirectory()) continue;
 
-    const state = await readCometState(changesDir, entry);
+    const state = await readBeaconState(changesDir, entry);
     if (!state) continue;
     if (state.archived === 'true') continue;
 

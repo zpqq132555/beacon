@@ -8,8 +8,8 @@
 
 - [ ] CLI commands (`init`, `status`, `doctor`, `update`)
 - [ ] Core installer / platform detection
-- [ ] Comet skills (`assets/skills/`, `assets/skills-zh/`)
-- [ ] Comet shell scripts (`assets/skills/comet/scripts/`)
+- [ ] Beacon skills (`assets/skills/`, `assets/skills-zh/`)
+- [ ] Beacon shell scripts (`assets/skills/beacon/scripts/`)
 - [ ] Tests / CI
 - [ ] Documentation / changelog
 - [ ] Other:
@@ -22,7 +22,7 @@
 - [ ] `pnpm lint`
 - [ ] `pnpm format:check`
 - [ ] `pnpm test`
-- [ ] `pnpm test -- test/ts/comet-scripts.test.ts`
+- [ ] `pnpm test -- test/ts/beacon-scripts.test.ts`
 - [ ] `pnpm test:shell`
 - [ ] Not run:
 

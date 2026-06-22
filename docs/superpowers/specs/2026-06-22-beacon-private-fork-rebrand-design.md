@@ -4,18 +4,18 @@
 
 ## 背景
 
-Beacon 是基于 Comet 的私有化二开项目。Comet 只作为来源项目和历史背景存在，不作为 Beacon 的运行合同存在。
+Beacon 是基于 Beacon 的私有化二开项目。Beacon 只作为来源项目和历史背景存在，不作为 Beacon 的运行合同存在。
 
-本设计不依赖任何功能筛选台账、编号、批次或审查结论。第一轮改造只基于当前仓库真实代码、现有 Comet 能力，以及已确认的 Beacon 私有化边界。
+本设计不依赖任何功能筛选台账、编号、批次或审查结论。第一轮改造只基于当前仓库真实代码、现有 Beacon 能力，以及已确认的 Beacon 私有化边界。
 
 ## 已确认决策
 
 - Beacon 使用 `beacon` 作为 package name 和唯一 CLI bin。
-- Beacon 不兼容旧 Comet 运行合同。
-- 不提供 `comet` bin、`/comet-*` skill alias 或 `.comet.yaml` 读取兼容。
+- Beacon 不兼容旧 Beacon 运行合同。
+- 不提供 `beacon` bin、`/beacon-*` skill alias 或 `.beacon.yaml` 读取兼容。
 - 新状态文件统一使用 `.beacon.yaml`。
 - 新 skill、script、rule、hook、manifest 路径统一使用 Beacon 命名。
-- 文档中只有来源说明或致谢可以提到 Comet，操作说明不使用 Comet 命名。
+- 文档中只有来源说明或致谢可以提到 Beacon，操作说明不使用 Beacon 命名。
 
 ## 改造策略
 
@@ -34,7 +34,7 @@ Beacon 是基于 Comet 的私有化二开项目。Comet 只作为来源项目和
 - package name 改为 `beacon`。
 - bin 只暴露 `beacon`。
 - CLI name、description、help、命令说明和错误提示输出 Beacon。
-- 不保留 `comet` bin。
+- 不保留 `beacon` bin。
 
 ### 安装资产层
 
@@ -53,7 +53,7 @@ Beacon 是基于 Comet 的私有化二开项目。Comet 只作为来源项目和
 - `beacon/scripts/beacon-*.sh`
 - Beacon rules/hooks
 
-新安装产物不包含 `/comet-*` 或 `comet/scripts/comet-*.sh`。
+新安装产物不包含 `/beacon-*` 或 `beacon/scripts/beacon-*.sh`。
 
 ### 状态合同层
 
@@ -74,13 +74,13 @@ Beacon 是基于 Comet 的私有化二开项目。Comet 只作为来源项目和
 
 ### 文案和文档层
 
-README、NEWS、CHANGELOG、CLI i18n、skill 文案统一写 Beacon。Comet 只作为来源项目在必要位置出现。
+README、NEWS、CHANGELOG、CLI i18n、skill 文案统一写 Beacon。Beacon 只作为来源项目在必要位置出现。
 
-README 第一轮目标是避免用户按文档执行出 Comet 命令；完整品牌叙事可以后续继续完善。
+README 第一轮目标是避免用户按文档执行出 Beacon 命令；完整品牌叙事可以后续继续完善。
 
 ### 内部代码命名层
 
-低风险内部命名可以同步改，例如 `copyCometSkillsForPlatform` 改为 `copyBeaconSkillsForPlatform`。如果某些内部重命名会造成大范围无行为收益的 churn，可以留到后续清理。
+低风险内部命名可以同步改，例如 `copyBeaconSkillsForPlatform` 改为 `copyBeaconSkillsForPlatform`。如果某些内部重命名会造成大范围无行为收益的 churn，可以留到后续清理。
 
 ## 运行数据流
 
@@ -107,7 +107,7 @@ package/bin beacon
   -> guard/state/handoff/archive 脚本只读写 .beacon.yaml
 ```
 
-旧 `.comet.yaml` 文件不会被读取或迁移。
+旧 `.beacon.yaml` 文件不会被读取或迁移。
 
 ### `beacon doctor`
 
@@ -130,11 +130,11 @@ beacon doctor
 手工验收：
 
 - `node dist/cli/index.js --help` 显示 `beacon`。
-- `node dist/cli/index.js status --json` 不再输出 `/comet-*`。
-- 新 manifest 中不再引用 `comet-*` 安装路径。
+- `node dist/cli/index.js status --json` 不再输出 `/beacon-*`。
+- 新 manifest 中不再引用 `beacon-*` 安装路径。
 - 新状态读写只使用 `.beacon.yaml`。
 - 新 hooks/rules/scripts 路径只使用 Beacon 命名。
-- 历史 changelog 或来源说明中允许保留 `Comet`，运行说明不出现 Comet 命令。
+- 历史 changelog 或来源说明中允许保留 `Beacon`，运行说明不出现 Beacon 命令。
 
 ## 风险与控制
 
@@ -144,20 +144,20 @@ beacon doctor
 
 - 先改 manifest 和资产路径，再改复制逻辑。
 - 按脚本依赖链同步改名和内部调用。
-- 同步更新测试夹具，避免测试仍在验证 Comet 合同。
+- 同步更新测试夹具，避免测试仍在验证 Beacon 合同。
 - 搜索残留时区分“历史说明允许出现”和“运行合同不得出现”。
 
 ## 非目标
 
 - 不新增 Beacon 新功能。
 - 不重新设计五阶段 workflow。
-- 不做旧 Comet 状态迁移。
-- 不兼容旧 `/comet-*` skill。
+- 不做旧 Beacon 状态迁移。
+- 不兼容旧 `/beacon-*` skill。
 - 不根据任何功能筛选台账决定保留或删除功能。
 
 ## 后续实施建议
 
-实施 change 可以命名为 `rebrand-comet-to-beacon` 或 `privatize-beacon-runtime-contracts`。
+实施 change 可以命名为 `rebrand-beacon-to-beacon` 或 `privatize-beacon-runtime-contracts`。
 
 建议任务顺序：
 

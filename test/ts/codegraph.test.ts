@@ -14,7 +14,7 @@ describe('codegraph', () => {
   let tmpDir: string;
 
   beforeEach(() => {
-    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'comet-codegraph-'));
+    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'beacon-codegraph-'));
     vi.resetAllMocks();
     vi.resetModules();
   });

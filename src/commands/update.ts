@@ -7,9 +7,9 @@ import { select } from '@inquirer/prompts';
 import { fileExists, readDir, readJson } from '../utils/file-system.js';
 import { getBaseDir } from '../core/detect.js';
 import {
-  copyCometSkillsForPlatform,
-  copyCometRulesForPlatform,
-  installCometHooksForPlatform,
+  copyBeaconSkillsForPlatform,
+  copyBeaconRulesForPlatform,
+  installBeaconHooksForPlatform,
   getManifestSkills,
 } from '../core/skills.js';
 import { PLATFORMS, getPlatformSkillsDir, type Platform } from '../core/platforms.js';
@@ -18,7 +18,7 @@ import type { InstallScope } from '../core/types.js';
 import { printVersionInfo } from '../core/version.js';
 import { t, type TranslationKey } from './i18n.js';
 
-const PACKAGE_NAME = '@rpamis/comet';
+const PACKAGE_NAME = 'beacon';
 const OFFICIAL_REGISTRY = 'https://registry.npmjs.org';
 
 interface UpdateOptions {
@@ -30,7 +30,7 @@ interface UpdateOptions {
 
 type SkillLanguage = 'en' | 'zh';
 
-interface InstalledCometTarget {
+interface InstalledBeaconTarget {
   scope: InstallScope;
   platform: Platform;
   language: SkillLanguage;
@@ -53,7 +53,7 @@ function getScopedBaseDir(
   return scope === 'global' ? globalBaseDir : projectPath;
 }
 
-function getInstalledCometSkillsDirs(
+function getInstalledBeaconSkillsDirs(
   baseDir: string,
   platform: Platform,
   scope: InstallScope = 'project',
@@ -65,27 +65,27 @@ function getInstalledCometSkillsDirs(
   return [...new Set(dirs)];
 }
 
-async function hasLocalCometSkills(
+async function hasLocalBeaconSkills(
   baseDir: string,
   platform: Platform,
   scope: InstallScope,
 ): Promise<boolean> {
-  for (const skillsDir of getInstalledCometSkillsDirs(baseDir, platform, scope)) {
+  for (const skillsDir of getInstalledBeaconSkillsDirs(baseDir, platform, scope)) {
     if (!(await fileExists(skillsDir))) continue;
     const entries = await readDir(skillsDir);
-    if (entries.some((entry) => entry.startsWith('comet'))) return true;
+    if (entries.some((entry) => entry.startsWith('beacon'))) return true;
   }
   return false;
 }
 
-async function detectInstalledCometLanguage(
+async function detectInstalledBeaconLanguage(
   baseDir: string,
   platform: Platform,
   scope: InstallScope = 'project',
 ): Promise<SkillLanguage> {
-  for (const skillsDir of getInstalledCometSkillsDirs(baseDir, platform, scope)) {
+  for (const skillsDir of getInstalledBeaconSkillsDirs(baseDir, platform, scope)) {
     if (!(await fileExists(skillsDir))) continue;
-    const entries = (await readDir(skillsDir)).filter((entry) => entry.startsWith('comet'));
+    const entries = (await readDir(skillsDir)).filter((entry) => entry.startsWith('beacon'));
 
     for (const entry of entries) {
       const skillPath = path.join(skillsDir, entry, 'SKILL.md');
@@ -103,23 +103,23 @@ async function detectInstalledCometLanguage(
   return 'en';
 }
 
-async function detectInstalledCometTargets(
+async function detectInstalledBeaconTargets(
   projectPath: string,
   options: DetectTargetsOptions = {},
-): Promise<InstalledCometTarget[]> {
+): Promise<InstalledBeaconTarget[]> {
   const scopes = options.scopes ?? (['project', 'global'] as InstallScope[]);
-  const targets: InstalledCometTarget[] = [];
+  const targets: InstalledBeaconTarget[] = [];
 
   for (const scope of scopes) {
     const baseDir = getScopedBaseDir(scope, projectPath, options.globalBaseDir);
 
     for (const platform of PLATFORMS) {
-      if (!(await hasLocalCometSkills(baseDir, platform, scope))) continue;
+      if (!(await hasLocalBeaconSkills(baseDir, platform, scope))) continue;
 
       targets.push({
         scope,
         platform,
-        language: await detectInstalledCometLanguage(baseDir, platform, scope),
+        language: await detectInstalledBeaconLanguage(baseDir, platform, scope),
       });
     }
   }
@@ -132,11 +132,11 @@ function isSameOrInside(childPath: string, parentPath: string): boolean {
   return relative === '' || (!relative.startsWith('..') && !path.isAbsolute(relative));
 }
 
-async function detectCometPackageScope(
+async function detectBeaconPackageScope(
   projectPath: string,
   packageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..'),
 ): Promise<InstallScope> {
-  const localPackageRoot = path.join(projectPath, 'node_modules', '@rpamis', 'comet');
+  const localPackageRoot = path.join(projectPath, 'node_modules', 'beacon');
   if (isSameOrInside(packageRoot, localPackageRoot)) return 'project';
 
   const packageJsonPath = path.join(projectPath, 'package.json');
@@ -182,7 +182,7 @@ function getNpmExecutable(): string {
   return process.platform === 'win32' ? 'npm.cmd' : 'npm';
 }
 
-async function updateCometNpmPackage(
+async function updateBeaconNpmPackage(
   scope: InstallScope,
   projectPath: string,
   log: (message: string) => void,
@@ -241,12 +241,12 @@ export async function updateCommand(
   }
   log('');
 
-  const packageScope = options.scope ?? (await detectCometPackageScope(projectPath));
+  const packageScope = options.scope ?? (await detectBeaconPackageScope(projectPath));
   let npmStatus: 'updated' | 'failed' | 'skipped' = 'skipped';
   if (!options.skipNpm) {
     log(`  ${t(lang, 'updatingNpmPackage')} (${packageScope} scope)...`);
     log(`    $ ${formatNpmUpdateCommand(packageScope)}`);
-    const npmUpdated = await updateCometNpmPackage(
+    const npmUpdated = await updateBeaconNpmPackage(
       packageScope,
       projectPath,
       log,
@@ -261,7 +261,7 @@ export async function updateCommand(
     }
   }
 
-  const targets = await detectInstalledCometTargets(projectPath, {
+  const targets = await detectInstalledBeaconTargets(projectPath, {
     scopes: options.scope ? [options.scope] : undefined,
   });
 
@@ -310,7 +310,7 @@ export async function updateCommand(
   for (const target of targets) {
     const baseDir = getBaseDir(target.scope, projectPath);
     const languageSkillsDir = languageToSkillsDir(options.language, target.language);
-    const { copied, skipped } = await copyCometSkillsForPlatform(
+    const { copied, skipped } = await copyBeaconSkillsForPlatform(
       baseDir,
       target.platform,
       true,
@@ -333,7 +333,7 @@ export async function updateCommand(
     );
 
     try {
-      const { copied: ruleCopied } = await copyCometRulesForPlatform(
+      const { copied: ruleCopied } = await copyBeaconRulesForPlatform(
         baseDir,
         target.platform,
         true,
@@ -341,30 +341,30 @@ export async function updateCommand(
       );
       totalRulesCopied += ruleCopied;
       if (ruleCopied > 0) {
-        log(`  Comet rules -> ${target.platform.name}: ${ruleCopied} ${t(lang, 'rulesUpdated')}`);
+        log(`  Beacon rules -> ${target.platform.name}: ${ruleCopied} ${t(lang, 'rulesUpdated')}`);
       }
     } catch (err) {
       log(
-        `  Comet rules -> ${target.platform.name}: ${t(lang, 'rulesFailed')} (${(err as Error).message})`,
+        `  Beacon rules -> ${target.platform.name}: ${t(lang, 'rulesFailed')} (${(err as Error).message})`,
       );
     }
 
     if (target.platform.supportsHooks) {
       try {
-        const { installed, reason } = await installCometHooksForPlatform(
+        const { installed, reason } = await installBeaconHooksForPlatform(
           baseDir,
           target.platform,
           target.scope,
         );
         if (installed) {
           totalHooksInstalled++;
-          log(`  Comet hooks -> ${target.platform.name}: ${t(lang, 'hooksUpdated')}`);
+          log(`  Beacon hooks -> ${target.platform.name}: ${t(lang, 'hooksUpdated')}`);
         } else if (reason) {
-          log(`  Comet hooks -> ${target.platform.name}: ${t(lang, 'hooksSkipped')} (${reason})`);
+          log(`  Beacon hooks -> ${target.platform.name}: ${t(lang, 'hooksSkipped')} (${reason})`);
         }
       } catch (err) {
         log(
-          `  Comet hooks -> ${target.platform.name}: ${t(lang, 'hooksFailed')} (${(err as Error).message})`,
+          `  Beacon hooks -> ${target.platform.name}: ${t(lang, 'hooksFailed')} (${(err as Error).message})`,
         );
       }
     }
@@ -427,10 +427,10 @@ export async function updateCommand(
 
 export {
   buildNpmUpdateArgs,
-  detectCometPackageScope,
-  detectInstalledCometLanguage,
-  detectInstalledCometTargets,
+  detectBeaconPackageScope,
+  detectInstalledBeaconLanguage,
+  detectInstalledBeaconTargets,
   formatNpmUpdateCommand,
   formatSkillUpdateCommand,
 };
-export type { InstalledCometTarget, SkillLanguage, TranslationKey };
+export type { InstalledBeaconTarget, SkillLanguage, TranslationKey };

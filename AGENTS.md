@@ -1,7 +1,7 @@
 ## 测试
 
 ```bash
-npx vitest run test/ts/comet-scripts.test.ts   # shell 脚本测试
+npx vitest run test/ts/beacon-scripts.test.ts   # shell 脚本测试
 npx vitest run                                   # 全量测试
 ```
 
@@ -22,7 +22,7 @@ pnpm test           # 单元测试
 
 ## Shell 脚本规范
 
-脚本位于 `assets/skills/comet/scripts/`，必须跨平台兼容（macOS / Linux / Windows Git Bash）：
+脚本位于 `assets/skills/beacon/scripts/`，必须跨平台兼容（macOS / Linux / Windows Git Bash）：
 
 - **禁止** `sed -i`（GNU/BSD 不兼容），用 `awk` 做字段替换
 - 必须兼容 `sha256sum`（GNU）和 `shasum -a 256`（BSD/macOS）
@@ -32,19 +32,19 @@ pnpm test           # 单元测试
 ## 脚本依赖关系
 
 ```
-comet-state.sh ← comet-guard.sh, comet-handoff.sh, comet-archive.sh
-comet-yaml-validate.sh ← comet-guard.sh (preflight 阶段)
-comet-handoff.sh ← comet-state.sh (写入 handoff_context/handoff_hash)
+beacon-state.sh ← beacon-guard.sh, beacon-handoff.sh, beacon-archive.sh
+beacon-yaml-validate.sh ← beacon-guard.sh (preflight 阶段)
+beacon-handoff.sh ← beacon-state.sh (写入 handoff_context/handoff_hash)
 ```
 
 新增共享工具函数时（如 hash、yaml 解析），如果两个脚本都需要，允许在各自脚本中独立实现，不强制抽共享文件。
 
-## .comet.yaml 状态机
+## .beacon.yaml 状态机
 
 每个 change 的状态文件，字段变更需要同步三处：
-1. `comet-state.sh` — `cmd_set` 白名单 + enum 验证
-2. `comet-yaml-validate.sh` — schema 校验 + KNOWN_KEYS
-3. `test/ts/comet-scripts.test.ts` — 测试中的 yaml 字符串
+1. `beacon-state.sh` — `cmd_set` 白名单 + enum 验证
+2. `beacon-yaml-validate.sh` — schema 校验 + KNOWN_KEYS
+3. `test/ts/beacon-scripts.test.ts` — 测试中的 yaml 字符串
 
 ## 双语言 Skill
 

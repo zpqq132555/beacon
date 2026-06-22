@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { applyBulkOverwriteChoice } from '../../src/commands/init.js';
 import {
-  copyCometSkillsForPlatform,
+  copyBeaconSkillsForPlatform,
   createWorkingDirs,
   readManifest,
 } from '../../src/core/skills.js';
@@ -60,13 +60,13 @@ describe('init command helpers', () => {
     });
   });
 
-  it('creates a project Comet config with context compression disabled by default', async () => {
-    const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'comet-init-config-'));
+  it('creates a project Beacon config with context compression disabled by default', async () => {
+    const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'beacon-init-config-'));
 
     try {
       await createWorkingDirs(tmpDir);
 
-      const config = await fs.readFile(path.join(tmpDir, '.comet', 'config.yaml'), 'utf-8');
+      const config = await fs.readFile(path.join(tmpDir, '.beacon', 'config.yaml'), 'utf-8');
       expect(config).toContain('# context_compression: off | beta');
       expect(config).toContain('context_compression: off');
       expect(config).toContain('# review_mode: off | standard | thorough');
@@ -79,7 +79,7 @@ describe('init command helpers', () => {
   });
 
   it('installs manifest-driven Pi slash commands and preserves existing settings', async () => {
-    const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'comet-init-pi-'));
+    const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'beacon-init-pi-'));
     const piPlatform = PLATFORMS.find((platform) => platform.id === 'pi')!;
     const settingsPath = path.join(tmpDir, '.pi', 'settings.json');
 
@@ -87,10 +87,10 @@ describe('init command helpers', () => {
       await fs.mkdir(path.dirname(settingsPath), { recursive: true });
       await fs.writeFile(settingsPath, JSON.stringify({ theme: 'light' }), 'utf-8');
 
-      await copyCometSkillsForPlatform(tmpDir, piPlatform, false, 'skills', 'project');
+      await copyBeaconSkillsForPlatform(tmpDir, piPlatform, false, 'skills', 'project');
 
       const extension = await fs.readFile(
-        path.join(tmpDir, '.pi', 'extensions', 'comet-commands.ts'),
+        path.join(tmpDir, '.pi', 'extensions', 'beacon-commands.ts'),
         'utf-8',
       );
       const settings = JSON.parse(await fs.readFile(settingsPath, 'utf-8'));
@@ -116,17 +116,17 @@ describe('init command helpers', () => {
   });
 
   it('rejects invalid Pi settings without writing a command extension', async () => {
-    const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'comet-init-pi-invalid-'));
+    const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'beacon-init-pi-invalid-'));
     const piPlatform = PLATFORMS.find((platform) => platform.id === 'pi')!;
     const settingsPath = path.join(tmpDir, '.pi', 'settings.json');
-    const extensionPath = path.join(tmpDir, '.pi', 'extensions', 'comet-commands.ts');
+    const extensionPath = path.join(tmpDir, '.pi', 'extensions', 'beacon-commands.ts');
 
     try {
       await fs.mkdir(path.dirname(settingsPath), { recursive: true });
       await fs.writeFile(settingsPath, '{ invalid', 'utf-8');
 
       await expect(
-        copyCometSkillsForPlatform(tmpDir, piPlatform, true, 'skills', 'project'),
+        copyBeaconSkillsForPlatform(tmpDir, piPlatform, true, 'skills', 'project'),
       ).rejects.toThrow(/invalid Pi settings/i);
       await expect(fs.readFile(settingsPath, 'utf-8')).resolves.toBe('{ invalid');
       await expect(fs.access(extensionPath)).rejects.toThrow();
@@ -136,17 +136,17 @@ describe('init command helpers', () => {
   });
 
   it('overwrites a stale Pi command extension while preserving unrelated settings', async () => {
-    const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'comet-init-pi-overwrite-'));
+    const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'beacon-init-pi-overwrite-'));
     const piPlatform = PLATFORMS.find((platform) => platform.id === 'pi')!;
     const settingsPath = path.join(tmpDir, '.pi', 'settings.json');
-    const extensionPath = path.join(tmpDir, '.pi', 'extensions', 'comet-commands.ts');
+    const extensionPath = path.join(tmpDir, '.pi', 'extensions', 'beacon-commands.ts');
 
     try {
       await fs.mkdir(path.dirname(extensionPath), { recursive: true });
       await fs.writeFile(settingsPath, JSON.stringify({ theme: 'dark' }), 'utf-8');
       await fs.writeFile(extensionPath, 'stale extension', 'utf-8');
 
-      await copyCometSkillsForPlatform(tmpDir, piPlatform, true, 'skills', 'project');
+      await copyBeaconSkillsForPlatform(tmpDir, piPlatform, true, 'skills', 'project');
 
       await expect(fs.readFile(extensionPath, 'utf-8')).resolves.not.toBe('stale extension');
       await expect(fs.readFile(settingsPath, 'utf-8')).resolves.toContain('"theme": "dark"');

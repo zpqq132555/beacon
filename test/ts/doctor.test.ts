@@ -8,7 +8,7 @@ describe('doctor command', () => {
   let tmpDir: string;
 
   beforeEach(async () => {
-    tmpDir = path.join(os.tmpdir(), `comet-doctor-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+    tmpDir = path.join(os.tmpdir(), `beacon-doctor-${Date.now()}-${Math.random().toString(36).slice(2)}`);
     await fs.mkdir(tmpDir, { recursive: true });
   });
 
@@ -16,11 +16,11 @@ describe('doctor command', () => {
     await fs.rm(tmpDir, { recursive: true, force: true });
   });
 
-  it('accepts current comet state fields in JSON output', async () => {
+  it('accepts current beacon state fields in JSON output', async () => {
     const changeDir = path.join(tmpDir, 'openspec', 'changes', 'current-state');
     await fs.mkdir(changeDir, { recursive: true });
     await fs.writeFile(
-      path.join(changeDir, '.comet.yaml'),
+      path.join(changeDir, '.beacon.yaml'),
       [
         'workflow: full',
         'phase: verify',
@@ -41,23 +41,23 @@ describe('doctor command', () => {
     const log = vi.spyOn(console, 'log').mockImplementation(() => undefined);
     let json = '';
     try {
-      await doctorCommand(tmpDir, { json: true });
+      await doctorCommand(tmpDir, { json: true, scope: 'project' });
       json = log.mock.calls.map((call) => call.join(' ')).join('\n');
     } finally {
       log.mockRestore();
     }
 
     const results = JSON.parse(json).results as Array<{ check: string; status: string }>;
-    expect(results.find((result) => result.check === '.comet.yaml: current-state')).toMatchObject({
+    expect(results.find((result) => result.check === '.beacon.yaml: current-state')).toMatchObject({
       status: 'pass',
     });
   });
 
-  it('only validates top-level keys in .comet.yaml', async () => {
+  it('only validates top-level keys in .beacon.yaml', async () => {
     const validChangeDir = path.join(tmpDir, 'openspec', 'changes', 'nested-valid');
     await fs.mkdir(validChangeDir, { recursive: true });
     await fs.writeFile(
-      path.join(validChangeDir, '.comet.yaml'),
+      path.join(validChangeDir, '.beacon.yaml'),
       [
         'workflow: full',
         'phase: verify',
@@ -72,7 +72,7 @@ describe('doctor command', () => {
     const invalidChangeDir = path.join(tmpDir, 'openspec', 'changes', 'top-level-invalid');
     await fs.mkdir(invalidChangeDir, { recursive: true });
     await fs.writeFile(
-      path.join(invalidChangeDir, '.comet.yaml'),
+      path.join(invalidChangeDir, '.beacon.yaml'),
       [
         'workflow: full',
         'phase: verify',
@@ -84,7 +84,7 @@ describe('doctor command', () => {
     const log = vi.spyOn(console, 'log').mockImplementation(() => undefined);
     let json = '';
     try {
-      await doctorCommand(tmpDir, { json: true });
+      await doctorCommand(tmpDir, { json: true, scope: 'project' });
       json = log.mock.calls.map((call) => call.join(' ')).join('\n');
     } finally {
       log.mockRestore();
@@ -92,11 +92,11 @@ describe('doctor command', () => {
 
     const results = JSON.parse(json).results as Array<{ check: string; status: string; message: string }>;
 
-    expect(results.find((result) => result.check === '.comet.yaml: nested-valid')).toMatchObject({
+    expect(results.find((result) => result.check === '.beacon.yaml: nested-valid')).toMatchObject({
       status: 'pass',
     });
 
-    expect(results.find((result) => result.check === '.comet.yaml: top-level-invalid')).toMatchObject({
+    expect(results.find((result) => result.check === '.beacon.yaml: top-level-invalid')).toMatchObject({
       status: 'fail',
       message: expect.stringContaining('unknown_root_field'),
     });

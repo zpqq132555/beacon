@@ -74,7 +74,7 @@ function getOpenSpecDefaultConfigPath(): string {
 }
 
 function createOpenSpecAllWorkflowsEnv(): { env: NodeJS.ProcessEnv; configHome: string } {
-  const configHome = fs.mkdtempSync(path.join(os.tmpdir(), 'comet-openspec-profile-'));
+  const configHome = fs.mkdtempSync(path.join(os.tmpdir(), 'beacon-openspec-profile-'));
   try {
     const openspecConfigDir = path.join(configHome, 'openspec');
     fs.mkdirSync(openspecConfigDir, { recursive: true });
@@ -101,7 +101,7 @@ interface ConfigBackup {
 
 function writeAllWorkflowsToDefaultConfig(): ConfigBackup | null {
   const configPath = getOpenSpecDefaultConfigPath();
-  const backupPath = configPath + '.comet-backup';
+  const backupPath = configPath + '.beacon-backup';
   let hadExisting = false;
 
   try {
@@ -197,7 +197,7 @@ function migrateOpenCodeOpenSpecPaths(homeDir: string): void {
 
   // OpenSpec hardcodes skillsDir as '.opencode' in its AI_TOOLS, so it writes
   // to ~/.opencode/ even for global installs. OpenCode actually reads from
-  // ~/.config/opencode/ (Comet's globalSkillsDir). Move the files over.
+  // ~/.config/opencode/ (Beacon's globalSkillsDir). Move the files over.
   const wrongDir = path.join(homeDir, opencodePlatform.skillsDir);
   const correctDir = path.join(homeDir, opencodePlatform.globalSkillsDir);
 

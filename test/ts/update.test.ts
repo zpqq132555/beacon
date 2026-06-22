@@ -6,9 +6,9 @@ import { select } from '@inquirer/prompts';
 import { PLATFORMS, type Platform } from '../../src/core/platforms.js';
 import {
   buildNpmUpdateArgs,
-  detectCometPackageScope,
-  detectInstalledCometLanguage,
-  detectInstalledCometTargets,
+  detectBeaconPackageScope,
+  detectInstalledBeaconLanguage,
+  detectInstalledBeaconTargets,
   formatNpmUpdateCommand,
   formatSkillUpdateCommand,
   updateCommand,
@@ -35,7 +35,7 @@ describe('update command helpers', () => {
     mockedSelect.mockClear();
     tmpDir = path.join(
       os.tmpdir(),
-      `comet-update-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+      `beacon-update-${Date.now()}-${Math.random().toString(36).slice(2)}`,
     );
     await fs.mkdir(tmpDir, { recursive: true });
   });
@@ -44,55 +44,55 @@ describe('update command helpers', () => {
     await fs.rm(tmpDir, { recursive: true, force: true });
   });
 
-  it('detects Chinese installed comet skills from existing skill content', async () => {
-    await fs.mkdir(path.join(tmpDir, '.claude', 'skills', 'comet'), { recursive: true });
+  it('detects Chinese installed beacon skills from existing skill content', async () => {
+    await fs.mkdir(path.join(tmpDir, '.claude', 'skills', 'beacon'), { recursive: true });
     await fs.writeFile(
-      path.join(tmpDir, '.claude', 'skills', 'comet', 'SKILL.md'),
-      '# Comet\n\n当用户提出需求时，先澄清目标再执行。',
+      path.join(tmpDir, '.claude', 'skills', 'beacon', 'SKILL.md'),
+      '# Beacon\n\n当用户提出需求时，先澄清目标再执行。',
       'utf-8',
     );
 
-    await expect(detectInstalledCometLanguage(tmpDir, claudePlatform)).resolves.toBe('zh');
+    await expect(detectInstalledBeaconLanguage(tmpDir, claudePlatform)).resolves.toBe('zh');
   });
 
-  it('detects English installed comet skills from existing skill content', async () => {
-    await fs.mkdir(path.join(tmpDir, '.claude', 'skills', 'comet'), { recursive: true });
+  it('detects English installed beacon skills from existing skill content', async () => {
+    await fs.mkdir(path.join(tmpDir, '.claude', 'skills', 'beacon'), { recursive: true });
     await fs.writeFile(
-      path.join(tmpDir, '.claude', 'skills', 'comet', 'SKILL.md'),
-      '# Comet\n\nUse this skill when starting a new change.',
+      path.join(tmpDir, '.claude', 'skills', 'beacon', 'SKILL.md'),
+      '# Beacon\n\nUse this skill when starting a new change.',
       'utf-8',
     );
 
-    await expect(detectInstalledCometLanguage(tmpDir, claudePlatform)).resolves.toBe('en');
+    await expect(detectInstalledBeaconLanguage(tmpDir, claudePlatform)).resolves.toBe('en');
   });
 
-  it('defaults installed comet language to English when the skills directory is missing', async () => {
+  it('defaults installed beacon language to English when the skills directory is missing', async () => {
     await fs.mkdir(path.join(tmpDir, '.claude'), { recursive: true });
 
-    await expect(detectInstalledCometLanguage(tmpDir, claudePlatform)).resolves.toBe('en');
+    await expect(detectInstalledBeaconLanguage(tmpDir, claudePlatform)).resolves.toBe('en');
   });
 
-  it('finds only scopes and platforms that already have comet skills installed', async () => {
+  it('finds only scopes and platforms that already have beacon skills installed', async () => {
     const projectDir = path.join(tmpDir, 'project');
     const globalDir = path.join(tmpDir, 'home');
 
-    await fs.mkdir(path.join(projectDir, '.claude', 'skills', 'comet'), { recursive: true });
+    await fs.mkdir(path.join(projectDir, '.claude', 'skills', 'beacon'), { recursive: true });
     await fs.writeFile(
-      path.join(projectDir, '.claude', 'skills', 'comet', 'SKILL.md'),
-      '# Comet\n\nUse this skill.',
+      path.join(projectDir, '.claude', 'skills', 'beacon', 'SKILL.md'),
+      '# Beacon\n\nUse this skill.',
       'utf-8',
     );
 
     await fs.mkdir(path.join(projectDir, '.cursor'), { recursive: true });
 
-    await fs.mkdir(path.join(globalDir, '.codex', 'skills', 'comet'), { recursive: true });
+    await fs.mkdir(path.join(globalDir, '.codex', 'skills', 'beacon'), { recursive: true });
     await fs.writeFile(
-      path.join(globalDir, '.codex', 'skills', 'comet', 'SKILL.md'),
-      '# Comet\n\n当用户提出需求时使用这个技能。',
+      path.join(globalDir, '.codex', 'skills', 'beacon', 'SKILL.md'),
+      '# Beacon\n\n当用户提出需求时使用这个技能。',
       'utf-8',
     );
 
-    const targets = await detectInstalledCometTargets(projectDir, {
+    const targets = await detectInstalledBeaconTargets(projectDir, {
       globalBaseDir: globalDir,
     });
 
@@ -106,7 +106,7 @@ describe('update command helpers', () => {
     const projectDir = path.join(tmpDir, 'project');
     await fs.mkdir(path.join(projectDir, '.claude'), { recursive: true });
 
-    await expect(detectInstalledCometTargets(projectDir, { scopes: ['project'] })).resolves.toEqual(
+    await expect(detectInstalledBeaconTargets(projectDir, { scopes: ['project'] })).resolves.toEqual(
       [],
     );
   });
@@ -115,12 +115,12 @@ describe('update command helpers', () => {
     const projectDir = path.join(tmpDir, 'project');
     const globalDir = path.join(tmpDir, 'home');
 
-    await fs.mkdir(path.join(projectDir, '.claude', 'skills', 'comet'), { recursive: true });
-    await fs.writeFile(path.join(projectDir, '.claude', 'skills', 'comet', 'SKILL.md'), '# Comet');
-    await fs.mkdir(path.join(globalDir, '.codex', 'skills', 'comet'), { recursive: true });
-    await fs.writeFile(path.join(globalDir, '.codex', 'skills', 'comet', 'SKILL.md'), '# Comet');
+    await fs.mkdir(path.join(projectDir, '.claude', 'skills', 'beacon'), { recursive: true });
+    await fs.writeFile(path.join(projectDir, '.claude', 'skills', 'beacon', 'SKILL.md'), '# Beacon');
+    await fs.mkdir(path.join(globalDir, '.codex', 'skills', 'beacon'), { recursive: true });
+    await fs.writeFile(path.join(globalDir, '.codex', 'skills', 'beacon', 'SKILL.md'), '# Beacon');
 
-    const targets = await detectInstalledCometTargets(projectDir, {
+    const targets = await detectInstalledBeaconTargets(projectDir, {
       globalBaseDir: globalDir,
       scopes: ['global'],
     });
@@ -132,14 +132,14 @@ describe('update command helpers', () => {
     const projectDir = path.join(tmpDir, 'project');
     const globalDir = path.join(tmpDir, 'home');
 
-    await fs.mkdir(path.join(globalDir, '.pi', 'skills', 'comet'), { recursive: true });
+    await fs.mkdir(path.join(globalDir, '.pi', 'skills', 'beacon'), { recursive: true });
     await fs.writeFile(
-      path.join(globalDir, '.pi', 'skills', 'comet', 'SKILL.md'),
-      '# Comet\n\nUse this skill.',
+      path.join(globalDir, '.pi', 'skills', 'beacon', 'SKILL.md'),
+      '# Beacon\n\nUse this skill.',
       'utf-8',
     );
 
-    const targets = await detectInstalledCometTargets(projectDir, {
+    const targets = await detectInstalledBeaconTargets(projectDir, {
       globalBaseDir: globalDir,
       scopes: ['global'],
     });
@@ -152,9 +152,9 @@ describe('update command helpers', () => {
 
   it('detects project package scope from local node_modules install path', async () => {
     const projectDir = path.join(tmpDir, 'project');
-    const packageRoot = path.join(projectDir, 'node_modules', '@rpamis', 'comet');
+    const packageRoot = path.join(projectDir, 'node_modules', 'beacon');
 
-    await expect(detectCometPackageScope(projectDir, packageRoot)).resolves.toBe('project');
+    await expect(detectBeaconPackageScope(projectDir, packageRoot)).resolves.toBe('project');
   });
 
   it('detects project package scope from package.json dependencies', async () => {
@@ -162,31 +162,31 @@ describe('update command helpers', () => {
     await fs.mkdir(projectDir, { recursive: true });
     await fs.writeFile(
       path.join(projectDir, 'package.json'),
-      JSON.stringify({ devDependencies: { '@rpamis/comet': '^0.2.4' } }),
+      JSON.stringify({ devDependencies: { 'beacon': '^0.2.4' } }),
       'utf-8',
     );
 
-    await expect(detectCometPackageScope(projectDir, tmpDir)).resolves.toBe('project');
+    await expect(detectBeaconPackageScope(projectDir, tmpDir)).resolves.toBe('project');
   });
 
   it('falls back to global package scope when no project install is found', async () => {
     const projectDir = path.join(tmpDir, 'project');
     await fs.mkdir(projectDir, { recursive: true });
 
-    await expect(detectCometPackageScope(projectDir, tmpDir)).resolves.toBe('global');
+    await expect(detectBeaconPackageScope(projectDir, tmpDir)).resolves.toBe('global');
   });
 
   it('builds npm update args preserving package install scope with official registry', () => {
     expect(buildNpmUpdateArgs('global')).toEqual([
       'install',
       '-g',
-      '@rpamis/comet@latest',
+      'beacon@latest',
       '--registry',
       'https://registry.npmjs.org',
     ]);
     expect(buildNpmUpdateArgs('project')).toEqual([
       'install',
-      '@rpamis/comet@latest',
+      'beacon@latest',
       '--registry',
       'https://registry.npmjs.org',
     ]);
@@ -194,10 +194,10 @@ describe('update command helpers', () => {
 
   it('formats the npm update command for friendly console output', () => {
     expect(formatNpmUpdateCommand('global')).toBe(
-      'npm install -g @rpamis/comet@latest --registry https://registry.npmjs.org',
+      'npm install -g beacon@latest --registry https://registry.npmjs.org',
     );
     expect(formatNpmUpdateCommand('project')).toBe(
-      'npm install @rpamis/comet@latest --registry https://registry.npmjs.org',
+      'npm install beacon@latest --registry https://registry.npmjs.org',
     );
   });
 
@@ -211,10 +211,10 @@ describe('update command helpers', () => {
   });
 
   it('prints the skill update command when updating installed skills', async () => {
-    await fs.mkdir(path.join(tmpDir, '.claude', 'skills', 'comet'), { recursive: true });
+    await fs.mkdir(path.join(tmpDir, '.claude', 'skills', 'beacon'), { recursive: true });
     await fs.writeFile(
-      path.join(tmpDir, '.claude', 'skills', 'comet', 'SKILL.md'),
-      '# Comet\n\n当用户提出需求时使用这个技能。',
+      path.join(tmpDir, '.claude', 'skills', 'beacon', 'SKILL.md'),
+      '# Beacon\n\n当用户提出需求时使用这个技能。',
       'utf-8',
     );
 
@@ -231,10 +231,10 @@ describe('update command helpers', () => {
   });
 
   it('prints structured JSON when requested', async () => {
-    await fs.mkdir(path.join(tmpDir, '.claude', 'skills', 'comet'), { recursive: true });
+    await fs.mkdir(path.join(tmpDir, '.claude', 'skills', 'beacon'), { recursive: true });
     await fs.writeFile(
-      path.join(tmpDir, '.claude', 'skills', 'comet', 'SKILL.md'),
-      '# Comet\n\nUse this skill.',
+      path.join(tmpDir, '.claude', 'skills', 'beacon', 'SKILL.md'),
+      '# Beacon\n\nUse this skill.',
       'utf-8',
     );
 
@@ -259,10 +259,10 @@ describe('update command helpers', () => {
   });
 
   it('does not prompt to install CodeGraph when the project already has an index', async () => {
-    await fs.mkdir(path.join(tmpDir, '.claude', 'skills', 'comet'), { recursive: true });
+    await fs.mkdir(path.join(tmpDir, '.claude', 'skills', 'beacon'), { recursive: true });
     await fs.writeFile(
-      path.join(tmpDir, '.claude', 'skills', 'comet', 'SKILL.md'),
-      '# Comet\n\nUse this skill.',
+      path.join(tmpDir, '.claude', 'skills', 'beacon', 'SKILL.md'),
+      '# Beacon\n\nUse this skill.',
       'utf-8',
     );
     await fs.mkdir(path.join(tmpDir, '.codegraph'), { recursive: true });

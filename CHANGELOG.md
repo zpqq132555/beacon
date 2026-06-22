@@ -1,6 +1,16 @@
 # Changelog
 
-All notable changes to @rpamis/comet will be documented in this file.
+All notable changes to beacon will be documented in this file.
+
+## What's Changed [0.4.0] - 2026-06-22
+
+### Changed
+
+- **Beacon runtime contracts**: 将 Comet fork 的 CLI、skills、scripts、状态文件和安装产物运行合同切换为 Beacon，断开旧 Comet 兼容，避免后续私有化二开继续背负双命名入口。
+
+### Tests
+
+- **Beacon contract coverage**: 更新 CLI、manifest、status、doctor、shell scripts 和 README 相关测试，使验证目标切换为 `beacon`、`/beacon-*`、`beacon-*.sh` 与 `.beacon.yaml`。
 
 ## What's Changed [0.3.9] - 2026-06-17
 

@@ -29,17 +29,17 @@ type Manifest = {
 };
 
 const OPENCODE_COMMAND_HEADER = `---
-description: Run the {skillName} Comet workflow
+description: Run the {skillName} Beacon workflow
 ---
 `;
 
-const PI_COMMAND_EXTENSION_FILE = 'comet-commands.ts';
+const PI_COMMAND_EXTENSION_FILE = 'beacon-commands.ts';
 
 function getAssetsDir(): string {
   return path.resolve(__dirname, '..', '..', 'assets');
 }
 
-async function copyCometSkillsForPlatform(
+async function copyBeaconSkillsForPlatform(
   baseDir: string,
   platform: Platform,
   overwrite: boolean,
@@ -120,10 +120,10 @@ function renderPiCommandExtension(skillNames: string[]): string {
 
 const commands = ${JSON.stringify(skillNames, null, 2)} as const;
 
-export default function registerCometCommands(pi: ExtensionAPI) {
+export default function registerBeaconCommands(pi: ExtensionAPI) {
   for (const name of commands) {
     pi.registerCommand(name, {
-      description: \`Comet: /\${name}\`,
+      description: \`Beacon: /\${name}\`,
       handler: async (args) => {
         pi.sendUserMessage(args ? \`/skill:\${name} \${args}\` : \`/skill:\${name}\`);
       },
@@ -229,7 +229,7 @@ async function createOpenCodeCommands(
     }
     const skillBody = stripFrontmatter(await readFile(skillSourcePath, 'utf-8'));
     const content = `${OPENCODE_COMMAND_HEADER.replace('{skillName}', skillName)}
-Equivalent Comet skill: \`${skillName}\`
+Equivalent Beacon skill: \`${skillName}\`
 Command name: \`/${skillName}\`
 
 Use the invocation arguments below as the user input for this workflow:
@@ -259,14 +259,14 @@ async function getManifestSkills(): Promise<string[]> {
 }
 
 /**
- * Copy Comet rule files to a platform's rules directory.
+ * Copy Beacon rule files to a platform's rules directory.
  * Formats:
  *   'md' = plain markdown copy
  *   'mdc' = Cursor MDC with frontmatter
  *   'copilot' = GitHub Copilot .instructions.md with applyTo frontmatter
  * Skips platforms without rulesDir.
  */
-async function copyCometRulesForPlatform(
+async function copyBeaconRulesForPlatform(
   baseDir: string,
   platform: Platform,
   overwrite: boolean,
@@ -333,7 +333,7 @@ function computeRuleDestPath(
     return path.join(rulesDestDir, ruleFileName.replace(/\.md$/, '.mdc'));
   }
   if (rulesFormat === 'copilot') {
-    // GitHub Copilot: comet-phase-guard.md → comet-phase-guard.instructions.md
+    // GitHub Copilot: beacon-phase-guard.md → beacon-phase-guard.instructions.md
     return path.join(rulesDestDir, ruleFileName.replace(/\.md$/, '.instructions.md'));
   }
   return path.join(rulesDestDir, ruleFileName);
@@ -363,7 +363,7 @@ ${content}`;
 }
 
 /**
- * Install Comet hooks for platforms that support them.
+ * Install Beacon hooks for platforms that support them.
  * Supports multiple hook formats:
  *   'claude-code' — settings.local.json with PreToolUse array (Claude Code, Codex, Amazon Q)
  *   'qwen' — settings.json with PreToolUse/hooks array (Qwen Code)
@@ -373,7 +373,7 @@ ${content}`;
  *   'copilot' — hooks/*.json with preToolUse
  *   'kiro' — hooks/*.kiro.hook JSON files
  */
-async function installCometHooksForPlatform(
+async function installBeaconHooksForPlatform(
   baseDir: string,
   platform: Platform,
   scope: InstallScope = 'project',
@@ -665,7 +665,7 @@ async function installWindsurfHooks(
 
 /**
  * GitHub Copilot format:
- * Writes to .github/hooks/comet-guard.json with preToolUse hooks config.
+ * Writes to .github/hooks/beacon-guard.json with preToolUse hooks config.
  */
 async function installCopilotHooks(
   platformBase: string,
@@ -673,7 +673,7 @@ async function installCopilotHooks(
   hooksConfig: Record<string, HookConfig>,
 ): Promise<{ installed: boolean; reason?: string }> {
   const hooksDir = path.join(platformBase, 'hooks');
-  const hookFilePath = path.join(hooksDir, 'comet-guard.json');
+  const hookFilePath = path.join(hooksDir, 'beacon-guard.json');
 
   const scriptEntries: Array<{ bash: string; powershell: string }> = [];
   for (const [scriptRelPath] of Object.entries(hooksConfig)) {
@@ -696,7 +696,7 @@ async function installCopilotHooks(
 
 /**
  * Kiro format:
- * Writes to .kiro/hooks/comet-phase-guard.kiro.hook as a JSON file.
+ * Writes to .kiro/hooks/beacon-phase-guard.kiro.hook as a JSON file.
  */
 async function installKiroHooks(
   platformBase: string,
@@ -738,14 +738,14 @@ async function createWorkingDirs(projectPath: string): Promise<void> {
   const dirs = [
     path.join(projectPath, 'docs', 'superpowers', 'specs'),
     path.join(projectPath, 'docs', 'superpowers', 'plans'),
-    path.join(projectPath, '.comet'),
+    path.join(projectPath, '.beacon'),
   ];
 
   for (const dir of dirs) {
     await ensureDir(dir);
   }
 
-  const configPath = path.join(projectPath, '.comet', 'config.yaml');
+  const configPath = path.join(projectPath, '.beacon', 'config.yaml');
   if (!(await fileExists(configPath))) {
     await writeFile(
       configPath,
@@ -764,9 +764,9 @@ async function createWorkingDirs(projectPath: string): Promise<void> {
 }
 
 export {
-  copyCometSkillsForPlatform,
-  copyCometRulesForPlatform,
-  installCometHooksForPlatform,
+  copyBeaconSkillsForPlatform,
+  copyBeaconRulesForPlatform,
+  installBeaconHooksForPlatform,
   readManifest,
   getManifestSkills,
   createWorkingDirs,

@@ -10,8 +10,8 @@ function escapeRegExp(value) {
 
 function findUsableBash() {
   const candidates = [
-    process.env.COMET_TEST_BASH,
-    process.env.COMET_BASH,
+    process.env.BEACON_TEST_BASH,
+    process.env.BEACON_BASH,
     'bash',
     ...(process.platform === 'win32'
       ? [
@@ -37,12 +37,15 @@ const bashUname = bashCommand
   ? (spawnSync(bashCommand, ['-lc', 'uname -s'], { encoding: 'utf8' }).stdout || '').trim()
   : '';
 const isGitBash = /^(MINGW|MSYS|CYGWIN)/.test(bashUname);
+const bashSupportsSlashDrive = bashCommand
+  ? spawnSync(bashCommand, ['-lc', 'test -d /c'], { encoding: 'utf8' }).status === 0
+  : false;
 
 function toBashPath(filePath) {
   const resolved = path.resolve(filePath).replace(/\\/g, '/');
   const driveMatch = resolved.match(/^([A-Za-z]):\/(.*)$/);
   if (!driveMatch) return resolved;
-  if (process.platform === 'win32' && isGitBash) {
+  if ((process.platform === 'win32' && isGitBash) || bashSupportsSlashDrive) {
     return `/${driveMatch[1].toLowerCase()}/${driveMatch[2]}`;
   }
   return `/mnt/${driveMatch[1].toLowerCase()}/${driveMatch[2]}`;
@@ -159,8 +162,10 @@ if (files.length === 0) {
 }
 
 if (!bashCommand) {
-  console.error('ERROR: usable bash not found. Install Git Bash or set COMET_TEST_BASH/COMET_BASH to a working bash executable.');
-  console.error('Windows WSL launcher bash.exe is not supported for Comet shell tests.');
+  console.error(
+    'ERROR: usable bash not found. Install Git Bash or set BEACON_TEST_BASH/BEACON_BASH to a working bash executable.',
+  );
+  console.error('Windows WSL launcher bash.exe is not supported for Beacon shell tests.');
   process.exit(1);
 }
 
@@ -170,7 +175,7 @@ for (const file of files) {
   console.log(`# ${file}`);
   console.log(`1..${tests.length}`);
 
-  const tempDir = mkdtempSync(path.join(tmpdir(), 'comet-bats-'));
+  const tempDir = mkdtempSync(path.join(tmpdir(), 'beacon-bats-'));
   const compiled = path.join(tempDir, 'compiled.bash');
   writeFileSync(compiled, compileBats(file), 'utf8');
 

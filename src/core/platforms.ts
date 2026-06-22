@@ -22,7 +22,7 @@ export interface Platform {
   rulesFormat?: 'md' | 'mdc' | 'copilot';
   /** Whether this platform supports PreToolUse hooks. */
   supportsHooks?: boolean;
-  /** Hook configuration format. Determines how installCometHooksForPlatform writes the hook config. */
+  /** Hook configuration format. Determines how installBeaconHooksForPlatform writes the hook config. */
   hookFormat?: 'claude-code' | 'gemini' | 'windsurf' | 'copilot' | 'qwen' | 'kiro' | 'qoder';
 }
 
