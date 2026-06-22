@@ -90,3 +90,6 @@ docs/superpowers/
 .comet/
 
 .agent/
+
+# Local implementation worktrees
+.worktrees/
