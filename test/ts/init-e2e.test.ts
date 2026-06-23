@@ -1,9 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { execFileSync } from 'child_process';
+import { checkbox } from '@inquirer/prompts';
 import { mkdirSync, writeFileSync } from 'fs';
 import { promises as fs } from 'fs';
 import os from 'os';
 import path from 'path';
+
+const platformSelectPromptMock = vi.hoisted(() => vi.fn());
 
 vi.mock('child_process', () => ({
   execFileSync: vi.fn(),
@@ -16,6 +19,11 @@ vi.mock('@inquirer/prompts', () => ({
   checkbox: vi.fn(),
 }));
 
+vi.mock('../../src/commands/platform-select-prompt.js', () => ({
+  platformSelectPrompt: platformSelectPromptMock,
+}));
+
+const mockedCheckbox = vi.mocked(checkbox);
 const manifestPath = path.resolve('assets', 'manifest.json');
 
 async function readManifest() {
@@ -76,6 +84,7 @@ describe('beacon init E2E', () => {
     await fs.mkdir(tmpDir, { recursive: true });
     vi.resetAllMocks();
     vi.resetModules();
+    platformSelectPromptMock.mockReset();
   });
 
   afterEach(async () => {
@@ -232,5 +241,67 @@ describe('beacon init E2E', () => {
     await expect(
       fs.access(path.join(tmpDir, '.trae', 'skills', 'beacon', 'SKILL.md')),
     ).rejects.toThrow();
+  }, 20_000);
+
+  it('passes English platform summary labels to the platform selection prompt', async () => {
+    mockExternalSuccess();
+    await fs.mkdir(path.join(tmpDir, '.codex'), { recursive: true });
+    mockedCheckbox.mockResolvedValue([]);
+    platformSelectPromptMock.mockResolvedValue(['codex']);
+
+    const { initCommand } = await import('../../src/commands/init.js');
+    const result = await captureJsonOutput(() =>
+      initCommand(tmpDir, { json: true, scope: 'project', language: 'en' }),
+    );
+
+    expect(result.selectedPlatforms).toEqual(['codex']);
+    expect(platformSelectPromptMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: 'Select platforms to set up:',
+        selectedLabel: 'Selected:',
+        emptyLabel: 'none',
+        required: true,
+        requiredErrorLabel: 'Select at least one platform.',
+        choices: expect.arrayContaining([
+          expect.objectContaining({
+            name: 'Codex (detected)',
+            summaryName: 'Codex',
+            value: 'codex',
+            checked: true,
+          }),
+        ]),
+      }),
+    );
+  }, 20_000);
+
+  it('passes Chinese platform summary labels to the platform selection prompt', async () => {
+    mockExternalSuccess();
+    await fs.mkdir(path.join(tmpDir, '.codex'), { recursive: true });
+    mockedCheckbox.mockResolvedValue([]);
+    platformSelectPromptMock.mockResolvedValue(['codex']);
+
+    const { initCommand } = await import('../../src/commands/init.js');
+    const result = await captureJsonOutput(() =>
+      initCommand(tmpDir, { json: true, scope: 'project', language: 'zh' }),
+    );
+
+    expect(result.selectedPlatforms).toEqual(['codex']);
+    expect(platformSelectPromptMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: '选择要配置的平台：',
+        selectedLabel: '已选择：',
+        emptyLabel: '无',
+        required: true,
+        requiredErrorLabel: '请至少选择一个平台。',
+        choices: expect.arrayContaining([
+          expect.objectContaining({
+            name: 'Codex (已检测到)',
+            summaryName: 'Codex',
+            value: 'codex',
+            checked: true,
+          }),
+        ]),
+      }),
+    );
   }, 20_000);
 });

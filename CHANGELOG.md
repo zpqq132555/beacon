@@ -2,6 +2,16 @@
 
 All notable changes to beacon will be documented in this file.
 
+## What's Changed [0.4.2] - 2026-06-23
+
+### Added
+
+- **init 平台选择摘要**: 在交互式 `beacon init` 平台选择阶段显示当前已选择平台摘要，并使用本地化必选校验文案，让四平台私有化范围下的选择结果更清晰。
+
+### Tests
+
+- **平台选择摘要覆盖**: 新增平台选择 prompt 纯函数测试，并补充英文/中文 init 集成测试，验证摘要文案、空状态、干净平台名称和非 `--yes` prompt 接入契约。
+
 ## What's Changed [0.4.1] - 2026-06-23
 
 ### Changed
