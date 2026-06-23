@@ -2,6 +2,16 @@
 
 All notable changes to beacon will be documented in this file.
 
+## What's Changed [0.4.1] - 2026-06-23
+
+### Changed
+
+- **私有平台范围**: 将首批私有版平台分发范围收敛为 Codex、Cursor、Claude Code 和 Trae，使 init、doctor、update、uninstall、OpenSpec 与 Superpowers 映射、README 和 CI 验证都围绕四平台边界运行。
+
+### Tests
+
+- **平台范围回归覆盖**: 更新平台注册、检测、OpenSpec、Superpowers、init、doctor、update、uninstall、README 和 CI workflow 测试，固定四平台私有化边界并验证旧公开平台不再作为首批支持目标暴露。
+
 ## What's Changed [0.4.0] - 2026-06-22
 
 ### Changed

@@ -28,76 +28,19 @@ describe('superpowers', () => {
       expect(SKILLS_AGENT_MAP['cursor']).toBe('cursor');
     });
 
-    it('maps roocode to roo', async () => {
+    it('maps codex unchanged', async () => {
       const { SKILLS_AGENT_MAP } = await import('../../src/core/superpowers.js');
-      expect(SKILLS_AGENT_MAP['roocode']).toBe('roo');
+      expect(SKILLS_AGENT_MAP['codex']).toBe('codex');
     });
 
-    it('maps kilocode to kilo', async () => {
+    it('maps trae unchanged', async () => {
       const { SKILLS_AGENT_MAP } = await import('../../src/core/superpowers.js');
-      expect(SKILLS_AGENT_MAP['kilocode']).toBe('kilo');
+      expect(SKILLS_AGENT_MAP['trae']).toBe('trae');
     });
 
-    it('maps auggie to augment', async () => {
+    it('only exposes first-batch private platform agent mappings', async () => {
       const { SKILLS_AGENT_MAP } = await import('../../src/core/superpowers.js');
-      expect(SKILLS_AGENT_MAP['auggie']).toBe('augment');
-    });
-
-    it('maps forgecode unchanged', async () => {
-      const { SKILLS_AGENT_MAP } = await import('../../src/core/superpowers.js');
-      expect(SKILLS_AGENT_MAP['forgecode']).toBe('forgecode');
-    });
-
-    it('maps platforms to valid skills CLI agent ids', async () => {
-      const { SKILLS_AGENT_MAP } = await import('../../src/core/superpowers.js');
-      expect(SKILLS_AGENT_MAP['gemini']).toBe('gemini-cli');
-      expect(SKILLS_AGENT_MAP['qwen']).toBe('qwen-code');
-      expect(SKILLS_AGENT_MAP['kiro']).toBe('kiro-cli');
-      expect(SKILLS_AGENT_MAP['kimicode']).toBe('kimi-code-cli');
-      expect(SKILLS_AGENT_MAP['iflow']).toBe('iflow-cli');
-      expect(SKILLS_AGENT_MAP['factory']).toBe('droid');
-      expect(SKILLS_AGENT_MAP['amazon-q']).toBe('universal');
-      expect(SKILLS_AGENT_MAP['costrict']).toBe('universal');
-      expect(SKILLS_AGENT_MAP['lingma']).toBeNull();
-    });
-
-    it('has entries for all 29 platforms', async () => {
-      const { SKILLS_AGENT_MAP } = await import('../../src/core/superpowers.js');
-      const platformIds = [
-        'claude',
-        'cursor',
-        'codex',
-        'opencode',
-        'windsurf',
-        'cline',
-        'roocode',
-        'continue',
-        'github-copilot',
-        'gemini',
-        'amazon-q',
-        'qwen',
-        'kilocode',
-        'auggie',
-        'kiro',
-        'kimicode',
-        'lingma',
-        'junie',
-        'codebuddy',
-        'costrict',
-        'crush',
-        'factory',
-        'iflow',
-        'pi',
-        'qoder',
-        'antigravity',
-        'bob',
-        'forgecode',
-        'trae',
-      ];
-      for (const id of platformIds) {
-        expect(SKILLS_AGENT_MAP).toHaveProperty(id);
-      }
-      expect(Object.keys(SKILLS_AGENT_MAP)).toHaveLength(29);
+      expect(Object.keys(SKILLS_AGENT_MAP)).toEqual(['claude', 'cursor', 'codex', 'trae']);
     });
   });
 
@@ -136,24 +79,12 @@ describe('superpowers', () => {
       });
     });
 
-    it('excludes Lingma from the skills CLI command because skills@1.5.7 does not support it', async () => {
+    it('throws for removed public platform ids', async () => {
       const { buildSuperpowersInstallCommand } = await import('../../src/core/superpowers.js');
 
-      expect(
-        buildSuperpowersInstallCommand('/tmp/test', 'project', ['claude', 'lingma']),
-      ).toEqual({
-        command: process.platform === 'win32' ? 'npx.cmd' : 'npx',
-        args: ['skills', 'add', 'obra/superpowers', '-y', '--agent', 'claude-code'],
-      });
-    });
-
-    it('builds a staging command for Lingma so skills can be copied into .lingma', async () => {
-      const { buildLingmaSuperpowersStageCommand } = await import('../../src/core/superpowers.js');
-
-      expect(buildLingmaSuperpowersStageCommand()).toEqual({
-        command: process.platform === 'win32' ? 'npx.cmd' : 'npx',
-        args: ['skills', 'add', 'obra/superpowers', '-y', '--agent', 'claude-code'],
-      });
+      expect(() => buildSuperpowersInstallCommand('/tmp/test', 'project', ['lingma'])).toThrow(
+        'Unknown platform IDs: lingma',
+      );
     });
 
     it('passes -g flag for global scope', async () => {

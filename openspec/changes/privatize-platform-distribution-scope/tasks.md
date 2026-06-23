@@ -1,25 +1,12 @@
-## 1. Platform Scope
+﻿## 1. Platform Scope
 
-- [ ] 1.1 收敛 `src/core/platforms.ts`，仅保留 Codex、Cursor、Claude Code、Trae 的首批私有版平台定义。
-- [ ] 1.2 同步平台检测逻辑，确保自动检测和候选平台只围绕首批四个平台。
-- [ ] 1.3 同步 OpenSpec tool id 和 Superpowers agent 映射，移除不再支持平台的首批私有版映射要求。
-
+- [x] 1.1 鏀舵暃 `src/core/platforms.ts`锛屼粎淇濈暀 Codex銆丆ursor銆丆laude Code銆乀rae 鐨勯鎵圭鏈夌増骞冲彴瀹氫箟銆?- [x] 1.2 鍚屾骞冲彴妫€娴嬮€昏緫锛岀‘淇濊嚜鍔ㄦ娴嬪拰鍊欓€夊钩鍙板彧鍥寸粫棣栨壒鍥涗釜骞冲彴銆?- [x] 1.3 鍚屾 OpenSpec tool id 鍜?Superpowers agent 鏄犲皠锛岀Щ闄や笉鍐嶆敮鎸佸钩鍙扮殑棣栨壒绉佹湁鐗堟槧灏勮姹傘€?
 ## 2. CLI Distribution Behavior
 
-- [ ] 2.1 更新 `beacon init` 的平台选择、已安装组件检测和安装摘要，使其符合四平台范围。
-- [ ] 2.2 更新 `beacon doctor` 的平台完整性诊断，使其只报告四平台范围。
-- [ ] 2.3 更新 `beacon update` 的已安装目标检测和刷新逻辑，使其遵守四平台范围。
-- [ ] 2.4 更新 `beacon uninstall` 的目标检测和卸载逻辑，使其遵守四平台范围。
-
+- [x] 2.1 鏇存柊 `beacon init` 鐨勫钩鍙伴€夋嫨銆佸凡瀹夎缁勪欢妫€娴嬪拰瀹夎鎽樿锛屼娇鍏剁鍚堝洓骞冲彴鑼冨洿銆?- [x] 2.2 鏇存柊 `beacon doctor` 鐨勫钩鍙板畬鏁存€ц瘖鏂紝浣垮叾鍙姤鍛婂洓骞冲彴鑼冨洿銆?- [x] 2.3 鏇存柊 `beacon update` 鐨勫凡瀹夎鐩爣妫€娴嬪拰鍒锋柊閫昏緫锛屼娇鍏堕伒瀹堝洓骞冲彴鑼冨洿銆?- [x] 2.4 鏇存柊 `beacon uninstall` 鐨勭洰鏍囨娴嬪拰鍗歌浇閫昏緫锛屼娇鍏堕伒瀹堝洓骞冲彴鑼冨洿銆?
 ## 3. Assets and Documentation
 
-- [ ] 3.1 检查 Beacon skills、rules、hooks 分发逻辑，确保四平台范围下资产复制和移除行为一致。
-- [ ] 3.2 更新 README 和相关文档中的支持平台说明。
-- [ ] 3.3 更新 `docs/PRIVATE-FEATURE-MODULES.md` 中 M04、M05、M14、M18、M19 相关私有化状态。
-
+- [x] 3.1 妫€鏌?Beacon skills銆乺ules銆乭ooks 鍒嗗彂閫昏緫锛岀‘淇濆洓骞冲彴鑼冨洿涓嬭祫浜у鍒跺拰绉婚櫎琛屼负涓€鑷淬€?- [x] 3.2 鏇存柊 README 鍜岀浉鍏虫枃妗ｄ腑鐨勬敮鎸佸钩鍙拌鏄庛€?- [x] 3.3 鏇存柊 `docs/PRIVATE-FEATURE-MODULES.md` 涓?M04銆丮05銆丮14銆丮18銆丮19 鐩稿叧绉佹湁鍖栫姸鎬併€?
 ## 4. Tests and Verification
 
-- [ ] 4.1 更新平台数量、平台 id、目录映射、OpenSpec 映射和 Superpowers 映射相关测试。
-- [ ] 4.2 更新 init、doctor、update、uninstall 中依赖平台范围的测试。
-- [ ] 4.3 运行 targeted tests 覆盖平台分发路径。
-- [ ] 4.4 运行全量测试，确认平台收敛没有破坏非平台工作流。
+- [x] 4.1 鏇存柊骞冲彴鏁伴噺銆佸钩鍙?id銆佺洰褰曟槧灏勩€丱penSpec 鏄犲皠鍜?Superpowers 鏄犲皠鐩稿叧娴嬭瘯銆?- [x] 4.2 鏇存柊 init銆乨octor銆乽pdate銆乽ninstall 涓緷璧栧钩鍙拌寖鍥寸殑娴嬭瘯銆?- [x] 4.3 杩愯 targeted tests 瑕嗙洊骞冲彴鍒嗗彂璺緞銆?- [x] 4.4 杩愯鍏ㄩ噺娴嬭瘯锛岀‘璁ゅ钩鍙版敹鏁涙病鏈夌牬鍧忛潪骞冲彴宸ヤ綔娴併€?

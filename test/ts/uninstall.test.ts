@@ -141,51 +141,6 @@ describe('uninstall', () => {
       expect(result.failed).toBe(0);
     });
 
-    it('removes OpenCode commands', async () => {
-      const opencodePlatform: Platform = PLATFORMS.find((p) => p.id === 'opencode')!;
-
-      await copyBeaconSkillsForPlatform(tmpDir, opencodePlatform, true, 'skills', 'project');
-
-      const commandsDir = path.join(tmpDir, '.opencode', 'commands');
-      expect(await fileExists(commandsDir)).toBe(true);
-
-      const result = await removeBeaconSkillsForPlatform(tmpDir, opencodePlatform, 'project');
-      expect(result.removed).toBeGreaterThan(0);
-    });
-
-    it('removes only the managed Pi extension and preserves shared settings', async () => {
-      const piPlatform: Platform = PLATFORMS.find((p) => p.id === 'pi')!;
-      const extensionsDir = path.join(tmpDir, '.pi', 'extensions');
-      const beaconExtension = path.join(extensionsDir, 'beacon-commands.ts');
-      const unrelatedExtension = path.join(extensionsDir, 'custom.ts');
-      const settingsPath = path.join(tmpDir, '.pi', 'settings.json');
-
-      await fs.mkdir(path.dirname(settingsPath), { recursive: true });
-      await fs.writeFile(settingsPath, JSON.stringify({ theme: 'dark' }), 'utf-8');
-      await copyBeaconSkillsForPlatform(tmpDir, piPlatform, true, 'skills', 'project');
-      await fs.writeFile(unrelatedExtension, 'export default function custom() {}', 'utf-8');
-
-      const result = await removeBeaconSkillsForPlatform(tmpDir, piPlatform, 'project');
-      const settings = JSON.parse(await fs.readFile(settingsPath, 'utf-8'));
-
-      expect(result.removed).toBeGreaterThan(0);
-      expect(await fileExists(beaconExtension)).toBe(false);
-      expect(await fileExists(unrelatedExtension)).toBe(true);
-      expect(settings).toEqual({ theme: 'dark', enableSkillCommands: true });
-    });
-
-    it('removes Beacon skills from the legacy global Pi directory', async () => {
-      const piPlatform: Platform = PLATFORMS.find((p) => p.id === 'pi')!;
-      const legacySkill = path.join(tmpDir, '.pi', 'skills', 'beacon', 'SKILL.md');
-
-      await fs.mkdir(path.dirname(legacySkill), { recursive: true });
-      await fs.writeFile(legacySkill, '# Beacon', 'utf-8');
-
-      const result = await removeBeaconSkillsForPlatform(tmpDir, piPlatform, 'global');
-
-      expect(result.removed).toBe(1);
-      expect(await fileExists(legacySkill)).toBe(false);
-    });
   });
 
   describe('removeBeaconRulesForPlatform', () => {
@@ -215,27 +170,27 @@ describe('uninstall', () => {
       expect(await fileExists(rulePath)).toBe(false);
     });
 
-    it('removes GitHub Copilot instructions format', async () => {
-      const copilotPlatform: Platform = PLATFORMS.find((p) => p.id === 'github-copilot')!;
+    it('removes Trae rules', async () => {
+      const traePlatform: Platform = PLATFORMS.find((p) => p.id === 'trae')!;
 
-      await copyBeaconRulesForPlatform(tmpDir, copilotPlatform, true, 'project');
+      await copyBeaconRulesForPlatform(tmpDir, traePlatform, true, 'project');
 
-      const rulePath = path.join(
-        tmpDir,
-        '.github',
-        'instructions',
-        'beacon-phase-guard.instructions.md',
-      );
+      const rulePath = path.join(tmpDir, '.trae', 'rules', 'beacon-phase-guard.md');
       expect(await fileExists(rulePath)).toBe(true);
 
-      const result = await removeBeaconRulesForPlatform(tmpDir, copilotPlatform, 'project');
+      const result = await removeBeaconRulesForPlatform(tmpDir, traePlatform, 'project');
       expect(result.removed).toBeGreaterThan(0);
       expect(await fileExists(rulePath)).toBe(false);
     });
 
     it('skips platforms without rules support', async () => {
-      const geminiPlatform: Platform = PLATFORMS.find((p) => p.id === 'gemini')!;
-      const result = await removeBeaconRulesForPlatform(tmpDir, geminiPlatform, 'project');
+      const noRulesPlatform: Platform = {
+        id: 'custom',
+        name: 'Custom',
+        skillsDir: '.custom',
+        openspecToolId: 'custom',
+      };
+      const result = await removeBeaconRulesForPlatform(tmpDir, noRulesPlatform, 'project');
       expect(result.removed).toBe(0);
     });
   });
@@ -282,39 +237,9 @@ describe('uninstall', () => {
       expect(allCommands.some((c: string) => c.includes('beacon-hook-guard'))).toBe(false);
     });
 
-    it('removes Copilot hook file', async () => {
-      const copilotPlatform: Platform = PLATFORMS.find((p) => p.id === 'github-copilot')!;
-
-      const hooksDir = path.join(tmpDir, '.github', 'hooks');
-      await fs.mkdir(hooksDir, { recursive: true });
-      const hookFilePath = path.join(hooksDir, 'beacon-guard.json');
-      await fs.writeFile(hookFilePath, JSON.stringify({ version: 1 }), 'utf-8');
-
-      expect(await fileExists(hookFilePath)).toBe(true);
-
-      const result = await removeBeaconHooksForPlatform(tmpDir, copilotPlatform, 'project');
-      expect(result.removed).toBe(1);
-      expect(await fileExists(hookFilePath)).toBe(false);
-    });
-
-    it('removes Kiro hook files', async () => {
-      const kiroPlatform: Platform = PLATFORMS.find((p) => p.id === 'kiro')!;
-
-      const hooksDir = path.join(tmpDir, '.kiro', 'hooks');
-      await fs.mkdir(hooksDir, { recursive: true });
-      const hookFilePath = path.join(hooksDir, 'beacon-hook-guard.kiro.hook');
-      await fs.writeFile(hookFilePath, JSON.stringify({ enabled: true }), 'utf-8');
-
-      expect(await fileExists(hookFilePath)).toBe(true);
-
-      const result = await removeBeaconHooksForPlatform(tmpDir, kiroPlatform, 'project');
-      expect(result.removed).toBe(1);
-      expect(await fileExists(hookFilePath)).toBe(false);
-    });
-
     it('skips platforms without hooks support', async () => {
-      const cursorPlatform: Platform = PLATFORMS.find((p) => p.id === 'cursor')!;
-      const result = await removeBeaconHooksForPlatform(tmpDir, cursorPlatform, 'project');
+      const traePlatform: Platform = PLATFORMS.find((p) => p.id === 'trae')!;
+      const result = await removeBeaconHooksForPlatform(tmpDir, traePlatform, 'project');
       expect(result.removed).toBe(0);
     });
 

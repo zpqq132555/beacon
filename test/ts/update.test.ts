@@ -3,7 +3,7 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import os from 'os';
 import { select } from '@inquirer/prompts';
-import { PLATFORMS, type Platform } from '../../src/core/platforms.js';
+import type { Platform } from '../../src/core/platforms.js';
 import {
   buildNpmUpdateArgs,
   detectBeaconPackageScope,
@@ -128,7 +128,7 @@ describe('update command helpers', () => {
     expect(targets.map((t) => `${t.scope}:${t.platform.id}`)).toEqual(['global:codex']);
   });
 
-  it('detects legacy global Pi skills so update can migrate them', async () => {
+  it('ignores former public platform skills when detecting installed targets', async () => {
     const projectDir = path.join(tmpDir, 'project');
     const globalDir = path.join(tmpDir, 'home');
 
@@ -144,10 +144,7 @@ describe('update command helpers', () => {
       scopes: ['global'],
     });
 
-    expect(targets.map((t) => `${t.scope}:${t.platform.id}:${t.language}`)).toEqual([
-      'global:pi:en',
-    ]);
-    expect(PLATFORMS.find((platform) => platform.id === 'pi')?.globalSkillsDir).toBe('.pi/agent');
+    expect(targets).toEqual([]);
   });
 
   it('detects project package scope from local node_modules install path', async () => {
