@@ -1,22 +1,22 @@
-## ✨ Summary
+## 变更摘要
 
-<!-- What changed, and why? Link related issues when available. -->
+<!-- 说明改了什么，以及为什么改；如有关联 issue，请一并链接。 -->
 
-## 🎯 Scope
+## 影响范围
 
-<!-- Check all areas touched by this PR. -->
+<!-- 勾选本 PR 触及的区域。 -->
 
-- [ ] CLI commands (`init`, `status`, `doctor`, `update`)
-- [ ] Core installer / platform detection
-- [ ] Beacon skills (`assets/skills/`, `assets/skills-zh/`)
-- [ ] Beacon shell scripts (`assets/skills/beacon/scripts/`)
-- [ ] Tests / CI
-- [ ] Documentation / changelog
-- [ ] Other:
+- [ ] CLI 命令（`init`、`status`、`doctor`、`update`）
+- [ ] 核心安装器 / 平台检测
+- [ ] Beacon skills（`assets/skills/`、`assets/skills-zh/`）
+- [ ] Beacon shell 脚本（`assets/skills/beacon/scripts/`）
+- [ ] 测试 / CI
+- [ ] 文档 / changelog
+- [ ] 其他：
 
-## 🧪 Testing
+## 验证
 
-<!-- List the commands you ran and summarize the result. -->
+<!-- 列出已运行的命令，并简要说明结果。 -->
 
 - [ ] `pnpm build`
 - [ ] `pnpm lint`
@@ -24,18 +24,18 @@
 - [ ] `pnpm test`
 - [ ] `pnpm test -- test/ts/beacon-scripts.test.ts`
 - [ ] `pnpm test:shell`
-- [ ] Not run:
+- [ ] 未运行：
 
-## ✅ Checklist
+## 检查清单
 
-- [ ] PR title follows Conventional Commits, for example `fix: handle project-scope init`
-- [ ] User-facing behavior is documented in `README.md`, `README-zh.md`, or `CONTRIBUTING.md`
-- [ ] `CHANGELOG.md` is updated when behavior changes
-- [ ] Skill changes were made in Chinese first when applicable, then synced to English
-- [ ] New scripts are included in `assets/manifest.json` and relevant tests
-- [ ] Shell scripts remain portable across macOS, Linux, and Windows Git Bash
-- [ ] No unrelated generated files or local artifacts are included
+- [ ] PR 标题符合 Conventional Commits，例如 `fix: handle project-scope init`
+- [ ] 用户可见行为已在 `README.md` 或 `CONTRIBUTING.md` 中说明
+- [ ] 行为变更已更新 `CHANGELOG.md`
+- [ ] 如涉及 Skill 变更，已先修改中文版本，再同步英文版本
+- [ ] 新脚本已加入 `assets/manifest.json` 和相关测试
+- [ ] Shell 脚本仍兼容 macOS、Linux 和 Windows Git Bash
+- [ ] 未包含无关生成文件或本地临时产物
 
-## 👀 Notes for Reviewers
+## Review 备注
 
-<!-- Anything reviewers should pay special attention to? -->
+<!-- 有什么需要 reviewer 重点关注的内容？ -->

@@ -1,77 +1,61 @@
-# Contributing to Comet
+# Beacon 贡献指南
 
-Languages: [English](CONTRIBUTING.md) | [中文](CONTRIBUTING-zh.md)
+感谢你帮助改进 Beacon。这份指南偏实操：说明如何配置项目、准备改动、维护分支、提交 PR，以及如何更新 Skill、shell 脚本等 Beacon 特有资产。
 
-Thank you for helping improve Comet. This guide is meant to be practical: it
-explains how to set up the project, prepare a change, keep branches healthy,
-submit a pull request, and update project-specific assets such as skills and
-shell scripts.
+## 开始之前
 
-## Before You Start
+- 修复 bug 前，先确认是否已有 issue 或近期 PR 覆盖同一问题。
+- 较大的行为变更建议先开 issue 或 draft PR，避免方向还没对齐就写太多代码。
+- 每个贡献保持一个清晰目的；无关改动拆成多个 PR。
+- 添加测试，或说明为什么这次改动不需要测试。
+- 行为、命令、工作流或用户可见文案变化时，同步更新文档。
 
-- For bug fixes, first check whether an issue or recent PR already covers the
-  same problem.
-- For larger behavior changes, open an issue or draft PR early so the direction
-  can be discussed before too much code is written.
-- Keep each contribution focused on one purpose. Split unrelated changes into
-  separate PRs.
-- Include tests or explain why a change does not need tests.
-- Update documentation when behavior, commands, workflows, or user-facing text
-  changes.
-
-## Development Setup
+## 开发环境
 
 ```bash
-git clone https://github.com/rpamis/comet
-cd comet
+git clone https://github.com/rpamis/beacon
+cd beacon
 pnpm install
 pnpm build
 ```
 
-Use the Node.js and pnpm versions supported by the repository lockfile and CI.
-If dependency installation or build behavior differs locally, mention it in the
-PR.
+Node.js 与 pnpm 版本以 lockfile 和 CI 支持范围为准。如果本地依赖安装或构建行为与 CI 不一致，请在 PR 中说明。
 
-## Commands
+## 常用命令
 
-| Command              | Purpose                                |
-| -------------------- | -------------------------------------- |
-| `pnpm dev`           | Watch mode (TypeScript)                |
-| `pnpm build`         | Compile TypeScript                     |
-| `pnpm test`          | Run unit tests                         |
-| `pnpm test:coverage` | Run tests with coverage                |
-| `pnpm test:shell`    | Run shell script tests (requires bats) |
-| `pnpm lint`          | Run ESLint                             |
-| `pnpm format`        | Run Prettier                           |
+| 命令                 | 用途                           |
+| -------------------- | ------------------------------ |
+| `pnpm dev`           | TypeScript watch 模式          |
+| `pnpm build`         | 编译 TypeScript                |
+| `pnpm test`          | 运行单元测试                   |
+| `pnpm test:coverage` | 运行测试并生成覆盖率           |
+| `pnpm test:shell`    | 运行 shell 脚本测试，需要 bats |
+| `pnpm lint`          | 运行 ESLint                    |
+| `pnpm format`        | 运行 Prettier                  |
 
-For shell-script work, the most useful targeted check is:
+如果改动 shell 脚本，最常用的定向检查是：
 
 ```bash
-npx vitest run test/ts/comet-scripts.test.ts
+npx vitest run test/ts/beacon-scripts.test.ts
 ```
 
-Before opening or updating a PR, run the full verification command unless the
-change is documentation-only:
+除纯文档改动外，开 PR 或更新 PR 前请运行完整验证：
 
 ```bash
 pnpm build && pnpm lint && pnpm format:check && pnpm test
 ```
 
-## Branching Model
+## 分支模型
 
-- `master` is the canonical development and release base.
-- Create task branches from the latest `master`.
-- Open PRs against `master`.
-- Merge PRs with **Squash and merge**.
-- Treat squashed PR branches as disposable: delete them after merge, or
-  recreate/reset them from `master` before reuse.
+- `master` 是唯一权威的开发与发布基线。
+- 任务分支从最新 `master` 创建。
+- PR 目标分支是 `master`。
+- PR 使用 **Squash and merge** 合并。
+- 被 squash 的 PR 源分支视为一次性分支：合并后删除，或从 `master` 重新创建/重置后再使用。
 
-Squash merge creates a new commit on `master`. If the source branch still keeps
-the original commits, Git cannot always recognize that both histories contain
-equivalent changes. Because of that, do not keep merging `master` back into a
-branch that has already been squashed.
+Squash merge 会在 `master` 上生成一个新提交。源分支如果仍保留原始多个提交，Git 不一定能识别两边历史包含的是等价变更。因此，不要把 `master` 继续 merge 回已经被 squash 的源分支。
 
-## Preparing a Change
+## 准备一个改动
 
 ```bash
 git fetch origin
@@ -80,52 +64,45 @@ git pull --ff-only origin master
 git switch -c <type>/<short-topic>
 ```
 
-Use a short branch name that describes the change, for example
-`fix/dev-resync-docs` or `docs/contributing-guide`.
+分支名要短且能说明改动，例如 `fix/dev-resync-docs` 或 `docs/contributing-guide`。
 
-While working:
+开发过程中：
 
-- Keep commits small enough to review.
-- Prefer adding tests before or with the implementation.
-- Run targeted tests during development.
-- Re-run formatting before the final diff.
-- Avoid broad rewrites, formatting sweeps, or unrelated metadata churn.
+- 提交保持便于 review 的粒度。
+- 优先在实现前或实现同时补测试。
+- 开发时运行定向测试。
+- 最终 diff 前重新运行格式化。
+- 避免大范围重写、无关格式化或无关元数据变更。
 
-## Keeping a PR Current
+## 让 PR 跟上 `master`
 
-If a PR branch falls behind `master`, prefer rebasing your task branch onto the
-latest `master`:
+如果 PR 分支落后 `master`，优先把任务分支 rebase 到最新 `master`：
 
 ```bash
 git fetch origin
 git switch <your-branch>
 git rebase origin/master
-# resolve conflicts, then run the relevant checks
+# 解决冲突后运行相关检查
 git push --force-with-lease
 ```
 
-Use `--force-with-lease` after a rebase because it protects remote work that you
-do not have locally. Avoid plain `--force`.
+rebase 后需要改写远端分支历史，因此使用 `--force-with-lease`。它会保护你本地没有的远端更新；避免使用普通 `--force`。
 
-If the branch has become tangled with unrelated commits, create a clean branch
-from `origin/master` and cherry-pick only the commits that belong to the PR:
+如果分支混入了无关提交，从 `origin/master` 新建干净分支，只 cherry-pick 属于这个 PR 的提交：
 
 ```bash
 git fetch origin
 git switch -c <topic>-take-2 origin/master
 git cherry-pick <commit-1> <commit-2>
-# run checks
+# 运行检查
 git push --force-with-lease origin <topic>-take-2:<original-branch>
 ```
 
-This keeps the PR reviewable and prevents accidental merges of unrelated work.
+这样能保持 PR 容易 review，也能避免把无关工作合进去。
 
-## Shared `dev` Branch
+## 共享 `dev` 分支
 
-If you keep a shared `dev` branch, use it only as a temporary working branch.
-After a PR from `dev` is squashed into `master`, do not merge `master` back into
-`dev`. Reset `dev` to `origin/master` after confirming there is no unsquashed
-work that still needs to be preserved:
+如果保留共享 `dev` 分支，只把它当作临时工作入口。来自 `dev` 的 PR 被 squash 到 `master` 后，不要再把 `master` merge 回 `dev`。确认 `dev` 没有仍需保留的未 squash 工作后，把 `dev` 重置到 `origin/master`：
 
 ```bash
 git fetch origin
@@ -136,145 +113,127 @@ git reset --hard origin/master
 git push --force-with-lease origin dev
 ```
 
-If `dev` contains work that has not been merged to `master`, move that work to a
-new branch from `origin/master` before resetting `dev`.
+如果 `dev` 里还有尚未合并到 `master` 的工作，先把这些工作移到从 `origin/master` 创建的新分支，再重置 `dev`。
 
-## Commit Conventions
+## 提交规范
 
-Follow [Conventional Commits](https://www.conventionalcommits.org/):
+遵循 [Conventional Commits](https://www.conventionalcommits.org/)：
 
 ```text
 <type>: <description>
 ```
 
-Types: `feat`, `fix`, `refactor`, `docs`, `test`, `chore`, `perf`, `ci`
+类型：`feat`、`fix`、`refactor`、`docs`、`test`、`chore`、`perf`、`ci`
 
-Examples:
+示例：
 
 ```text
 docs: expand contribution workflow
 fix: preserve stderr when superpowers install fails
-test: cover comet state transitions
+test: cover beacon state transitions
 ```
 
-## PR Process
+## PR 流程
 
-1. Update `master` and create a feature branch from it.
-2. Implement a focused change with tests.
-3. Run targeted checks while developing.
-4. Run `pnpm build && pnpm lint && pnpm format:check && pnpm test` before PR
-   review, unless the change is documentation-only.
-5. Open a PR against `master`.
-6. Describe what changed, why it changed, and how it was verified.
-7. Respond to review feedback with follow-up commits.
-8. Use **Squash and merge** when the PR is approved.
-9. Delete or recreate the source branch after merge; do not keep merging
-   `master` back into a squashed branch.
+1. 更新 `master`，并从它创建任务分支。
+2. 实现聚焦的改动，并补充测试。
+3. 开发过程中运行定向检查。
+4. PR review 前运行 `pnpm build && pnpm lint && pnpm format:check && pnpm test`，纯文档改动除外。
+5. 向 `master` 开 PR。
+6. 说明改了什么、为什么改、如何验证。
+7. 用后续提交响应 review 反馈。
+8. PR 通过后使用 **Squash and merge**。
+9. 合并后删除或重新创建源分支；不要继续把 `master` merge 回被 squash 的分支。
 
-For documentation-only changes, run at least the relevant formatter check, for
-example:
+纯文档改动至少运行相关格式检查，例如：
 
 ```bash
-npx prettier --check CONTRIBUTING.md CONTRIBUTING-zh.md README.md README-zh.md
+npx prettier --check CONTRIBUTING.md README.md
 ```
 
-## Project Structure
+## 项目结构
 
 ```text
 src/
-├── cli/index.ts       # Commander registration
-├── commands/          # Command orchestrators
-│   ├── init.ts        # comet init
-│   ├── status.ts      # comet status
-│   ├── doctor.ts      # comet doctor
-│   └── update.ts      # comet update
-├── core/              # Business logic (platform-agnostic)
-│   ├── platforms.ts   # Platform definitions
-│   ├── detect.ts      # Platform detection
-│   ├── skills.ts      # Skill file operations
-│   ├── openspec.ts    # OpenSpec installation
-│   └── superpowers.ts # Superpowers installation
+├── cli/index.ts       # Commander 注册
+├── commands/          # 命令编排
+│   ├── init.ts        # beacon init
+│   ├── status.ts      # beacon status
+│   ├── doctor.ts      # beacon doctor
+│   └── update.ts      # beacon update
+├── core/              # 平台无关的核心逻辑
+│   ├── platforms.ts   # 平台定义
+│   ├── detect.ts      # 平台检测
+│   ├── skills.ts      # Skill 文件操作
+│   ├── openspec.ts    # OpenSpec 安装
+│   └── superpowers.ts # Superpowers 安装
 └── utils/
-    └── file-system.ts # File I/O utilities
+    └── file-system.ts # 文件系统工具
 ```
 
-## Adding a New Platform
+## 新增平台
 
-1. Add an entry to `PLATFORMS` in `src/core/platforms.ts`.
-2. Add the mapping to `SKILLS_AGENT_MAP` in `src/core/superpowers.ts` if it
-   differs.
-3. Add or update tests that cover detection, installation paths, and generated
-   instructions.
-4. Update README documentation if the platform is user-facing.
+1. 在 `src/core/platforms.ts` 的 `PLATFORMS` 中添加平台定义。
+2. 如果映射不同，在 `src/core/superpowers.ts` 中更新 `SKILLS_AGENT_MAP`。
+3. 添加或更新测试，覆盖检测、安装路径和生成说明。
+4. 如果平台对用户可见，同步更新 README 文档。
 
-## Adding or Updating a Skill
+## 新增或更新 Skill
 
-1. Write or update the Chinese version first under `assets/skills-zh/`.
-2. Get the wording and behavior confirmed.
-3. Sync the English version under `assets/skills/`.
-4. Add new skills to `assets/manifest.json`.
-5. Add tests for generated assets or installer behavior when applicable.
+1. 先在 `assets/skills-zh/` 编写或更新中文版本。
+2. 确认措辞与行为。
+3. 再同步 `assets/skills/` 下的英文版本。
+4. 新增 Skill 时同步加入 `assets/manifest.json`。
+5. 视情况补充生成资产或安装行为的测试。
 
-Skill design guidance:
+Skill 设计建议：
 
-- **Decision Core first**: Agent-facing instructions go at the top, including
-  phase detection, dispatch logic, and error handling.
-- **Reference Appendix**: Field reference, script locations, and best practices
-  go at the bottom.
-- Keep Chinese and English versions behaviorally equivalent, even when wording
-  differs naturally.
+- **Decision Core first**：面向 Agent 的决策说明放在顶部，包括阶段检测、分发逻辑、错误处理。
+- **Reference Appendix**：字段说明、脚本位置、最佳实践放在底部。
+- 中文和英文版本要保持行为等价，表达可以自然不同。
 
-## Shell Scripts
+## Shell 脚本
 
-Shell scripts live under `assets/skills/comet/scripts/` and must work on macOS,
-Linux, and Windows Git Bash.
+脚本位于 `assets/skills/beacon/scripts/`，必须兼容 macOS、Linux 和 Windows Git Bash。
 
-Rules:
+规则：
 
-- Do not use `sed -i`; GNU and BSD behavior differ. Use `awk` for field
-  replacement.
-- Support both `sha256sum` on GNU systems and `shasum -a 256` on BSD/macOS.
-- Add `|| true` to optional `grep` results so `pipefail` does not abort the
-  script.
-- Add new scripts to the `beforeEach` copy list in
-  `test/ts/comet-scripts.test.ts`.
-- Add new scripts to `assets/manifest.json`.
+- 禁止使用 `sed -i`；GNU 与 BSD 行为不同。字段替换使用 `awk`。
+- 同时兼容 GNU 系统的 `sha256sum` 与 BSD/macOS 的 `shasum -a 256`。
+- 所有可选 `grep` 结果都加 `|| true`，避免 `pipefail` 误杀脚本。
+- 新增脚本必须加入 `test/ts/beacon-scripts.test.ts` 的 `beforeEach` 拷贝列表。
+- 新增脚本必须加入 `assets/manifest.json`。
 
-Script dependencies:
+脚本依赖关系：
 
 ```text
-comet-state.sh <- comet-guard.sh, comet-handoff.sh, comet-archive.sh
-comet-yaml-validate.sh <- comet-guard.sh (preflight phase)
-comet-handoff.sh <- comet-state.sh (writes handoff_context/handoff_hash)
+beacon-state.sh <- beacon-guard.sh, beacon-handoff.sh, beacon-archive.sh
+beacon-yaml-validate.sh <- beacon-guard.sh (preflight 阶段)
+beacon-handoff.sh <- beacon-state.sh (写入 handoff_context/handoff_hash)
 ```
 
-If two scripts need the same small helper, such as hashing or YAML parsing, it
-is acceptable to implement it independently in each script instead of forcing a
-shared shell library.
+如果两个脚本需要同一个小工具函数，例如 hash 或 YAML 解析，允许在各自脚本中独立实现，不强制抽共享 shell 库。
 
-## `.comet.yaml` State Changes
+## `.beacon.yaml` 状态变更
 
-When changing fields in a `.comet.yaml` state file, update all three places:
+修改 `.beacon.yaml` 状态文件字段时，需要同步三处：
 
-1. `assets/skills/comet/scripts/comet-state.sh` for the `cmd_set` whitelist and
-   enum validation.
-2. `assets/skills/comet/scripts/comet-yaml-validate.sh` for schema validation
-   and `KNOWN_KEYS`.
-3. `test/ts/comet-scripts.test.ts` for YAML examples and assertions.
+1. `assets/skills/beacon/scripts/beacon-state.sh`：`cmd_set` 白名单与 enum 校验。
+2. `assets/skills/beacon/scripts/beacon-yaml-validate.sh`：schema 校验与 `KNOWN_KEYS`。
+3. `test/ts/beacon-scripts.test.ts`：测试中的 YAML 示例与断言。
 
 ## Changelog
 
-Update `CHANGELOG.md` for user-facing behavior changes. New version entries go
-at the top and the version must match `package.json`.
+用户可见行为变化需要更新 `CHANGELOG.md`。新版本条目置顶，版本号必须与 `package.json` 一致。
 
-Use this shape:
+格式：
 
 ```markdown
 ## What's Changed [x.y.z] - YYYY-MM-DD
 
 ### Added
 
-- **Feature name**: Describe what changed and why.
+- **功能名**: 描述做了什么以及为什么。
 
 ### Changed
 
@@ -287,18 +246,16 @@ Use this shape:
 ### Security
 ```
 
-Guidelines:
+规范：
 
-- Group entries in this order: Added, Changed, Fixed, Tests, Removed, Security.
-- Start each entry with `- **Bold keyword**: `.
-- Describe behavior and rationale, not implementation trivia.
-- In `### Tests`, summarize coverage areas instead of listing every test case.
+- 分组顺序：Added、Changed、Fixed、Tests、Removed、Security。
+- 每条以 `- **粗体关键词**: ` 开头。
+- 描述行为变化和原因，不写实现细节流水账。
+- `### Tests` 汇总覆盖场景，不逐条列测试用例。
 
-## Security
+## 安全
 
-- Scan for API keys, secrets, tokens, and private keys before publishing.
-- Keep `.npmignore` aligned so source-only and local configuration files are not
-  published to npm.
-- Keep `.gitignore` coverage for secrets, credentials, and IDE-specific files.
-- Validate user-provided change names against path traversal before using them
-  in filesystem paths.
+- 发布前扫描 API key、secret、token、private key。
+- 保持 `.npmignore` 准确，避免 source-only 文件和本地配置发布到 npm。
+- 保持 `.gitignore` 覆盖 secret、凭据和 IDE 特定文件。
+- 使用用户提供的 change name 作为文件路径前，必须校验 path traversal。

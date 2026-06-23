@@ -2,6 +2,16 @@
 
 All notable changes to beacon will be documented in this file.
 
+## What's Changed [0.4.3] - 2026-06-23
+
+### Changed
+
+- **普通文档维护语言**: 将面向用户和维护者的普通文档收敛为单一中文 canonical，删除重复语言副本，并让 `CLAUDE.md` 直接引用 `AGENTS.md` 以减少同职责文档同步成本。
+
+### Tests
+
+- **README 单中文入口覆盖**: 更新 README 文档测试，使图片链接与 `build_pause` 说明只验证 `README.md` 这个中文 canonical 入口。
+
 ## What's Changed [0.4.2] - 2026-06-23
 
 ### Added
@@ -326,7 +336,7 @@ All notable changes to beacon will be documented in this file.
 ### Docs
 
 - Improved README setup guidance with clearer installation instructions and collapsible reference panels (both English and Chinese) (@hepeng)
-- Added contributors wall to both README and README-zh (@Joechan11)
+- Added contributors wall to the README documentation (@Joechan11)
 
 ### New Contributors
 

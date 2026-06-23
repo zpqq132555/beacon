@@ -19,284 +19,266 @@
 # beacon
 
 ```
- ██████╗ ██████╗ ███╗   ███╗███████╗████████╗
-██╔════╝██╔═══██╗████╗ ████║██╔════╝╚══██╔══╝
-██║     ██║   ██║██╔████╔██║█████╗     ██║
-██║     ██║   ██║██║╚██╔╝██║██╔══╝     ██║
-╚██████╗╚██████╔╝██║ ╚═╝ ██║███████╗   ██║
- ╚═════╝ ╚═════╝ ╚═╝     ╚═╝╚══════╝   ╚═╝
+██████╗ ███████╗ █████╗  ██████╗ ██████╗ ███╗   ██╗
+██╔══██╗██╔════╝██╔══██╗██╔════╝██╔═══██╗████╗  ██║
+██████╔╝█████╗  ███████║██║     ██║   ██║██╔██╗ ██║
+██╔══██╗██╔══╝  ██╔══██║██║     ██║   ██║██║╚██╗██║
+██████╔╝███████╗██║  ██║╚██████╗╚██████╔╝██║ ╚████║
+╚═════╝ ╚══════╝╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ╚═╝  ╚═══╝
 ```
 
-> 中文版：[README-zh.md](README-zh.md)
 > [Bilibili video](https://www.bilibili.com/video/BV1y4Gi6CEo1/?spm_id_from=333.1387.homepage.video_card.click&vd_source=d22726fe6b108647dbebf1c5d8817377)
-> [DouYin](https://www.douyin.com/search/beacon?aid=cd8fcc82-498b-4d59-8860-617deb719412&modal_id=7646429015808936293&type=general)
+> [抖音](https://www.douyin.com/search/beacon?aid=cd8fcc82-498b-4d59-8860-617deb719412&modal_id=7646429015808936293&type=general)
 
-**OpenSpec + Superpowers dual-star development workflow** — one command from idea to archive.
+**OpenSpec + Superpowers 双星开发工作流** — 从创意到归档，一条命令。
 
-OpenSpec handles **WHAT** (outlines, proposals, spec lifecycle, archiving).
+OpenSpec 处理 **WHAT**（大纲、提案、spec 生命周期、归档）。
 
-Superpowers handles **HOW** (technical design, planning, execution, wrap-up).
+Superpowers 处理 **HOW**（技术设计、规划、执行、收尾）。
 
-Beacon chains both into a five-phase automated pipeline.
+Beacon 将二者串联为五阶段自动化流水线。
 
 > [!IMPORTANT]
-> **0.3.9** — Review mode (`off|standard|thorough`) controls Build/Verify code review with project defaults; init/update now use optional dependency prompts, broader CLI i18n, stronger phase guards, and macOS executable bits.
+> **0.3.9** — `review_mode: off|standard|thorough` 控制 Build/Verify 自动代码审查并支持项目级默认；init/update 改为可选依赖安装，补齐 CLI 国际化、阶段守护加固和 macOS 可执行权限。
 >
-> **0.3.8** — Adds Kimi Code support, safe multi-platform `beacon uninstall`, extended subagent dispatch, shared progressive-loading references, update checks, and pre-commit formatting.
+> **0.3.8** — 新增 Kimi Code 支持、安全的多平台 `beacon uninstall`、子代理调度扩展、按需加载共享参考、版本更新检查和 pre-commit 格式化。
 >
-> **0.3.7** — Adds CodeGraph semantic indexing, Beta context compression, active context compression, token optimizations, `auto_transition`, phase guards, optional TDD, and safer archive/verification flow.
+> **0.3.7** — 新增 CodeGraph 语义索引、Beta 上下文压缩、主动式上下文压缩、Token 优化、`auto_transition`、阶段守护、可选 TDD 和更稳的归档/验证流程。
 >
-> See [NEWS.md](NEWS.md) for details.
+> 详见 [NEWS.md](NEWS.md)。
 
-## Why Beacon
+## 为什么需要 Beacon
 
-OpenSpec excels at managing requirements, creating proposals, managing Spec lifecycles, and archiving, but its proposals
-and tasks lack the detail of Superpowers brainstorming.
+OpenSpec 擅长管理需求、做提案、管理 Spec 生命周期和归档，但使用过程中 OpenSpec 的提案和 Task 没有像 Superpowers 头脑风暴那样细致。
 
-Superpowers generates Spec documents after brainstorming, but these documents typically lack stateful design — after
-completing requirements, Specs only have tasks checked off in the document, and Agents even forget to check them off.
-This causes the Agent to re-examine documents and project code to verify on resumption, wasting many tokens.
+Superpowers 在头脑风暴后会产出 Spec 文档，但这个文档通常没有进行状态化设计——做完需求之后 Spec 仅在文档上对 Task 打勾，甚至
+Agent 还会忘记打勾，造成下一次断点开始时，Agent 需要重新查看文档和项目代码来核验，产生较多 Token 浪费。
 
-**Beacon combines the strengths of both**, integrating the core workflow into 5 phases
+**Beacon 合并了两者的强项**，将核心流程整合为 5 个阶段
 
-The main entry `/beacon` supports current Spec state detection, suitable for long tasks — after closing your AI coding
-session midway, just `/beacon` and Beacon will automatically read the active Spec (lists multiple for selection),
-dynamically identify which phase is currently executing, and continue.
+主入口 `/beacon` 支持当前 Spec 状态检测，适用于长任务——中途关闭当前 AI 编码会话后，回来只需 `/beacon`，Beacon 会自动读取活跃的
+Spec（多个则列出选择），动态识别当前执行到哪个阶段，继续往下执行。
 
-At the same time, Beacon provides full Spec lifecycle management. During execution, it links OpenSpec change/spec
-artifacts with Superpowers design and planning documents, then automates handoff, state updates, validation, and archive
-sync so users do not have to repeatedly remind the Agent to keep documents synchronized and connected.
+同时，Beacon具备Spec全生命周期管理能力，运行过程中能够将 OpenSpec 的 change/spec 制品与 Superpowers
+的设计、计划文档进行关联，并自动完成交接、状态更新、校验和归档同步，把原本需要用户频繁提醒 Agent 维护文档同步和关联关系的操作自动化。
 
-## What You'll Learn
+## 你能学到什么
 
-Many excellent Skill projects exist in the current Skill market, but they generally have preference issues — users may
-only like some features. For example, when using both OpenSpec and Superpowers, one might only use OpenSpec's Spec
-management capabilities, but prefer Superpowers' TDD-driven approach for coding.
+现有的 Skill 市场中有很多优秀的 Skill 项目，但普遍存在偏好性问题——用户可能只喜欢部分功能。比如同时使用 OpenSpec 和
+Superpowers 时，可能只用 OpenSpec 的 Spec 管理能力，而编码上更喜欢 Superpowers 的 TDD 驱动。
 
-Long-term Skill users know these capabilities can be freely combined, but exactly how to do so still requires real
-practice. The Beacon project can serve as a reference:
+长期使用 Skill 的人都知道，这些能力是可以自由组合的，但具体怎么做依然需要真正的实践。Beacon 项目可以作为参考：
 
-- **How to reliably trigger nested Skills** — Not letting the Agent rely on document descriptions to perform "look-alike
-  Skill trigger" operations (like writing files based on Skill descriptions), but truly triggering Skills (key feature:
-  Skill trigger prints on CC). Beacon triggers many capabilities from OpenSpec and Superpowers. How is this Prompt
-  written?
+- **如何稳定触发嵌套 Skill** — 不是让 Agent 依靠文档描述做了“看起来像触发了 Skill”的操作（比如根据 Skill 描述写了文件），而是真正触发
+  Skill（核心特征：CC 上有 Skill 触发的打印）。Beacon 中会触发大量来自 OpenSpec 和 Superpowers 的能力，这段 Prompt 是怎么写的？
 
-- **How to make combined Skills flow automatically across phases** — Not relying on manual intervention. Beacon's 5-phase
-  flow can automatically trigger Skills for the core process except for necessary user choices, while the state machine
-  also protects state transition reliability.
+- **如何让组合 Skill 多阶段自动流转** — 不是靠人工介入。Beacon 的 5 阶段流程，除必要的用户选择项外，核心流程能够自动进行
+  Skill 触发，同时状态机机制也能保障状态扭转的可靠性。
 
-- **How to turn the Spec lifecycle into a resumable workflow** — Beacon links OpenSpec change/spec artifacts with
-  Superpowers design and planning documents, then records phase, execution mode, verification results, and archive
-  status in `.beacon.yaml`, so the Agent can resume after interruption instead of rereading documents and guessing
-  progress.
+- **如何把 Spec 生命周期做成可恢复流程** — Beacon 会把 OpenSpec 的 change/spec 制品与 Superpowers 的设计、计划文档关联起来，并通过
+  `.beacon.yaml` 记录阶段、执行模式、验证结果和归档状态，让 Agent 中断后能够继续，而不是重新翻文档猜进度。
 
-- **How to turn document synchronization from "user reminders" into automation** — Beacon puts handoff, state updates,
-  validation, and archive sync into scripted flows, reducing repeated prompts like "remember to update the design
-  doc", "remember to sync the spec", and "remember to archive the change".
+- **如何把文档同步从“用户提醒”变成自动化** — Beacon 将 handoff、状态更新、校验和归档同步放进脚本化流程，减少“记得更新 design
+  doc”“记得同步 spec”“记得归档 change”这类反复提示。
 
-- **How to design guard conditions that Agents can execute** — Beacon does not simply trust the Agent saying "done" at
-  phase exits. Scripts such as `beacon-guard.sh`, `beacon-yaml-validate.sh`, and `beacon-state.sh` check tasks, state
-  fields, verification evidence, and archive conditions before allowing the workflow to advance.
+- **如何设计 Agent 可执行的守护条件** — Beacon 的阶段退出不是简单相信 Agent 说“完成了”，而是通过 `beacon-guard.sh`、
+  `beacon-yaml-validate.sh`、`beacon-state.sh` 等脚本检查任务、状态字段、验证证据和归档条件，满足条件后才允许推进。
 
-- **How to distribute and install Skills across platforms** — Beacon supports first-batch private AI coding platforms,
-  project/global installation, Chinese/English Skill choices, and platform-specific directory metadata. It can be a reference for CLI installers and Skill package
-  structure.
+- **如何做跨平台 Skill 分发和安装** — Beacon 支持首批私有版 AI 编码平台、项目级/全局安装、中文/英文 Skill 选择，以及平台目录元数据，
+  可以作为 CLI 安装器和 Skill 打包结构的参考。
 
-- **How to turn shell scripts into Agent workflow infrastructure** — Beacon's scripts need to work across macOS, Linux,
-  and Windows Git Bash while handling hashes, YAML fields, state machines, and archive flows. It shows how to move
-  fragile workflow control out of scattered Prompt text and into testable, reusable tools.
+- **如何把 shell 脚本写成 Agent 工作流基础设施** — Beacon 的脚本需要兼容 macOS、Linux、Windows Git Bash，处理 hash、YAML
+  字段、状态机和归档流程。它展示了如何把原本容易写散在 Prompt 里的流程控制，沉淀成可测试、可复用的工具。
 
-## Install
+## 安装
 
-Requirements:
+前置要求：
 
 - Node.js 20+
 - npm/npx
 - Git
-- Bash-compatible shell for workflow scripts (Windows users should use Git Bash or an equivalent bash environment)
+- 可运行 bash 的 shell 环境（Windows 用户建议使用 Git Bash 或等价环境）
 
 ```bash
 npm install -g beacon
 ```
 
-## Quick Start
+## 快速开始
 
 ```bash
 cd your-project
 beacon init
 ```
 
-`beacon init` will:
+`beacon init` 会：
 
-1. Prompt you to select AI platforms (auto-detects existing configs)
-2. Choose install scope: project-level (current directory) or global (home directory)
-3. Select language for Beacon skills: English or 中文
-4. Select npm dependencies to install/upgrade — [OpenSpec](https://github.com/Fission-AI/OpenSpec) CLI, [Superpowers](https://github.com/obra/superpowers) (via `npx skills add`), and [CodeGraph](https://github.com/colbymchenry/codegraph) CLI. Items not yet detected default to checked; already-installed items default to unchecked so you can opt in to upgrades.
-5. Install the selected dependencies and deploy their skills
-6. Deploy Beacon skills (in your chosen language) to selected platforms
-7. Create `docs/superpowers/specs/` and `docs/superpowers/plans/` working directories for project-scope installs
+1. 提示你选择 AI 平台（自动检测已有配置）
+2. 选择安装范围：项目级（当前目录）或全局（用户主目录）
+3. 选择 Beacon 技能语言：English 或 中文
+4. 选择要安装/升级的 npm 依赖 —— [OpenSpec](https://github.com/Fission-AI/OpenSpec) CLI、[Superpowers](https://github.com/obra/superpowers)（通过 `npx skills add`）、[CodeGraph](https://github.com/colbymchenry/codegraph) CLI。未检测到的依赖默认勾选；已存在的默认不勾，可自主选择是否升级。
+5. 安装选中的依赖并部署对应技能
+6. 将 Beacon 技能（你选择的语言）部署到所选平台
+7. 在项目级安装时创建 `docs/superpowers/specs/` 和 `docs/superpowers/plans/` 工作目录
 
 > [!TIP]
-> Superpowers v6.0.0+ is recommended — about 2× faster and ~50% fewer tokens than older versions.
-> To upgrade Beacon itself later: `beacon update` or `npm install -g beacon@latest`.
+> 推荐安装 Superpowers v6.0.0+ —— 相比旧版速度快约 2 倍，节省约 50% token。
+> 后续升级 Beacon 本身：执行 `beacon update` 或 `npm install -g beacon@latest`。
 
-## Manual Skills CLI Installation
+## 手动 skills CLI 安装
 
-Outside the first-batch private `beacon init` platforms, tools that use the generic `skills` CLI directly can still install the Beacon skill package manually:
+首批私有版 `beacon init` 平台范围之外，如果工具可以直接使用通用 `skills` CLI，也可以手动安装 Beacon skill 包：
 
 ```bash
 npx skills add rpamis/beacon
 ```
 
-## Screenshots
+## 运行截图
 
 <p align="center">
   <img src="https://github.com/rpamis/beacon/blob/master/img/runner.png" alt="runner">
 </p>
+<p align="center">自动安装 OpenSpec、Superpowers，一键配置开发环境</p>
+<p align="center">多阶段 Skill 入口，自动识别当前 Spec 阶段，核心流程自动触发，关键节点人工审核</p>
 
-<p align="center">Auto-install OpenSpec & Superpowers, one-click dev environment setup</p>
-<p align="center">Multi-phase Skill entry, auto-detects current Spec stage, auto-triggers core flow, manual review at key nodes</p>
-
-## Commands
+## CLI命令
 
 <details>
-<summary><code>beacon init [path]</code> — Initialize Beacon workflow</summary>
+<summary><code>beacon init [path]</code> — 初始化 Beacon 工作流</summary>
 
-Initializes OpenSpec, Superpowers, and Beacon skills for selected AI coding platforms.
+为选定的 AI 编码平台初始化 OpenSpec、Superpowers 和 Beacon 技能。
 
-| Option              | Description                                                                    |
-|---------------------|--------------------------------------------------------------------------------|
-| `--yes`             | Non-interactive mode, auto-select detected platforms (or all if none detected) |
-| `--scope <scope>`   | Install scope: `project` or `global`                                           |
-| `--language <lang>` | Skill language: `en` or `zh` (skips interactive language prompt)              |
-| `--skip-existing`   | Skip already installed components                                              |
-| `--overwrite`       | Overwrite already installed components                                         |
-| `--json`            | Output structured JSON                                                         |
+| 选项                | 描述                                                 |
+| ------------------- | ---------------------------------------------------- |
+| `--yes`             | 非交互模式，自动选择已检测平台（未检测到则选择全部） |
+| `--scope <scope>`   | 安装范围：`project` 或 `global`                      |
+| `--language <lang>` | 技能语言：`en` 或 `zh`（跳过交互式语言选择）         |
+| `--skip-existing`   | 跳过已安装的组件                                     |
+| `--overwrite`       | 覆盖已安装的组件                                     |
+| `--json`            | 输出结构化 JSON                                      |
 
-When multiple existing components are found on the same platform, interactive init offers one bulk choice: overwrite
-all, skip all, or choose per component.
+当同一平台检测到多个已安装组件时，交互式 init 会先提供一次批量选择：全部覆盖、全部跳过，或逐项选择。
 
 </details>
 
 <details>
-<summary><code>beacon status [path]</code> — Show active changes and next workflow command</summary>
+<summary><code>beacon status [path]</code> — 显示活跃更改和下一步命令</summary>
 
-Displays active changes, task progress, and the recommended next Beacon workflow command.
+显示活跃更改、任务进度，以及推荐的下一步 Beacon 工作流命令。
 
-| Option   | Description                              |
-|----------|------------------------------------------|
-| `--json` | Output active changes with `nextCommand` |
-
-</details>
-
-<details>
-<summary><code>beacon doctor [path]</code> — Diagnose Beacon installation health</summary>
-
-Checks project/global installation health, working directories, installed skills, scripts, and Beacon state files.
-
-| Option            | Description                                                     |
-|-------------------|-----------------------------------------------------------------|
-| `--json`          | Output structured diagnostic results                            |
-| `--scope <scope>` | Diagnose `auto`, `project`, or `global` scope (default: `auto`) |
+| 选项     | 描述                               |
+| -------- | ---------------------------------- |
+| `--json` | 输出活跃更改，并包含 `nextCommand` |
 
 </details>
 
 <details>
-<summary><code>beacon update [path]</code> — Update Beacon package and skills</summary>
+<summary><code>beacon doctor [path]</code> — 诊断 Beacon 安装健康状态</summary>
 
-Updates the npm package and refreshes installed Beacon skills in detected project/global targets.
+检查项目级/全局安装、工作目录、已安装技能、脚本和 Beacon 状态文件。
 
-| Option              | Description                                   |
-|---------------------|-----------------------------------------------|
-| `--json`            | Output npm and skill update results as JSON   |
-| `--language <lang>` | Override detected skill language (`en`, `zh`) |
-| `--scope <scope>`   | Update only `global` or `project` scope       |
+| 选项              | 描述                                                    |
+| ----------------- | ------------------------------------------------------- |
+| `--json`          | 输出结构化诊断结果                                      |
+| `--scope <scope>` | 诊断 `auto`、`project` 或 `global` 范围（默认：`auto`） |
 
 </details>
 
 <details>
-<summary><code>beacon uninstall [path]</code> — Remove Beacon skills, rules, and hooks</summary>
+<summary><code>beacon update [path]</code> — 更新 Beacon 包和技能</summary>
 
-Safely removes Beacon-distributed skills, rules, and hooks from all detected platforms. Preserves user-defined hooks and non-Beacon configuration.
+更新 npm 包，并刷新已检测到的项目级/全局 Beacon 技能。
 
-| Option            | Description                                    |
-|-------------------|------------------------------------------------|
-| `--force`         | Skip confirmation prompt                       |
-| `--scope <scope>` | Uninstall only `global` or `project` scope     |
-| `--json`          | Output removal results as JSON                 |
+| 选项                | 描述                                     |
+| ------------------- | ---------------------------------------- |
+| `--json`            | 以 JSON 输出 npm 和 skill 更新结果       |
+| `--language <lang>` | 覆盖自动检测到的 skill 语言 (`en`, `zh`) |
+| `--scope <scope>`   | 仅更新 `global` 或 `project` 范围        |
+
+</details>
+
+<details>
+<summary><code>beacon uninstall [path]</code> — 卸载 Beacon 技能、规则和钩子</summary>
+
+安全移除 Beacon 分发的技能、规则和钩子，保留用户自定义的钩子和非 Beacon 配置。
+
+| 选项              | 描述                              |
+| ----------------- | --------------------------------- |
+| `--force`         | 跳过确认提示                      |
+| `--scope <scope>` | 仅卸载 `global` 或 `project` 范围 |
+| `--json`          | 以 JSON 输出卸载结果              |
 
 ```bash
-beacon uninstall              # Interactive — shows targets, asks for confirmation
-beacon uninstall --force      # Non-interactive — removes everything immediately
-beacon uninstall --scope project  # Only remove project-level installations
+beacon uninstall              # 交互式 — 显示已安装目标，确认后卸载
+beacon uninstall --force      # 非交互式 — 直接移除所有内容
+beacon uninstall --scope project  # 仅移除项目级安装
 ```
 
 </details>
 
-| Command           | Description  |
-|-------------------|--------------|
-| `beacon --help`    | Show help    |
-| `beacon --version` | Show version |
+| 命令               | 描述     |
+| ------------------ | -------- |
+| `beacon --help`    | 显示帮助 |
+| `beacon --version` | 显示版本 |
 
-## Supported Platforms
+## 支持平台
 
-`beacon init` supports four first-batch private AI coding platforms:
+`beacon init` 支持首批四个私有版 AI 编码平台：
 
-| Platform    | Skills Dir |
-|-------------|------------|
+| 平台        | 技能目录   |
+| ----------- | ---------- |
 | Claude Code | `.claude/` |
 | Cursor      | `.cursor/` |
 | Codex       | `.codex/`  |
 | Trae        | `.trae/`   |
 
-## Skills
+## 技能
 
-After `beacon init`, three groups of skills are installed to the selected platform's `skills/` directory:
+`beacon init` 完成后，三组技能将被安装到所选平台的 `skills/` 目录：
 
-### Beacon Skills
+### Beacon 技能
 
 <details>
-<summary>View Beacon skills</summary>
+<summary>查看 Beacon 技能列表</summary>
 
-| Skill            | Description                                                    |
-|------------------|----------------------------------------------------------------|
-| `/beacon`         | Main entry — auto-detects phase and dispatches to sub-commands |
-| `/beacon-open`    | Phase 1: Open a change (proposal, design, task breakdown)      |
-| `/beacon-design`  | Phase 2: Deep design (brainstorming, Design Doc)               |
-| `/beacon-build`   | Phase 3: Plan and build (implementation plan, code commits)    |
-| `/beacon-verify`  | Phase 4: Verify and finish (testing, verification report)      |
-| `/beacon-archive` | Phase 5: Archive (delta spec sync, status annotation)          |
-| `/beacon-hotfix`  | Preset: Quick bug fix (skips brainstorming)                    |
-| `/beacon-tweak`   | Preset: Small change (skips brainstorming and full plan)       |
+| 技能              | 描述                                                       |
+| ----------------- | ---------------------------------------------------------- |
+| `/beacon`         | 主入口 — 自动检测阶段并分派到子命令                        |
+| `/beacon-open`    | 阶段 1：打开变更（提案、设计、任务分解）                   |
+| `/beacon-design`  | 阶段 2：深度设计（头脑风暴、设计文档）                     |
+| `/beacon-build`   | 阶段 3：规划与构建（实现计划、代码提交）                   |
+| `/beacon-verify`  | 阶段 4：验证与完成（测试、验证报告）                       |
+| `/beacon-archive` | 阶段 5：归档（delta spec 同步、状态标注）                  |
+| `/beacon-hotfix`  | 快捷路径：快速 bug 修复（跳过头脑风暴，不需要能力设计）    |
+| `/beacon-tweak`   | 快捷路径：小改动（文案调整、配置调整、文档或 Prompt 优化） |
 
 </details>
 
-### Guard & Automation Scripts
+### 守护与自动化脚本
 
 <details>
-<summary>View script list</summary>
+<summary>查看脚本列表</summary>
 
-| Script                   | Purpose                                                                                                                           |
-|--------------------------|-----------------------------------------------------------------------------------------------------------------------------------|
-| `beacon-env.sh`           | Script discovery helper — exports bundled script paths such as `BEACON_GUARD`, `BEACON_STATE`, `BEACON_HANDOFF`, and `BEACON_ARCHIVE` |
-| `beacon-guard.sh`         | Phase transition guard — validates exit conditions, `--apply` auto-updates `.beacon.yaml`                                          |
-| `beacon-handoff.sh`       | Design handoff — generates deterministic context packages from OpenSpec artifacts with SHA256 tracing                             |
-| `beacon-archive.sh`       | One-command archive — validates state, syncs specs, moves to archive, updates status                                              |
-| `beacon-yaml-validate.sh` | Schema validator — validates `.beacon.yaml` structure and field values                                                             |
-| `beacon-hook-guard.sh`    | Phase write guard — PreToolUse hook, blocks file writes during open/design/archive phases                                         |
-| `beacon-state.sh`         | Unified state management — init/set/get/check/scale, agents' exclusive YAML interface                                             |
+| 脚本                      | 用途                                                                                                  |
+| ------------------------- | ----------------------------------------------------------------------------------------------------- |
+| `beacon-env.sh`           | 脚本发现助手 — 导出 `BEACON_GUARD`、`BEACON_STATE`、`BEACON_HANDOFF`、`BEACON_ARCHIVE` 等内置脚本路径 |
+| `beacon-guard.sh`         | 阶段转换守护 — 验证退出条件，`--apply` 自动更新 `.beacon.yaml`                                        |
+| `beacon-handoff.sh`       | 设计交接 — 从 OpenSpec 制品生成带 SHA256 追踪的确定性上下文包                                         |
+| `beacon-archive.sh`       | 一键归档 — 验证状态、同步 specs、移至归档、更新状态                                                   |
+| `beacon-yaml-validate.sh` | 模式校验器 — 校验 `.beacon.yaml` 结构和字段值                                                         |
+| `beacon-state.sh`         | 统一状态管理 — init/set/get/check/scale，agent 的专属 YAML 接口                                       |
+| `beacon-hook-guard.sh`    | 阶段写入守护 — PreToolUse hook，在 open/design/archive 阶段拦截文件写入                               |
 
 </details>
 
-### OpenSpec Skills
+### OpenSpec 技能
 
-Spec lifecycle management: propose, explore, sync, verify, archive, and more.
+Spec 生命周期管理：propose、explore、sync、verify、archive 等。
 
-### Superpowers Skills
+### Superpowers 技能
 
-Development methodology: brainstorming, TDD, subagent-driven development, code review, plan writing, and more.
+开发方法论：brainstorming、TDD、subagent-driven development、code review、plan writing 等。
 
-## Workflow
+## 工作流
 
 ```
 /beacon
@@ -304,49 +286,48 @@ Development methodology: brainstorming, TDD, subagent-driven development, code r
 /beacon-open  -->  /beacon-design  -->  /beacon-build  -->  /beacon-verify  -->  /beacon-archive
 (OpenSpec)         (Superpowers)       (Superpowers)       (Both)           (OpenSpec)
 
-/beacon-hotfix (preset path, skips brainstorming)
+/beacon-hotfix（快捷路径，跳过头脑风暴）
   open  -->  build  -->  verify  -->  archive
 
-/beacon-tweak (preset path, skips brainstorming and full plan)
-  open  -->  lightweight build  -->  light verify  -->  archive
+/beacon-tweak（快捷路径，跳过头脑风暴和完整计划）
+  open  -->  轻量构建  -->  轻量验证  -->  archive
 ```
 
-### Five Phases
+### 五个阶段
 
-| Phase              | Command          | Owner       | Artifacts                            |
-|--------------------|------------------|-------------|--------------------------------------|
-| 1. Open            | `/beacon-open`    | OpenSpec    | proposal.md, design.md, tasks.md     |
-| 2. Deep Design     | `/beacon-design`  | Superpowers | Design Doc, delta spec               |
-| 3. Plan & Build    | `/beacon-build`   | Superpowers | Implementation plan, code commits    |
-| 4. Verify & Finish | `/beacon-verify`  | Both        | Verification report, branch handling |
-| 5. Archive         | `/beacon-archive` | OpenSpec    | delta→main spec sync, archive        |
+| 阶段               | 命令              | 归属        | 产出物                           |
+| ------------------ | ----------------- | ----------- | -------------------------------- |
+| 1. Open            | `/beacon-open`    | OpenSpec    | proposal.md、design.md、tasks.md |
+| 2. Deep Design     | `/beacon-design`  | Superpowers | Design Doc、delta spec           |
+| 3. Plan & Build    | `/beacon-build`   | Superpowers | 实现计划、代码提交               |
+| 4. Verify & Finish | `/beacon-verify`  | Both        | 验证报告、分支处理               |
+| 5. Archive         | `/beacon-archive` | OpenSpec    | delta→main spec 同步、归档       |
 
-### Core Principles
+### 核心原则
 
-- **Brainstorming is non-skippable** — every change must go through deep design (except hotfix/tweak)
-- **Delta specs are living documents** — freely editable during Phase 3, synced at archive
-- **Keep tasks.md in sync** — check off each task as completed
-- **Commit frequently** — one commit per task, message reflects design intent
-- **Verify before archive** — `/beacon-verify` must pass before `/beacon-archive`
+- **头脑风暴不可跳过** — 每个变更必须经过深度设计（hotfix/tweak 除外）
+- **Delta spec 是活文档** — 在阶段 3 中可自由编辑，归档时同步
+- **保持 tasks.md 同步** — 每完成一个任务就勾选
+- **频繁提交** — 每个任务一个 commit，message 体现设计意图
+- **先验证再归档** — `/beacon-verify` 必须通过才能执行 `/beacon-archive`
 
-### State Management
+### 状态管理
 
-Beacon uses a decoupled state architecture with separate YAML files:
+Beacon 使用解耦状态架构，YAML 文件独立管理：
 
-| File             | Owner    | Purpose                                             |
-|------------------|----------|-----------------------------------------------------|
-| `.openspec.yaml` | OpenSpec | Spec lifecycle, change metadata                     |
-| `.beacon.yaml`    | Beacon    | Workflow phase, execution mode, verification status |
+| 文件             | 归属     | 用途                           |
+| ---------------- | -------- | ------------------------------ |
+| `.openspec.yaml` | OpenSpec | Spec 生命周期、变更元数据      |
+| `.beacon.yaml`   | Beacon   | 工作流阶段、执行模式、验证状态 |
 
-All states and execution phases are updated via scripts, and each phase verifies that tasks are truly complete before
-advancing. Compared to storing complex state rules only in Skill text, this script-backed state machine gives Beacon more
-reliable phase transitions, correct YAML, and easier breakpoint recovery; agents can read the current Spec situation
-through Beacon's built-in commands.
+所有状态和运行阶段都通过脚本更新，并且会在每个阶段退出前校验任务是否真实完成。相比于将复杂状态管理写在 Skill
+文本中，脚本化状态机能更稳定地保障阶段流转、YAML 正确性和断点恢复；Agent 只需要通过 Beacon 内置命令读取状态，就能知道当前
+Spec 处于哪个阶段。
 
 <details>
-<summary>View key .beacon.yaml fields</summary>
+<summary>查看 .beacon.yaml 关键字段</summary>
 
-**Key Fields in `.beacon.yaml`:**
+**`.beacon.yaml` 关键字段：**
 
 ```yaml
 workflow: full
@@ -356,8 +337,6 @@ build_mode: subagent-driven-development
 build_pause: null
 isolation: branch
 verify_mode: null
-tdd_mode: null
-subagent_dispatch: null
 design_doc: docs/superpowers/specs/YYYY-MM-DD-topic-design.md
 plan: docs/superpowers/plans/YYYY-MM-DD-feature.md
 verify_result: pending
@@ -370,80 +349,84 @@ build_command: null
 verify_command: null
 handoff_context: openspec/changes/<name>/.beacon/handoff/design-context.json
 handoff_hash: <sha256>
+tdd_mode: null
+subagent_dispatch: null
 ```
 
-In full workflow, `build_mode`, `build_pause`, `isolation`, `verify_mode`, `tdd_mode`, and `subagent_dispatch` may
-temporarily be `null`; `build_mode` and `isolation` must be resolved before `build → verify`. `auto_transition` controls automatic vs manual skill invocation after phase completion — see [AUTO-TRANSITION.md](docs/AUTO-TRANSITION.md). `build_pause` records an internal build-phase pause point:
-`null` means no pause, while `plan-ready` means the plan has been generated and the user paused before choosing
-isolation and execution mode. It is not an execution mode and must not be written into `build_mode`.
-`verification_report` stays `null` until verification writes a report, and `verify-pass` requires that report to exist
-plus `branch_status: handled`. Fields after `archived` in the example are optional or script-derived: `direct_override`
-is only needed for full-workflow direct builds, project commands may be absent unless configured, and
-`handoff_context` / `handoff_hash` are recorded by `beacon-handoff.sh` before leaving design. Projects can configure
-`build_command` / `verify_command` in the change or repo root, and guard will run those commands first and print failure
-output.
+full workflow 初始化时 `build_mode`、`build_pause`、`isolation`、`verify_mode`、`tdd_mode` 和 `subagent_dispatch` 可以暂时为
+`null`；进入 `build → verify` 前必须完成 `build_mode` 与 `isolation` 决策并写入合法值。`auto_transition` 控制阶段完成后是否自动触发下一个 Skill — 详见 [AUTO-TRANSITION.md](docs/AUTO-TRANSITION.md)。`build_pause` 记录 build 阶段内部暂停点：
+`null` 表示无暂停，`plan-ready` 表示 plan 已生成，用户在选择隔离方式和执行方式前暂停。它不是执行方式，不得写入 `build_mode`。
+`verification_report` 在验证报告生成前保持 `null`，`verify-pass` 要求该报告文件存在且 `branch_status: handled`。示例中
+`archived` 之后的字段是可选字段或脚本派生字段：`direct_override` 只在 full workflow 直接构建时需要，项目命令未配置时可以不存在，
+`handoff_context` 和 `handoff_hash` 由 `beacon-handoff.sh` 在离开 design 阶段前写入。项目可在 change 或仓库根配置中设置
+`build_command` / `verify_command`，guard 会优先运行并打印失败输出。
 
 </details>
 
-### Reliability Features
+### 可靠性特性
 
-Beacon ensures agent execution reliability through automated state transitions:
+Beacon 通过自动化状态转换确保 agent 执行可靠性：
 
 <details>
-<summary>View reliability features</summary>
+<summary>查看可靠性特性</summary>
 
-1. **Entry Verification** — Each phase validates preconditions before execution
-    - Checks file existence, state consistency, and phase transitions
-    - Outputs `[HARD STOP]` with actionable suggestions if validation fails
+1. **入口验证** — 每个阶段在执行前验证前置条件
+   - 检查文件存在、状态一致性、阶段转换
+   - 验证失败时输出 `[HARD STOP]` 及可操作建议
 
-2. **Automated State Transitions** — `beacon-guard.sh --apply` updates `.beacon.yaml` automatically
-    - All phase transitions (open → design/build → verify → archive) use `guard --apply`
-    - No manual state editing required — eliminates write-verification errors
-    - `beacon-state.sh` is the agents' exclusive interface for state operations
-    - Guard and archive scripts use `beacon-state.sh` internally for state management
+2. **自动化状态转换** — `beacon-guard.sh --apply` 自动更新 `.beacon.yaml`
+   - 所有阶段转换（open → design/build → verify → archive）使用 `guard --apply`
+   - 无需手动状态编辑 — 消除写入验证错误
+   - `beacon-state.sh` 是 agent 对状态操作的专属接口
+   - Guard 和 archive 脚本内部使用 `beacon-state.sh` 进行状态管理
 
-3. **Schema Validation** — `beacon-yaml-validate.sh` ensures data integrity
-    - Validates required and optional fields
-    - Validates enum values, including `direct_override`
-    - Validates `design_doc`, `plan`, and `handoff_context` paths exist, plus `handoff_hash` format
-    - Detects unknown/typos fields
+3. **模式校验** — `beacon-yaml-validate.sh` 确保数据完整性
+   - 校验必填字段和可选字段
+   - 校验枚举值（包括 `direct_override`）
+   - 校验 `design_doc`、`plan`、`handoff_context` 路径存在，并校验 `handoff_hash` 格式
+   - 检测未知/拼写错误字段
 
-4. **Build Decision Enforcement** — Guard and state transitions both block skipped build choices
-    - `isolation` must be `branch` or `worktree`
-    - `build_mode` must be selected before leaving build
-    - `build_pause: plan-ready` is a recoverable pause after plan generation, not a `build_mode`
-    - Full workflow `build_mode: direct` requires `direct_override: true`
+4. **Build 决策强制** — Guard 和状态转换同时拦截跳过关键选择
+   - `isolation` 必须是 `branch` 或 `worktree`
+   - `build_mode` 必须已选择
+   - `build_pause: plan-ready` 是 plan 生成后的可恢复暂停点，不是 `build_mode`
+   - full workflow 的 `build_mode: direct` 必须有 `direct_override: true`
 
-5. **Verification Evidence** — Guard enforces proof before phase advance
-    - `verify-pass` transition requires `verification_report` pointing to an existing report file
-    - `branch_status` must be `handled` before verify can pass
-    - Guard checks `verification_report exists` and `branch_status=handled` as hard prerequisites
-    - Prevents false phase advances when verification or branch handling was skipped
+5. **验证证据强制** — Guard 在阶段流转前强制要求验证凭证
+   - `verify-pass` 转换要求 `verification_report` 指向已存在的验证报告文件
+   - `branch_status` 必须为 `handled` 才能通过验证
+   - Guard 检查 `verification_report exists` 和 `branch_status=handled` 作为硬性前提
+   - 防止验证或分支处理被跳过时产生虚假的阶段推进
 
-6. **Archive Automation** — `beacon-archive.sh` handles the full archive flow in one command
-    - Validates entry state, merges delta specs into main specs through OpenSpec
-    - Annotates design doc and plan frontmatter
-    - Moves change to archive directory and updates `archived: true`
-    - Supports `--dry-run` for preview
+6. **归档自动化** — `beacon-archive.sh` 一键处理完整归档流程
+   - 验证入口状态、通过 OpenSpec 将 delta specs 合并到 main specs
+   - 标注设计文档和计划文档的 frontmatter
+   - 将变更移至归档目录并更新 `archived: true`
+   - 支持 `--dry-run` 预览
+
+7. **防漂移阶段守护** — 长上下文会话中的阶段意识保障
+   - Rule 层：`beacon-phase-guard.md` 每轮注入阶段感知、Skill 调用规范和上下文恢复指令（所有平台通用）
+   - Hook 层：`beacon-hook-guard.sh` 在 open/design/archive 阶段硬拦截文件写入（Claude Code 等支持 hook 的平台）
+   - 白名单路径：`openspec/*`、`docs/superpowers/*`、`.claude/*`、`.beacon/*`
 
 </details>
 
-## Project Structure
+## 项目结构
 
 ```
 your-project/
 ├── .beacon/
-│   └── config.yaml              # Project-level global config (context_compression, auto_transition, etc.)
-├── .claude/skills/              # Platform skills dir (Beacon + OpenSpec + Superpowers)
+│   └── config.yaml              # 项目级全局配置（context_compression、auto_transition 等）
+├── .claude/skills/              # 平台技能目录（Beacon + OpenSpec + Superpowers）
 │   ├── beacon/SKILL.md
 │   │   └── scripts/
-│   │       ├── beacon-guard.sh       # Phase transition guard (--apply auto-updates state)
-│   │       ├── beacon-env.sh         # Script discovery helper
-│   │       ├── beacon-handoff.sh     # Design handoff (OpenSpec → Superpowers context tracing)
-│   │       ├── beacon-archive.sh     # One-command archive automation
-│   │       ├── beacon-yaml-validate.sh # Schema validator
-│   │       ├── beacon-hook-guard.sh   # Phase write guard (PreToolUse hook)
-│   │       └── beacon-state.sh       # Unified state management (init/set/get/check/scale)
+│   │       ├── beacon-guard.sh       # 阶段转换守护（--apply 自动更新状态）
+│   │       ├── beacon-env.sh         # 脚本发现助手
+│   │       ├── beacon-handoff.sh     # 设计交接（OpenSpec → Superpowers 上下文追踪）
+│   │       ├── beacon-archive.sh     # 一键归档自动化
+│   │       ├── beacon-yaml-validate.sh # 模式校验器
+│   │       ├── beacon-hook-guard.sh    # 阶段写入守护（PreToolUse hook）
+│   │       └── beacon-state.sh       # 统一状态管理（init/set/get/check/scale）
 │   ├── beacon-*/SKILL.md
 │   ├── openspec-*/SKILL.md
 │   └── brainstorming/SKILL.md
@@ -451,103 +434,100 @@ your-project/
 │   ├── config.yaml
 │   └── changes/
 │       └── <name>/
-│           ├── .openspec.yaml       # OpenSpec state
-│           ├── .beacon.yaml          # Beacon workflow state (decoupled)
+│           ├── .openspec.yaml       # OpenSpec 状态
+│           ├── .beacon.yaml          # Beacon 工作流状态（解耦）
 │           ├── proposal.md
 │           ├── design.md
 │           ├── specs/<capability>/spec.md
 │           └── tasks.md
 └── docs/superpowers/            # Superpowers — HOW
-    ├── specs/                   # Design documents
-    └── plans/                   # Implementation plans
+    ├── specs/                   # 设计文档
+    └── plans/                   # 实现计划
 ```
 
 <details>
-<summary>Context Compression (Beta)</summary>
+<summary>上下文压缩（Beta）</summary>
 
-Beacon supports context compression at the Design → Build handoff. When enabled, `beacon-handoff.sh` generates a compact
-context package that reduces Build-phase input tokens by **25–30%** without affecting implementation correctness.
+Beacon 支持在 Design → Build 阶段交接时进行上下文压缩。启用后，`beacon-handoff.sh` 会生成精简的上下文包，在不影响实现正确性的前提下，将
+Build 阶段的输入 token 降低 **25–30%**。
 
-| Mode   | Behavior                                 | Token Savings |
-|--------|------------------------------------------|---------------|
-| `off`  | Full Spec excerpts in handoff context    | Baseline      |
-| `beta` | Design Doc + SHA256 hash references only | ~25–30%       |
+| 模式   | 行为                                 | Token 节省 |
+| ------ | ------------------------------------ | ---------- |
+| `off`  | handoff context 包含完整 Spec 摘录   | 基线       |
+| `beta` | 仅保留 Design Doc + SHA256 hash 引用 | ~25–30%    |
 
-Key findings from benchmark testing:
+Benchmark 核心结论：
 
-- **Test pass rate**: 100% across all tiers (compression does not affect correctness)
-- **Spec coverage**: 100% (off) vs 95% (beta) — minor edge-case detail loss
-- **Scaling**: Larger tasks yield higher absolute savings (up to 15,000 tokens for large-tier tasks)
+- **测试通过率**：所有档位均为 100%（压缩不影响实现正确性）
+- **Spec 覆盖率**：off 100% vs beta 95%（压缩可能丢失少量边缘需求细节）
+- **规模效应**：任务越大，绝对节省量越高（large 档位节省可达 15,000 tokens）
 
-Enable in `.beacon/config.yaml`: `context_compression: beta`
+启用方式：在 `.beacon/config.yaml` 中设置 `context_compression: beta`
 
-See [CONTEXT-COMPRESSION.md](docs/CONTEXT-COMPRESSION.md) for the full benchmark report, compression principles, and
-reproduction steps.
+详见 [CONTEXT-COMPRESSION.md](docs/CONTEXT-COMPRESSION.md) 获取完整 Benchmark 报告、压缩原理和复现步骤。
 
 </details>
 
 <details>
-<summary>Auto Transition</summary>
+<summary>自动流转（Auto Transition）</summary>
 
-`auto_transition` controls whether Beacon automatically invokes the next skill after a phase completes, or pauses for
-manual handoff. Phase advancement itself always happens — this setting only affects skill invocation.
+`auto_transition` 控制阶段完成后是否自动调用下一个 Skill，还是暂停等待用户手动触发。阶段推进本身始终执行，该配置仅影响 Skill 调用。
 
-| Value  | Behavior |
-|--------|----------|
-| `true` | Auto-invoke the next skill after each phase (default) |
-| `false` | Pause after each phase; user manually triggers the next skill |
+| 值      | 行为                                     |
+| ------- | ---------------------------------------- |
+| `true`  | 阶段完成后自动调用下一个 Skill（默认）   |
+| `false` | 阶段完成后暂停，用户手动触发下一个 Skill |
 
-Three-layer configuration with precedence: `BEACON_AUTO_TRANSITION` env var > `.beacon/config.yaml` (project) > `.beacon.yaml` (change).
+三层配置与优先级：`BEACON_AUTO_TRANSITION` 环境变量 > `.beacon/config.yaml`（项目级）> `.beacon.yaml`（change 级）。
 
-See [AUTO-TRANSITION.md](docs/AUTO-TRANSITION.md) for configuration details, workflow mapping, and FAQ.
+详见 [AUTO-TRANSITION.md](docs/AUTO-TRANSITION.md) 获取配置详情、工作流映射和常见问题。
 
 </details>
 
-## Development
+## 开发
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) | [中文版](CONTRIBUTING-zh.md) for development setup, commit
-conventions, PR process, branch workflow, and guidance for adding platforms,
-skills, scripts, or changelog entries.
+贡献流程、提交规范、PR 流程、分支工作流，以及新增平台、Skill、脚本或 changelog
+的说明见 [CONTRIBUTING.md](CONTRIBUTING.md)。
 
-See [CHANGELOG.md](CHANGELOG.md) for version history and updates.
+详见 [CHANGELOG.md](CHANGELOG.md) 了解版本历史与更新。
 
-## Roadmap
+## 路线图
 
-Track our development progress and upcoming features on the [Beacon Roadmap](https://github.com/orgs/rpamis/projects/1).
+在 [Beacon Roadmap](https://github.com/orgs/rpamis/projects/1) 查看开发进展与即将推出的功能。
 
-## Star History
+## Star历史
 
 [![Star History Chart](https://api.star-history.com/svg?repos=rpamis/beacon&type=Date)](https://star-history.com/#rpamis/beacon&Date)
 
 ## Contributors
 
 <a href="https://github.com/rpamis/beacon/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=rpamis/beacon&columns=12&anon=1" />
+  <img src="https://contrib.rocks/image?repo=rpamis/beacon&max=999&columns=12&anon=1" />
 </a>
 
 ## License
 
 [MIT](LICENSE)
 
-## Community
+## 社区交流
 
 <table align="center">
   <tr>
     <td align="center" width="180">
       <img src="https://github.com/rpamis/beacon/blob/master/img/douyin.png" width="120" height="120"><br>
-      <b>DouYin (Recommended)</b>
+      <b>抖音群（推荐）</b>
     </td>
     <td align="center" width="180">
       <img src="https://github.com/rpamis/beacon/blob/master/img/wechat.jpg" width="120" height="120"><br>
-      <b>WeChat</b>
+      <b>微信群</b>
     </td>
     <td align="center" width="180">
       <img src="https://github.com/rpamis/beacon/blob/master/img/qq.jpg" width="120" height="120"><br>
-      <b>QQ</b>
+      <b>QQ群</b>
     </td>
   </tr>
 </table>
 
-## Reference
+## 友情链接
 
 [LINUX DO - 新的理想型社区](https://linux.do/)
