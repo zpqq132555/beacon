@@ -4,6 +4,8 @@
 > Commit range: `84d918e..a5f073e`
 > Worktree: `D:/tools/AI/beacon/.worktrees/consolidate-human-docs-to-zh`
 
+> Update: finishing 阶段再次运行 `pnpm.cmd test` 时，全量测试仍超时，但超时前暴露出仓库协作说明测试仍读取 `CLAUDE.md` 的完整规则。`b35275e test: align authoring guidance with AGENTS canonical docs` 已把 Skill 触发表述规范移入 `AGENTS.md` 并让 `CLAUDE.md` 继续作为薄入口。
+
 ---
 
 ## 0. Evidence
@@ -23,6 +25,7 @@ Commit chain:
 ```text
 ca59124 docs: consolidate human documentation to Chinese
 a5f073e docs: add documentation consolidation verification
+b35275e test: align authoring guidance with AGENTS canonical docs
 ```
 
 ---
@@ -41,27 +44,29 @@ a5f073e docs: add documentation consolidation verification
 - 🟡 [painful | evidence: `test/ts/readme.test.ts`] Deleting `README-zh.md` initially missed a test that still read the deleted file. This was caught by coordinator inspection, not the first implementation pass.
 - 🟡 [painful | evidence: reviewer `Nietzsche`] README's ASCII art still spelled COMET after the first implementation pass. The migration copied canonical Chinese content but did not fully inspect first-viewport brand signals.
 - 📌 [nit | evidence: verify.md §8] Full `pnpm.cmd test` hung in this Windows worktree even before implementation. The cycle proceeded with targeted tests and documented the limitation, but the full-suite signal remains unresolved.
+- 📌 [nit | evidence: finishing-stage test output] The first archive pass missed that `test/ts/skills.test.ts` still expected full authoring guidance in `CLAUDE.md`. The follow-up fix moved that assertion to `AGENTS.md` and verified `CLAUDE.md` only references the canonical file.
 
 ## 3. Plan deviations
 
-| Plan task | What changed | Why |
-| --- | --- | --- |
-| 2.1 | Added `test/ts/readme.test.ts` update, although the original task only named README migration. | Removing `README-zh.md` would otherwise break an existing README test. |
-| 2.5 / 5.4 | Formatted `docs/PRIVATE-FEATURE-MODULES.md`, creating a larger diff than the content change alone. | Quality review found the touched table failed Prettier; formatting the touched file was necessary to keep validation green. |
-| 4.1–4.3 | Bumped version to `0.4.3` instead of appending to `0.4.2`. | `master` was `0.4.2`, so project rules required this change to be exactly one version greater than master. |
-| Verify | Used `PASS WITH WARNINGS` instead of plain PASS. | Delta spec sync is expected to happen during archive, and full `pnpm.cmd test` timed out locally. |
+| Plan task | What changed                                                                                       | Why                                                                                                                                              |
+| --------- | -------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 2.1       | Added `test/ts/readme.test.ts` update, although the original task only named README migration.     | Removing `README-zh.md` would otherwise break an existing README test.                                                                           |
+| 2.5 / 5.4 | Formatted `docs/PRIVATE-FEATURE-MODULES.md`, creating a larger diff than the content change alone. | Quality review found the touched table failed Prettier; formatting the touched file was necessary to keep validation green.                      |
+| 4.1–4.3   | Bumped version to `0.4.3` instead of appending to `0.4.2`.                                         | `master` was `0.4.2`, so project rules required this change to be exactly one version greater than master.                                       |
+| Verify    | Used `PASS WITH WARNINGS` instead of plain PASS.                                                   | Delta spec sync is expected to happen during archive, and full `pnpm.cmd test` timed out locally.                                                |
+| Finishing | Added a post-archive test/docs commit.                                                             | Full-suite timeout surfaced a stale `CLAUDE.md` assumption in `test/ts/skills.test.ts`; the fix was scoped to AGENTS/CLAUDE canonical ownership. |
 
 ## 4. Skill / workflow compliance
 
-| Skill | Used |
-| --- | --- |
-| superpowers:brainstorming | ✓ |
-| superpowers:writing-plans | ✓ |
-| superpowers:using-git-worktrees | ✓ |
-| superpowers:subagent-driven-development | ✓ |
-| (transitive) superpowers:test-driven-development | ✓ scope-appropriate |
-| (transitive) superpowers:requesting-code-review | ✓ |
-| superpowers:finishing-a-development-branch | pending after retrospective/archive |
+| Skill                                            | Used                                |
+| ------------------------------------------------ | ----------------------------------- |
+| superpowers:brainstorming                        | ✓                                   |
+| superpowers:writing-plans                        | ✓                                   |
+| superpowers:using-git-worktrees                  | ✓                                   |
+| superpowers:subagent-driven-development          | ✓                                   |
+| (transitive) superpowers:test-driven-development | ✓ scope-appropriate                 |
+| (transitive) superpowers:requesting-code-review  | ✓                                   |
+| superpowers:finishing-a-development-branch       | pending after retrospective/archive |
 
 > **Default expectation**: apply-phase implementation and review skills were used. `finishing-a-development-branch` is pending because schema ordering places it after retrospective and archive, so it is not skipped at this retrospective write-time.
 
@@ -79,14 +84,17 @@ None.
 ## 6. Promote candidates → long-term learning
 
 - [ ] 🟡 **Worker prompts for worktree tasks should require a first command proving `pwd` / `git rev-parse --show-toplevel` before edits** → **Promote to memory**
+
   > **Why**: This cycle's implementer wrote the intended worktree and also touched the main checkout, requiring recovery.
   > **How to apply**: Any delegated worker with a required worktree path must report the resolved repo root before making file edits.
 
 - [ ] 🟡 **Deleting a documentation file requires searching tests and source for that filename before marking the task done** → **Promote to project AGENTS.md**
+
   > **Why**: `README-zh.md` deletion initially missed `test/ts/readme.test.ts`, which would have broken CI.
   > **How to apply**: When removing a doc file, run `rg` for its basename across `test`, `src`, scripts, and ordinary docs before completing the removal task.
 
 - [ ] 📌 **README brand migrations should inspect first-viewport text artifacts, not only prose and links** → **Promote to one-off**
+
   > **Why**: The migrated README still displayed COMET in ASCII art after the first pass.
   > **How to apply**: For README rebrand or canonicalization work, inspect the first 40 lines and any fenced banners manually.
 
