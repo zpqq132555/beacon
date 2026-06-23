@@ -19,6 +19,7 @@ import {
 } from '../core/codegraph.js';
 import { printVersionInfo } from '../core/version.js';
 import { t, type TranslationKey } from './i18n.js';
+import { platformSelectPrompt } from './platform-select-prompt.js';
 
 type InitOptions = {
   yes?: boolean;
@@ -97,6 +98,7 @@ async function selectPlatforms(
 ): Promise<string[]> {
   const choices = PLATFORMS.map((p) => ({
     name: `${p.name}${detected.has(p.id) ? ` (${t(lang, 'detected')})` : ''}`,
+    summaryName: p.name,
     value: p.id,
     checked: detected.has(p.id),
   }));
@@ -106,7 +108,14 @@ async function selectPlatforms(
     return selected.length > 0 ? selected : PLATFORMS.map((p) => p.id);
   }
 
-  return checkbox({ message: t(lang, 'selectPlatforms'), choices, required: true });
+  return platformSelectPrompt({
+    message: t(lang, 'selectPlatforms'),
+    choices,
+    selectedLabel: t(lang, 'selectedPlatforms'),
+    emptyLabel: t(lang, 'noneSelected'),
+    required: true,
+    requiredErrorLabel: t(lang, 'selectPlatformsRequired'),
+  });
 }
 
 async function promptOverwriteChoice(
