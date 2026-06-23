@@ -10,7 +10,7 @@ All notable changes to beacon will be documented in this file.
 
 ### Tests
 
-- **README 单中文入口覆盖**: 更新 README 文档测试，使图片链接与 `build_pause` 说明只验证 `README.md` 这个中文 canonical 入口。
+- **普通文档单源覆盖**: 更新 README 与仓库协作说明测试，使图片链接、`build_pause` 说明和 Skill 触发表述规范分别验证 `README.md` 与 `AGENTS.md` 这两个 canonical 入口。
 
 ## What's Changed [0.4.2] - 2026-06-23
 

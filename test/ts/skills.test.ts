@@ -726,7 +726,9 @@ describe('skills', () => {
       );
       expect(zhBuild).not.toContain('使用 Skill 工具加载对应技能');
       expect(zhBuild).toContain('tdd_mode');
-      expect(zhBuild).toContain('`"$BEACON_BASH" "$BEACON_STATE" set <name> tdd_mode <tdd|direct>`');
+      expect(zhBuild).toContain(
+        '`"$BEACON_BASH" "$BEACON_STATE" set <name> tdd_mode <tdd|direct>`',
+      );
       expect(zhBuild).toContain('若 `tdd_mode: tdd`');
       expect(zhBuild).toContain(
         'TDD 约束和证据门槛已在 `beacon/reference/subagent-dispatch.md` 中定义',
@@ -939,7 +941,9 @@ describe('skills', () => {
       expect(enVerify).toContain(
         "must use the current platform's available user input/confirmation mechanism as a single-select question to pause and wait for the user to choose the handling method",
       );
-      expect(enBeacon).toContain('first check `build_pause`, `plan`, `build_mode`, and `isolation`');
+      expect(enBeacon).toContain(
+        'first check `build_pause`, `plan`, `build_mode`, and `isolation`',
+      );
       expect(enBeacon).toContain('`build_pause: plan-ready` and the plan file exists');
       expect(enBeacon).toContain(
         '`build_pause` is not an execution method and must not be written to `build_mode`',
@@ -1028,7 +1032,9 @@ describe('skills', () => {
       expect(enDesign).toContain('In beta mode, `spec-context.json` must be structurally valid');
       expect(enDesign).toContain('incrementally update `brainstorm-summary.md`');
       expect(enDesign).toContain('### 1e. Active Context Compaction Gate');
-      expect(enHotfix).toContain('Immediately use the Skill tool to load the `beacon-design` skill');
+      expect(enHotfix).toContain(
+        'Immediately use the Skill tool to load the `beacon-design` skill',
+      );
       expect(enTweak).toContain('Immediately use the Skill tool to load the `beacon-design` skill');
       expect(enVerify).toContain(
         'After user selects B, run `"$BEACON_BASH" "$BEACON_STATE" transition <change-name> verify-fail`, then invoke `/beacon-build`',
@@ -1134,7 +1140,9 @@ describe('skills', () => {
       expect(zhSkills['beacon-build']).toContain(
         '计划文件和执行反馈必须使用触发本次工作流的用户请求语言',
       );
-      expect(zhSkills['beacon-build']).toContain('ARGUMENTS 必须包含与 Step 1 相同的 Language 约束');
+      expect(zhSkills['beacon-build']).toContain(
+        'ARGUMENTS 必须包含与 Step 1 相同的 Language 约束',
+      );
       expect(zhSkills['beacon-verify']).toContain(
         '验证报告和分支处理说明必须使用触发本次工作流的用户请求语言',
       );
@@ -1201,7 +1209,9 @@ describe('skills', () => {
       expect(zhBuild).toContain(
         '使用 Skill 工具加载 Superpowers `subagent-driven-development` 技能',
       );
-      expect(zhBuild).toContain('读取 `beacon/reference/subagent-dispatch.md` 获取 Beacon 专属扩展');
+      expect(zhBuild).toContain(
+        '读取 `beacon/reference/subagent-dispatch.md` 获取 Beacon 专属扩展',
+      );
       expect(zhBuild).not.toContain('#### Subagent 调度协议');
       expect(zhDispatch).toContain('发生冲突时，以本文档中更具体的 Beacon 约束为准');
       expect(zhDispatch).toContain('不得把多个 task 打包给同一个 agent');
@@ -1245,7 +1255,9 @@ describe('skills', () => {
       expect(zhRecovery).toContain('重新阅读 `beacon/reference/subagent-dispatch.md`');
       expect(zhRecovery).toContain('读取 `openspec/changes/<name>/.beacon/subagent-progress.md`');
       expect(zhGuard).toContain('重新加载 Superpowers `subagent-driven-development` 技能');
-      expect(zhGuard).toContain('读取 `beacon/reference/subagent-dispatch.md` 获取 Beacon 专属扩展');
+      expect(zhGuard).toContain(
+        '读取 `beacon/reference/subagent-dispatch.md` 获取 Beacon 专属扩展',
+      );
       expect(zhGuard).toContain('读取 `openspec/changes/<name>/.beacon/subagent-progress.md`');
     });
 
@@ -1367,19 +1379,22 @@ describe('skills', () => {
   });
 
   describe('Repository authoring guidance', () => {
-    it('documents consistent skill invocation wording in CLAUDE.md', async () => {
+    it('documents consistent skill invocation wording in AGENTS.md and keeps CLAUDE.md as an alias', async () => {
+      const agents = await fs.readFile(path.resolve('AGENTS.md'), 'utf-8');
       const claude = await fs.readFile(path.resolve('CLAUDE.md'), 'utf-8');
 
-      expect(claude).toContain('## Skill 触发表述规范');
-      expect(claude).toContain(
+      expect(agents).toContain('## Skill 触发表述规范');
+      expect(agents).toContain(
         '中文统一使用：`**立即执行：** 使用 Skill 工具加载 <skill-name> 技能。禁止跳过此步骤。`',
       );
-      expect(claude).toContain(
+      expect(agents).toContain(
         '英文统一使用：`**Immediately execute:** Use the Skill tool to load the <skill-name> skill. Skipping this step is prohibited.`',
       );
-      expect(claude).toContain(
+      expect(agents).toContain(
         '后续输入、上下文或执行要求写在“技能加载后 / After the skill loads”段落',
       );
+      expect(claude).toContain('[AGENTS.md](AGENTS.md)');
+      expect(claude).toContain('不要在本文件重复维护同一套规则');
     });
   });
 
