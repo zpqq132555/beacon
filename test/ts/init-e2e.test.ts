@@ -180,7 +180,7 @@ describe('beacon init E2E', () => {
     expect(claude?.beacon).toBe('installed');
   }, 20_000);
 
-  it('installs all platforms from clean directory with --yes', async () => {
+  it('installs all first-batch private platforms from clean directory with --yes', async () => {
     mockExternalSuccess();
 
     const fakeHome = path.join(tmpDir, 'fake-home');
@@ -191,62 +191,26 @@ describe('beacon init E2E', () => {
       const { initCommand } = await import('../../src/commands/init.js');
       const result = await captureJsonOutput(() => initCommand(tmpDir, { yes: true, json: true }));
 
-      expect((result.results as unknown[]).length).toBeGreaterThanOrEqual(29);
+      expect(result.selectedPlatforms).toEqual(['claude', 'cursor', 'codex', 'trae']);
+      expect((result.results as unknown[]).length).toBe(4);
 
       const manifest = await readManifest();
-      const platformDirs = [
-        '.claude',
-        '.cursor',
-        '.codex',
-        '.opencode',
-        '.windsurf',
-        '.cline',
-        '.roo',
-        '.continue',
-        '.gemini',
-        '.amazonq',
-        '.qwen',
-        '.kilocode',
-        '.augment',
-        '.kiro',
-        '.kimi-code',
-        '.lingma',
-        '.junie',
-        '.codebuddy',
-        '.cospec',
-        '.crush',
-        '.factory',
-        '.iflow',
-        '.pi',
-        '.qoder',
-        '.agents',
-        '.bob',
-        '.forge',
-        '.trae',
-        '.github',
-      ];
+      const platformDirs = ['.claude', '.cursor', '.codex', '.trae'];
       for (const platform of platformDirs) {
         for (const skillPath of manifest.skills) {
           const dest = path.join(tmpDir, platform, 'skills', skillPath);
           await expect(fs.access(dest)).resolves.toBeUndefined();
         }
       }
-
-      await expect(
-        fs.access(path.join(tmpDir, '.opencode', 'commands', 'beacon-open.md')),
-      ).resolves.toBeUndefined();
-      await expect(
-        fs.access(path.join(tmpDir, '.pi', 'extensions', 'beacon-commands.ts')),
-      ).resolves.toBeUndefined();
     } finally {
       homedirSpy.mockRestore();
     }
   }, 20_000);
 
-  it('installs Antigravity Beacon skills to the Gemini global skills directory', async () => {
+  it('installs Trae global Beacon skills to the user Trae skills directory', async () => {
     mockExternalSuccess();
 
-    await fs.mkdir(path.join(tmpDir, '.agents'), { recursive: true });
+    await fs.mkdir(path.join(tmpDir, '.trae'), { recursive: true });
     const fakeHome = path.join(tmpDir, 'fake-home');
     await fs.mkdir(fakeHome, { recursive: true });
 
@@ -257,129 +221,16 @@ describe('beacon init E2E', () => {
       initCommand(tmpDir, { yes: true, scope: 'global', json: true }),
     );
 
-    expect(result.selectedPlatforms).toEqual(['antigravity']);
+    expect(result.selectedPlatforms).toEqual(['trae']);
 
     const manifest = await readManifest();
     for (const skillPath of manifest.skills) {
-      const dest = path.join(fakeHome, '.gemini', 'antigravity', 'skills', skillPath);
-      await expect(fs.access(dest)).resolves.toBeUndefined();
-    }
-  }, 20_000);
-
-  it('installs OpenCode global Beacon skills and commands to the OpenCode config directory', async () => {
-    mockExternalSuccess();
-
-    await fs.mkdir(path.join(tmpDir, '.opencode'), { recursive: true });
-    const fakeHome = path.join(tmpDir, 'fake-home');
-    await fs.mkdir(fakeHome, { recursive: true });
-
-    vi.spyOn(os, 'homedir').mockReturnValue(fakeHome);
-
-    const { initCommand } = await import('../../src/commands/init.js');
-    const result = await captureJsonOutput(() =>
-      initCommand(tmpDir, { yes: true, scope: 'global', json: true }),
-    );
-
-    expect(result.selectedPlatforms).toEqual(['opencode']);
-
-    const manifest = await readManifest();
-    for (const skillPath of manifest.skills) {
-      const dest = path.join(fakeHome, '.config', 'opencode', 'skills', skillPath);
+      const dest = path.join(fakeHome, '.trae', 'skills', skillPath);
       await expect(fs.access(dest)).resolves.toBeUndefined();
     }
 
     await expect(
-      fs.access(path.join(fakeHome, '.config', 'opencode', 'commands', 'beacon.md')),
-    ).resolves.toBeUndefined();
-    await expect(
-      fs.access(path.join(fakeHome, '.config', 'opencode', 'commands', 'beacon-open.md')),
-    ).resolves.toBeUndefined();
-    await expect(
-      fs.access(path.join(fakeHome, '.opencode', 'skills', 'beacon', 'SKILL.md')),
-    ).rejects.toThrow();
-  }, 20_000);
-
-  it('installs Pi global skills and commands to the Pi agent directory', async () => {
-    mockExternalSuccess();
-
-    await fs.mkdir(path.join(tmpDir, '.pi'), { recursive: true });
-    const fakeHome = path.join(tmpDir, 'fake-home');
-    await fs.mkdir(fakeHome, { recursive: true });
-
-    vi.spyOn(os, 'homedir').mockReturnValue(fakeHome);
-
-    const { initCommand } = await import('../../src/commands/init.js');
-    const result = await captureJsonOutput(() =>
-      initCommand(tmpDir, { yes: true, scope: 'global', json: true }),
-    );
-
-    expect(result.selectedPlatforms).toEqual(['pi']);
-
-    await expect(
-      fs.access(path.join(fakeHome, '.pi', 'agent', 'skills', 'beacon', 'SKILL.md')),
-    ).resolves.toBeUndefined();
-    await expect(
-      fs.access(path.join(fakeHome, '.pi', 'agent', 'extensions', 'beacon-commands.ts')),
-    ).resolves.toBeUndefined();
-    await expect(
-      fs.readFile(path.join(fakeHome, '.pi', 'agent', 'settings.json'), 'utf-8'),
-    ).resolves.toContain('"enableSkillCommands": true');
-    await expect(
-      fs.access(path.join(fakeHome, '.pi', 'skills', 'beacon', 'SKILL.md')),
-    ).rejects.toThrow();
-  }, 20_000);
-
-  it('installs Lingma global Beacon skills to the user Lingma skills directory', async () => {
-    mockExternalSuccess();
-
-    await fs.mkdir(path.join(tmpDir, '.lingma'), { recursive: true });
-    const fakeHome = path.join(tmpDir, 'fake-home');
-    await fs.mkdir(fakeHome, { recursive: true });
-
-    vi.spyOn(os, 'homedir').mockReturnValue(fakeHome);
-
-    const { initCommand } = await import('../../src/commands/init.js');
-    const result = await captureJsonOutput(() =>
-      initCommand(tmpDir, { yes: true, scope: 'global', json: true }),
-    );
-
-    expect(result.selectedPlatforms).toEqual(['lingma']);
-
-    const manifest = await readManifest();
-    for (const skillPath of manifest.skills) {
-      const dest = path.join(fakeHome, '.lingma', 'skills', skillPath);
-      await expect(fs.access(dest)).resolves.toBeUndefined();
-    }
-
-    await expect(
-      fs.access(path.join(tmpDir, '.lingma', 'skills', 'beacon', 'SKILL.md')),
-    ).rejects.toThrow();
-  }, 20_000);
-
-  it('installs Kimi Code global Beacon skills to the user Kimi Code skills directory', async () => {
-    mockExternalSuccess();
-
-    await fs.mkdir(path.join(tmpDir, '.kimi-code'), { recursive: true });
-    const fakeHome = path.join(tmpDir, 'fake-home');
-    await fs.mkdir(fakeHome, { recursive: true });
-
-    vi.spyOn(os, 'homedir').mockReturnValue(fakeHome);
-
-    const { initCommand } = await import('../../src/commands/init.js');
-    const result = await captureJsonOutput(() =>
-      initCommand(tmpDir, { yes: true, scope: 'global', json: true }),
-    );
-
-    expect(result.selectedPlatforms).toEqual(['kimicode']);
-
-    const manifest = await readManifest();
-    for (const skillPath of manifest.skills) {
-      const dest = path.join(fakeHome, '.kimi-code', 'skills', skillPath);
-      await expect(fs.access(dest)).resolves.toBeUndefined();
-    }
-
-    await expect(
-      fs.access(path.join(tmpDir, '.kimi-code', 'skills', 'beacon', 'SKILL.md')),
+      fs.access(path.join(tmpDir, '.trae', 'skills', 'beacon', 'SKILL.md')),
     ).rejects.toThrow();
   }, 20_000);
 });

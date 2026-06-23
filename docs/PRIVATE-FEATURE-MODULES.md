@@ -47,12 +47,12 @@
 
 | 功能项 | 具体作用 | 主要位置 | 私有化状态 |
 | --- | --- | --- | --- |
-| M04-F01 平台注册表 | 定义支持的 AI 编码平台及目录 | `src/core/platforms.ts` | 未定制 |
+| M04-F01 平台注册表 | 定义支持的 AI 编码平台及目录 | `src/core/platforms.ts` | 已定制 |
 | M04-F02 项目级安装路径 | 将 skills 安装到当前项目目录 | `src/core/platforms.ts`, `src/core/skills.ts` | 部分定制 |
 | M04-F03 全局安装路径 | 将 skills 安装到用户全局目录 | `src/core/platforms.ts`, `src/core/skills.ts` | 部分定制 |
-| M04-F04 平台自动检测 | 根据目录和配置推断已有平台 | `src/core/detect.ts` | 部分定制 |
-| M04-F05 OpenSpec tool 映射 | 将 Beacon 平台映射到 OpenSpec tool id | `src/core/platforms.ts`, `src/core/openspec.ts` | 未定制 |
-| M04-F06 特殊平台适配 | 处理 OpenCode、Pi、Lingma 等非通用安装逻辑 | `src/core/skills.ts`, `src/core/superpowers.ts` | 未定制 |
+| M04-F04 平台自动检测 | 根据目录和配置推断已有平台 | `src/core/detect.ts` | 已定制 |
+| M04-F05 OpenSpec tool 映射 | 将 Beacon 平台映射到 OpenSpec tool id | `src/core/platforms.ts`, `src/core/openspec.ts` | 已定制 |
+| M04-F06 特殊平台适配 | 处理 OpenCode、Pi、Lingma 等非通用安装逻辑 | `src/core/skills.ts`, `src/core/superpowers.ts` | 已定制 |
 
 ## M05. Skill 资产分发
 
@@ -62,8 +62,8 @@
 | M05-F02 英文 skills | 提供英文工作流说明和协议 | `assets/skills/` | 部分定制 |
 | M05-F03 中文 skills | 提供中文工作流说明和协议 | `assets/skills-zh/` | 已定制 |
 | M05-F04 Skill 复制 | 将 manifest 中的 skills 复制到目标平台 | `src/core/skills.ts` | 已定制 |
-| M05-F05 OpenCode 命令生成 | 为 OpenCode 生成可调用命令文件 | `src/core/skills.ts` | 未定制 |
-| M05-F06 Pi extension 生成 | 为 Pi 生成 slash command extension | `src/core/skills.ts` | 未定制 |
+| M05-F05 OpenCode 命令生成 | 为 OpenCode 生成可调用命令文件 | `src/core/skills.ts` | 已定制 |
+| M05-F06 Pi extension 生成 | 为 Pi 生成 slash command extension | `src/core/skills.ts` | 已定制 |
 | M05-F07 工作目录创建 | 创建 `docs/superpowers/specs` 和 `plans` | `src/core/skills.ts` | 部分定制 |
 
 ## M06. 主工作流入口
@@ -184,8 +184,8 @@
 | M14-F03 构建命令检测 | 运行配置的或自动推断的 build 命令 | `beacon-guard.sh` | 部分定制 |
 | M14-F04 验证命令检测 | archive 前运行配置的 verify 命令 | `beacon-guard.sh` | 部分定制 |
 | M14-F05 阶段写入 hook | open/design/archive 阶段拦截源码写入 | `beacon-hook-guard.sh` | 已定制 |
-| M14-F06 Hook 配置写入 | 安装平台对应的 hook 配置 | `src/core/skills.ts` | 部分定制 |
-| M14-F07 Hook 配置移除 | 卸载时保留用户 hook，仅移除 Beacon 管理项 | `src/core/uninstall.ts` | 部分定制 |
+| M14-F06 Hook 配置写入 | 安装平台对应的 hook 配置 | `src/core/skills.ts` | 已定制 |
+| M14-F07 Hook 配置移除 | 卸载时保留用户 hook，仅移除 Beacon 管理项 | `src/core/uninstall.ts` | 已定制 |
 | M14-F08 阶段感知 rule | 给平台注入防漂移规则 | `assets/skills/beacon/rules/` | 已定制 |
 
 ## M15. Handoff、压缩与恢复
@@ -229,8 +229,8 @@
 
 | 功能项 | 具体作用 | 主要位置 | 私有化状态 |
 | --- | --- | --- | --- |
-| M18-F01 英文 README | 说明安装、命令、平台和工作流 | `README.md` | 部分定制 |
-| M18-F02 中文 README | 说明安装、命令、平台和工作流 | `README-zh.md` | 部分定制 |
+| M18-F01 英文 README | 说明安装、命令、平台和工作流 | `README.md` | 已定制 |
+| M18-F02 中文 README | 说明安装、命令、平台和工作流 | `README-zh.md` | 已定制 |
 | M18-F03 NEWS | 记录版本亮点 | `NEWS.md` | 部分定制 |
 | M18-F04 CHANGELOG | 记录版本变更 | `CHANGELOG.md` | 部分定制 |
 | M18-F05 Auto transition 文档 | 解释自动衔接机制 | `docs/AUTO-TRANSITION.md` | 部分定制 |
@@ -244,13 +244,13 @@
 | 功能项 | 具体作用 | 主要位置 | 私有化状态 |
 | --- | --- | --- | --- |
 | M19-F01 Shell contract tests | 覆盖状态机、guard、handoff、archive、hook | `test/ts/beacon-scripts.test.ts`, `test/shell/` | 已定制 |
-| M19-F02 CLI command tests | 覆盖 init/status/doctor/update/uninstall | `test/ts/*command*.test.ts`, `test/ts/status.test.ts` | 部分定制 |
+| M19-F02 CLI command tests | 覆盖 init/status/doctor/update/uninstall | `test/ts/*command*.test.ts`, `test/ts/status.test.ts` | 已定制 |
 | M19-F03 Skill prose tests | 检查 skill 文案合同和双语言一致性 | `test/ts/skills.test.ts` | 已定制 |
-| M19-F04 Platform install tests | 覆盖平台安装和特殊适配 | `test/ts/init-e2e.test.ts`, `test/ts/init.test.ts` | 部分定制 |
-| M19-F05 External pack tests | 覆盖 OpenSpec、Superpowers、CodeGraph 集成 | `test/ts/openspec.test.ts`, `test/ts/superpowers.test.ts`, `test/ts/codegraph.test.ts` | 部分定制 |
+| M19-F04 Platform install tests | 覆盖平台安装和特殊适配 | `test/ts/init-e2e.test.ts`, `test/ts/init.test.ts` | 已定制 |
+| M19-F05 External pack tests | 覆盖 OpenSpec、Superpowers、CodeGraph 集成 | `test/ts/openspec.test.ts`, `test/ts/superpowers.test.ts`, `test/ts/codegraph.test.ts` | 已定制 |
 | M19-F06 Filesystem tests | 覆盖安全文件操作 | `test/ts/file-system.test.ts`, `test/ts/uninstall.test.ts` | 未定制 |
 | M19-F07 Version tests | 覆盖版本比较和更新提示 | `test/ts/version.test.ts` | 未定制 |
-| M19-F08 README/CI tests | 覆盖文档和 GitHub workflow 约束 | `test/ts/readme.test.ts`, `test/ts/ci-workflows.test.ts` | 部分定制 |
+| M19-F08 README/CI tests | 覆盖文档和 GitHub workflow 约束 | `test/ts/readme.test.ts`, `test/ts/ci-workflows.test.ts` | 已定制 |
 
 ## M20. CI、格式化与发布
 

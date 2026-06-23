@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+﻿import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { promises as fs } from 'fs';
 import path from 'path';
 import os from 'os';
@@ -44,21 +44,26 @@ describe('detect', () => {
   });
 
   describe('platform global skills directories', () => {
-    it('declares Kimi Code global skills under the user .kimi-code directory', () => {
-      const kimicode = PLATFORMS.find((platform) => platform.id === 'kimicode');
-
-      expect(kimicode).toBeDefined();
-      expect(kimicode?.skillsDir).toBe('.kimi-code');
-      expect(kimicode?.globalSkillsDir).toBe('.kimi-code');
-      expect(kimicode?.openspecToolId).toBe('kimi');
+    it('declares only the first-batch private platforms', () => {
+      expect(PLATFORMS.map((platform) => platform.id)).toEqual([
+        'claude',
+        'cursor',
+        'codex',
+        'trae',
+      ]);
     });
 
-    it('declares Lingma global skills under the user .lingma directory', () => {
-      const lingma = PLATFORMS.find((platform) => platform.id === 'lingma');
+    it('keeps Trae rules-capable and hook-unsupported', () => {
+      const trae = PLATFORMS.find((platform) => platform.id === 'trae');
 
-      expect(lingma).toBeDefined();
-      expect(lingma?.skillsDir).toBe('.lingma');
-      expect(lingma?.globalSkillsDir).toBe('.lingma');
+      expect(trae).toMatchObject({
+        skillsDir: '.trae',
+        globalSkillsDir: '.trae',
+        openspecToolId: 'trae',
+        rulesDir: 'rules',
+        rulesFormat: 'md',
+      });
+      expect(trae?.supportsHooks).toBeUndefined();
     });
   });
 
@@ -69,27 +74,14 @@ describe('detect', () => {
       expect(detected.has('claude')).toBe(true);
     });
 
-    it('detects github-copilot when copilot-instructions.md exists', async () => {
-      await fs.mkdir(path.join(tmpDir, '.github'), { recursive: true });
-      await fs.writeFile(path.join(tmpDir, '.github', 'copilot-instructions.md'), '');
-      const detected = await detectPlatforms(tmpDir);
-      expect(detected.has('github-copilot')).toBe(true);
-    });
-
-    it('does not detect github-copilot when only .github dir exists', async () => {
-      await fs.mkdir(path.join(tmpDir, '.github'));
-      const detected = await detectPlatforms(tmpDir);
-      expect(detected.has('github-copilot')).toBe(false);
-    });
-
     it('detects multiple platforms', async () => {
       await fs.mkdir(path.join(tmpDir, '.claude'));
       await fs.mkdir(path.join(tmpDir, '.cursor'));
-      await fs.mkdir(path.join(tmpDir, '.kimi-code'));
+      await fs.mkdir(path.join(tmpDir, '.trae'));
       const detected = await detectPlatforms(tmpDir);
       expect(detected.has('claude')).toBe(true);
       expect(detected.has('cursor')).toBe(true);
-      expect(detected.has('kimicode')).toBe(true);
+      expect(detected.has('trae')).toBe(true);
       expect(detected.size).toBeGreaterThanOrEqual(3);
     });
 
@@ -98,13 +90,13 @@ describe('detect', () => {
       expect(detected.size).toBe(0);
     });
 
-    it('detects Antigravity from the project skills directory', async () => {
-      const antigravity = PLATFORMS.find((platform) => platform.id === 'antigravity');
-      expect(antigravity?.skillsDir).toBe('.agents');
-
+    it('ignores former public platform directories', async () => {
       await fs.mkdir(path.join(tmpDir, '.agents'));
+      await fs.mkdir(path.join(tmpDir, '.github'), { recursive: true });
+      await fs.writeFile(path.join(tmpDir, '.github', 'copilot-instructions.md'), '');
       const detected = await detectPlatforms(tmpDir);
-      expect(detected.has('antigravity')).toBe(true);
+      expect(detected.has('antigravity')).toBe(false);
+      expect(detected.has('github-copilot')).toBe(false);
     });
   });
 
@@ -129,43 +121,6 @@ describe('detect', () => {
     it('detects beacon skills', async () => {
       await fs.mkdir(path.join(tmpDir, '.claude', 'skills', 'beacon'), { recursive: true });
       expect(await hasSkills(tmpDir, mockPlatform, 'beacon')).toBe(true);
-    });
-
-    it('treats OpenCode Beacon skills without slash commands as incomplete', async () => {
-      const opencode = PLATFORMS.find((platform) => platform.id === 'opencode');
-      expect(opencode).toBeDefined();
-      if (!opencode) return;
-
-      await fs.mkdir(path.join(tmpDir, '.opencode', 'skills', 'beacon'), { recursive: true });
-      await fs.mkdir(path.join(tmpDir, '.opencode', 'skills', 'beacon-open'), { recursive: true });
-
-      expect(await hasSkills(tmpDir, opencode, 'beacon')).toBe(false);
-    });
-
-    it('detects OpenCode Beacon skills when matching slash commands exist', async () => {
-      const opencode = PLATFORMS.find((platform) => platform.id === 'opencode');
-      expect(opencode).toBeDefined();
-      if (!opencode) return;
-
-      await fs.mkdir(path.join(tmpDir, '.opencode', 'skills', 'beacon'), { recursive: true });
-      await fs.mkdir(path.join(tmpDir, '.opencode', 'skills', 'beacon-open'), { recursive: true });
-      await fs.mkdir(path.join(tmpDir, '.opencode', 'commands'), { recursive: true });
-      await fs.writeFile(path.join(tmpDir, '.opencode', 'commands', 'beacon.md'), '');
-      await fs.writeFile(path.join(tmpDir, '.opencode', 'commands', 'beacon-open.md'), '');
-
-      expect(await hasSkills(tmpDir, opencode, 'beacon')).toBe(true);
-    });
-
-    it('detects Antigravity global skills in the Gemini Antigravity directory', async () => {
-      const antigravity = PLATFORMS.find((platform) => platform.id === 'antigravity');
-      expect(antigravity).toBeDefined();
-      if (!antigravity) return;
-
-      await fs.mkdir(path.join(tmpDir, '.gemini', 'antigravity', 'skills', 'beacon'), {
-        recursive: true,
-      });
-
-      expect(await hasSkills(tmpDir, antigravity, 'beacon', [], 'global')).toBe(true);
     });
 
     it('returns false for missing skills', async () => {
@@ -444,32 +399,4 @@ describe('detect', () => {
     });
   });
 
-  describe('hasSkills for OpenCode plugin-installed superpowers', () => {
-    it('detects superpowers via OpenCode plugin when normal skills dir is empty', async () => {
-      const origEnv = process.env.OPENCODE_CONFIG_DIR;
-      const opencodeDir = path.join(tmpDir, '.config', 'opencode');
-      process.env.OPENCODE_CONFIG_DIR = opencodeDir;
-
-      const opencode = PLATFORMS.find((platform) => platform.id === 'opencode');
-      expect(opencode).toBeDefined();
-      if (!opencode) return;
-
-      // Create the plugin source directory with superpowers skills
-      const pluginSkillsDir = path.join(opencodeDir, 'superpowers', 'skills');
-      await fs.mkdir(pluginSkillsDir, { recursive: true });
-      await fs.mkdir(path.join(pluginSkillsDir, 'brainstorming'));
-      await fs.mkdir(path.join(pluginSkillsDir, 'using-superpowers'));
-
-      // Normal skills directory is empty — no skills there
-      await fs.mkdir(path.join(tmpDir, '.opencode', 'skills'), { recursive: true });
-
-      expect(await hasSkills(tmpDir, opencode, 'superpowers')).toBe(true);
-
-      if (origEnv !== undefined) {
-        process.env.OPENCODE_CONFIG_DIR = origEnv;
-      } else {
-        delete process.env.OPENCODE_CONFIG_DIR;
-      }
-    });
-  });
 });

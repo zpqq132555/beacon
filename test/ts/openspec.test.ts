@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+﻿import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { execFileSync } from 'child_process';
 import fs from 'fs';
 import os from 'os';
@@ -39,12 +39,12 @@ describe('openspec', () => {
   });
 
   describe('installOpenSpec', () => {
-    it('accepts the Kimi OpenSpec tool id from platform definitions', async () => {
+    it('accepts retained private OpenSpec tool ids from platform definitions', async () => {
       mockedExecFileSync.mockReturnValueOnce(Buffer.from('/usr/bin/openspec'));
       mockedExecFileSync.mockReturnValueOnce(Buffer.from('ok'));
 
       const { installOpenSpec } = await import('../../src/core/openspec.js');
-      const result = await installOpenSpec('/tmp/test', ['kimi'], 'project');
+      const result = await installOpenSpec('/tmp/test', ['claude', 'cursor', 'codex', 'trae'], 'project');
 
       expect(result).toBe('installed');
       const initCall = mockedExecFileSync.mock.calls.find(
@@ -56,10 +56,20 @@ describe('openspec', () => {
         'init',
         '/tmp/test',
         '--tools',
-        'kimi',
+        'claude,cursor,codex,trae',
         '--profile',
         'custom',
       ]);
+    });
+
+    it('rejects former public OpenSpec tool ids', async () => {
+      mockedExecFileSync.mockReturnValueOnce(Buffer.from('/usr/bin/openspec'));
+      mockedExecFileSync.mockReturnValueOnce(Buffer.from('ok'));
+
+      const { installOpenSpec } = await import('../../src/core/openspec.js');
+      await expect(installOpenSpec('/tmp/test', ['kimi'], 'project')).rejects.toThrow(
+        'Unknown tool IDs: kimi',
+      );
     });
 
     it('installs openspec when CLI is available', async () => {
@@ -471,57 +481,14 @@ describe('openspec', () => {
       expect(mockedExecFileSync).toHaveBeenCalledTimes(4);
     });
 
-    it('merges with existing content in ~/.config/opencode/ without overwrite errors', async () => {
-      const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'beacon-migrate-test-'));
-      const fakeHome = path.join(tmpDir, 'home');
-      const wrongSkillsDir = path.join(fakeHome, '.opencode', 'skills');
-      const correctSkillsDir = path.join(fakeHome, '.config', 'opencode', 'skills');
 
-      fs.mkdirSync(path.join(correctSkillsDir, 'beacon'), { recursive: true });
-      fs.writeFileSync(path.join(correctSkillsDir, 'beacon', 'SKILL.md'), 'beacon skill');
-
-      fs.mkdirSync(path.join(wrongSkillsDir, 'openspec-propose'), { recursive: true });
-      fs.writeFileSync(path.join(wrongSkillsDir, 'openspec-propose', 'SKILL.md'), 'propose skill');
-
-      const { migrateOpenCodeOpenSpecPaths } = await import('../../src/core/openspec.js');
-      migrateOpenCodeOpenSpecPaths(fakeHome);
-
-      expect(fs.readFileSync(path.join(correctSkillsDir, 'beacon', 'SKILL.md'), 'utf-8')).toBe(
-        'beacon skill',
-      );
-      expect(
-        fs.readFileSync(path.join(correctSkillsDir, 'openspec-propose', 'SKILL.md'), 'utf-8'),
-      ).toBe('propose skill');
-
-      fs.rmSync(tmpDir, { recursive: true, force: true });
-    });
-
-    it('handles errors gracefully when source directory is a file instead of a directory', async () => {
-      const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'beacon-migrate-test-'));
-      const fakeHome = path.join(tmpDir, 'home');
-
-      fs.mkdirSync(path.join(fakeHome, '.opencode'), { recursive: true });
-      fs.writeFileSync(path.join(fakeHome, '.opencode', 'skills'), 'this is a file, not a dir');
-
-      const { migrateOpenCodeOpenSpecPaths } = await import('../../src/core/openspec.js');
-      expect(() => migrateOpenCodeOpenSpecPaths(fakeHome)).not.toThrow();
-
-      fs.rmSync(tmpDir, { recursive: true, force: true });
-    });
-
-    it('integrates with installOpenSpec for global scope with opencode tool', async () => {
+    it('rejects OpenCode during global OpenSpec install because it is outside private scope', async () => {
       mockedExecFileSync.mockReturnValue(Buffer.from('/usr/bin/openspec'));
-      mockedExecFileSync.mockReturnValue(Buffer.from('ok'));
-      const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'beacon-install-test-'));
-      const homedirSpy = vi.spyOn(os, 'homedir').mockReturnValue(tmpDir);
 
       const { installOpenSpec } = await import('../../src/core/openspec.js');
-      const result = await installOpenSpec('/tmp/test', ['opencode', 'claude'], 'global');
-
-      expect(result).toBe('installed');
-
-      homedirSpy.mockRestore();
-      fs.rmSync(tmpDir, { recursive: true, force: true });
+      await expect(installOpenSpec('/tmp/test', ['opencode', 'claude'], 'global')).rejects.toThrow(
+        'Unknown tool IDs: opencode',
+      );
     });
   });
 });

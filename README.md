@@ -98,9 +98,8 @@ practice. The Beacon project can serve as a reference:
   phase exits. Scripts such as `beacon-guard.sh`, `beacon-yaml-validate.sh`, and `beacon-state.sh` check tasks, state
   fields, verification evidence, and archive conditions before allowing the workflow to advance.
 
-- **How to distribute and install Skills across platforms** — Beacon supports multiple AI coding platforms,
-  project/global installation, Chinese/English Skill choices, and platform-specific directory differences such as
-  Antigravity using different project-level and global paths. It can be a reference for CLI installers and Skill package
+- **How to distribute and install Skills across platforms** — Beacon supports first-batch private AI coding platforms,
+  project/global installation, Chinese/English Skill choices, and platform-specific directory metadata. It can be a reference for CLI installers and Skill package
   structure.
 
 - **How to turn shell scripts into Agent workflow infrastructure** — Beacon's scripts need to work across macOS, Linux,
@@ -141,9 +140,9 @@ beacon init
 > Superpowers v6.0.0+ is recommended — about 2× faster and ~50% fewer tokens than older versions.
 > To upgrade Beacon itself later: `beacon update` or `npm install -g beacon@latest`.
 
-## Support for OpenClaw and Hermes, and other AI platforms
+## Manual Skills CLI Installation
 
-For platforms that use the generic `skills` CLI directly, you can install the Beacon skill package with:
+Outside the first-batch private `beacon init` platforms, tools that use the generic `skills` CLI directly can still install the Beacon skill package manually:
 
 ```bash
 npx skills add rpamis/beacon
@@ -241,33 +240,14 @@ beacon uninstall --scope project  # Only remove project-level installations
 
 ## Supported Platforms
 
-`beacon init` supports 29 AI coding platforms:
+`beacon init` supports four first-batch private AI coding platforms:
 
-<details>
-<summary>View full platform list</summary>
-
-| Platform           | Skills Dir   | Platform   | Skills Dir    |
-|--------------------|--------------|------------|---------------|
-| Claude Code        | `.claude/`   | Cursor     | `.cursor/`    |
-| Codex              | `.codex/`    | OpenCode   | `.opencode/`  |
-| Windsurf           | `.windsurf/` | Cline      | `.cline/`     |
-| RooCode            | `.roo/`      | Continue   | `.continue/`  |
-| GitHub Copilot     | `.github/`   | Gemini CLI | `.gemini/`    |
-| Amazon Q Developer | `.amazonq/`  | Qwen Code  | `.qwen/`      |
-| Kilo Code          | `.kilocode/` | Auggie     | `.augment/`   |
-| Kimi Code          | `.kimi-code/`| Kiro       | `.kiro/`      |
-| Lingma             | `.lingma/`   | Junie      | `.junie/`     |
-| CodeBuddy          | `.codebuddy/`| CoStrict   | `.cospec/`    |
-| Crush              | `.crush/`    | Factory Droid | `.factory/` |
-| iFlow              | `.iflow/`    | Pi         | `.pi/`        |
-| Qoder              | `.qoder/`    | Antigravity | `.agents/`   |
-| Bob Shell          | `.bob/`      | ForgeCode  | `.forge/`     |
-| Trae               | `.trae/`     |            |               |
-
-</details>
-
-Some platforms use different project and global directories. For example, OpenCode global installs use
-`.config/opencode`, Lingma global installs use `.lingma`, and Antigravity global installs use `.gemini/antigravity`.
+| Platform    | Skills Dir |
+|-------------|------------|
+| Claude Code | `.claude/` |
+| Cursor      | `.cursor/` |
+| Codex       | `.codex/`  |
+| Trae        | `.trae/`   |
 
 ## Skills
 

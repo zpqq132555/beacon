@@ -18,10 +18,8 @@ describe('CI workflows', () => {
     expect(workflow).toContain('export USERPROFILE="$RUNNER_TEMP/beacon-e2e-global"');
     expect(workflow).toContain('check_file "$PROJ/$sd/beacon/SKILL.md"');
     expect(workflow).toContain('check_file "$HOME_DIR/$sd/beacon/SKILL.md"');
-    expect(projectVerify).toContain('.opencode/skills');
-    expect(projectVerify).not.toContain('.config/opencode/skills');
-    expect(globalVerify).toContain('.config/opencode/skills');
-    expect(globalVerify).not.toContain('.opencode/skills');
+    expect(projectVerify).not.toContain('.opencode/skills');
+    expect(globalVerify).not.toContain('.config/opencode/skills');
     expect(workflow).toContain('function extractJsonPayload(raw) {');
     expect(workflow).toContain("throw new Error('No JSON payload found in init output');");
     expect(workflow).toContain('const data = JSON.parse(extractJsonPayload(raw));');
@@ -35,8 +33,8 @@ describe('CI workflows', () => {
     expect(workflow).not.toContain('check_glob "$HOME_DIR/$sd/openspec-*"');
     expect(workflow).not.toContain('check_dir "$HOME_DIR/$sd/brainstorming"');
     expect(workflow).not.toContain('check_dir "$HOME_DIR/$sd/using-superpowers"');
-    expect(workflow).toContain('All 29 platforms project Beacon skills: OK');
-    expect(workflow).toContain('All 29 platforms global Beacon skills: OK');
+    expect(workflow).toContain('All 4 private platforms project Beacon skills: OK');
+    expect(workflow).toContain('All 4 private platforms global Beacon skills: OK');
   });
 
   it('defines PR title linting with Beacon-specific semantic scopes', async () => {
