@@ -15,4 +15,4 @@
 
 - [x] 3.1 将版本升级到 `0.4.2`，并在 `CHANGELOG.md` 顶部记录用户可见行为变更
 - [x] 3.2 运行 OpenSpec validate、format、lint、build 和相关 vitest 验证
-- [ ] 3.3 提交 worktree 分支，合并回 `master` 后复查 `master...upstream/master` 状态
+- [x] 3.3 提交 worktree 分支，合并回 `master` 后复查 `master...upstream/master` 状态
