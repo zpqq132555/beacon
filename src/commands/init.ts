@@ -18,6 +18,7 @@ import {
   resolveCodegraphCommand,
 } from '../core/codegraph.js';
 import { printVersionInfo } from '../core/version.js';
+import { buildBeaconLatestMetadataUrl, loadSupplyChainConfig } from '../core/supply-chain.js';
 import { t, type TranslationKey } from './i18n.js';
 import { platformSelectPrompt } from './platform-select-prompt.js';
 
@@ -292,10 +293,11 @@ function displaySummary(results: PlatformResult[], scope: InstallScope, lang: st
 export async function initCommand(targetPath: string, options: InitOptions = {}): Promise<void> {
   const projectPath = path.resolve(targetPath);
   const log = options.json ? () => undefined : console.log;
+  const supplyChain = await loadSupplyChainConfig(projectPath);
 
   log(`\n${BEACON_BANNER}\n`);
   if (!options.json) {
-    await printVersionInfo(log);
+    await printVersionInfo(log, buildBeaconLatestMetadataUrl(supplyChain));
   }
 
   const language = await selectLanguage(options);

@@ -7,9 +7,9 @@
 
 ## 2. Beacon 更新与版本检查
 
-- [ ] 2.1 将 `src/core/version.ts` 的 latest-version 查询改为使用供应链策略。
-- [ ] 2.2 将 `src/commands/update.ts` 的 npm update 参数改为使用供应链策略。
-- [ ] 2.3 更新版本检查和 update 命令测试，移除公开 npm registry 作为默认断言。
+- [x] 2.1 将 `src/core/version.ts` 的 latest-version 查询改为使用供应链策略。
+- [x] 2.2 将 `src/commands/update.ts` 的 npm update 参数改为使用供应链策略。
+- [x] 2.3 更新版本检查和 update 命令测试，移除公开 npm registry 作为默认断言。
 
 ## 3. 外部能力包安装来源
 

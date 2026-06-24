@@ -5,7 +5,6 @@ const require = createRequire(import.meta.url);
 const { version: CURRENT_VERSION } = require('../../package.json');
 
 const PACKAGE_NAME = 'beacon';
-const REGISTRY_URL = `https://registry.npmjs.org/${PACKAGE_NAME}/latest`;
 
 export interface VersionCheckResult {
   currentVersion: string;
@@ -51,12 +50,14 @@ export function getCurrentVersion(): string {
 }
 
 /**
- * Fetch the latest version from the npm registry.
- * Returns null if the registry is unreachable or the request fails.
+ * Fetch the latest version from the configured package metadata source.
+ * Returns null if no source is configured or the request fails.
  */
-export function getLatestVersion(): Promise<string | null> {
+export function getLatestVersion(metadataUrl: string | null): Promise<string | null> {
+  if (!metadataUrl) return Promise.resolve(null);
+
   return new Promise((resolve) => {
-    const request = https.get(REGISTRY_URL, { timeout: 5000 }, (res) => {
+    const request = https.get(metadataUrl, { timeout: 5000 }, (res) => {
       if (res.statusCode !== 200) {
         res.resume();
         resolve(null);
@@ -88,11 +89,11 @@ export function getLatestVersion(): Promise<string | null> {
 
 /**
  * Check for available updates.
- * Silently returns a "not checked" result if the registry is unreachable.
+ * Silently returns a "not checked" result if the metadata source is missing or unreachable.
  */
-export async function checkForUpdate(): Promise<VersionCheckResult> {
+export async function checkForUpdate(metadataUrl: string | null): Promise<VersionCheckResult> {
   const currentVersion = getCurrentVersion();
-  const latestVersion = await getLatestVersion();
+  const latestVersion = await getLatestVersion(metadataUrl);
 
   if (latestVersion === null) {
     return {
@@ -117,8 +118,9 @@ export async function checkForUpdate(): Promise<VersionCheckResult> {
  */
 export async function printVersionInfo(
   log: (message: string) => void,
+  metadataUrl: string | null,
 ): Promise<VersionCheckResult> {
-  const result = await checkForUpdate();
+  const result = await checkForUpdate(metadataUrl);
 
   log(`  Beacon v${result.currentVersion}`);
 

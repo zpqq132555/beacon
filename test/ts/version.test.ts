@@ -32,6 +32,29 @@ function mockRegistryResponse(body: Record<string, unknown> | null): void {
   });
 }
 
+function mockRegistryResponseAndCaptureUrls(body: Record<string, unknown> | null): string[] {
+  const urls: string[] = [];
+  vi.spyOn(https, 'get').mockImplementation((url: unknown, _opts: unknown, callback?: unknown) => {
+    urls.push(String(url));
+    const cb = typeof _opts === 'function' ? _opts : (callback as (res: unknown) => void);
+    const res = {
+      statusCode: body ? 200 : 500,
+      resume: vi.fn(),
+      on: (event: string, handler: (chunk?: string) => void) => {
+        if (event === 'data' && body) handler(JSON.stringify(body));
+        if (event === 'end') handler();
+      },
+    };
+    const req = {
+      on: vi.fn().mockReturnThis(),
+      destroy: vi.fn(),
+    };
+    setTimeout(() => cb(res), 0);
+    return req as unknown as ReturnType<typeof https.get>;
+  });
+  return urls;
+}
+
 function mockRegistryError(): void {
   vi.spyOn(https, 'get').mockImplementation(() => {
     const req = {
@@ -93,20 +116,21 @@ describe('checkForUpdate', () => {
   });
 
   it('returns correct shape when registry returns newer version', async () => {
-    mockRegistryResponse({ version: '99.99.99' });
+    const urls = mockRegistryResponseAndCaptureUrls({ version: '99.99.99' });
 
-    const result = await checkForUpdate();
+    const result = await checkForUpdate('https://npm.internal.example/beacon/latest');
     expect(result.checked).toBe(true);
     expect(result.hasUpdate).toBe(true);
     expect(result.latestVersion).toBe('99.99.99');
     expect(result.currentVersion).toBe(getCurrentVersion());
+    expect(urls).toEqual(['https://npm.internal.example/beacon/latest']);
   });
 
   it('returns hasUpdate false when already on latest', async () => {
     const currentVersion = getCurrentVersion();
     mockRegistryResponse({ version: currentVersion });
 
-    const result = await checkForUpdate();
+    const result = await checkForUpdate('https://npm.internal.example/beacon/latest');
     expect(result.checked).toBe(true);
     expect(result.hasUpdate).toBe(false);
     expect(result.latestVersion).toBe(currentVersion);
@@ -115,7 +139,7 @@ describe('checkForUpdate', () => {
   it('returns checked false when registry returns non-200', async () => {
     mockRegistryResponse(null);
 
-    const result = await checkForUpdate();
+    const result = await checkForUpdate('https://npm.internal.example/beacon/latest');
     expect(result.checked).toBe(false);
     expect(result.hasUpdate).toBe(false);
     expect(result.latestVersion).toBeNull();
@@ -124,10 +148,21 @@ describe('checkForUpdate', () => {
   it('returns checked false when network error occurs', async () => {
     mockRegistryError();
 
-    const result = await checkForUpdate();
+    const result = await checkForUpdate('https://npm.internal.example/beacon/latest');
     expect(result.checked).toBe(false);
     expect(result.hasUpdate).toBe(false);
     expect(result.latestVersion).toBeNull();
+  });
+
+  it('skips latest-version lookup when no private metadata URL is configured', async () => {
+    const get = vi.spyOn(https, 'get');
+
+    const result = await checkForUpdate(null);
+
+    expect(result.checked).toBe(false);
+    expect(result.hasUpdate).toBe(false);
+    expect(result.latestVersion).toBeNull();
+    expect(get).not.toHaveBeenCalled();
   });
 });
 
@@ -142,7 +177,7 @@ describe('printVersionInfo', () => {
     const logs: string[] = [];
     const log = (msg: string) => logs.push(msg);
 
-    await printVersionInfo(log);
+    await printVersionInfo(log, 'https://npm.internal.example/beacon/latest');
 
     expect(logs[0]).toMatch(/^  Beacon v\d+\.\d+\.\d+$/);
     expect(logs[1]).toContain('99.99.99');
@@ -155,7 +190,7 @@ describe('printVersionInfo', () => {
     const logs: string[] = [];
     const log = (msg: string) => logs.push(msg);
 
-    await printVersionInfo(log);
+    await printVersionInfo(log, 'https://npm.internal.example/beacon/latest');
 
     expect(logs[0]).toMatch(/^  Beacon v/);
     expect(logs[1]).toContain('latest version');
@@ -167,9 +202,21 @@ describe('printVersionInfo', () => {
     const logs: string[] = [];
     const log = (msg: string) => logs.push(msg);
 
-    await printVersionInfo(log);
+    await printVersionInfo(log, 'https://npm.internal.example/beacon/latest');
 
     expect(logs).toHaveLength(1);
     expect(logs[0]).toMatch(/^  Beacon v/);
+  });
+
+  it('prints only version when latest metadata URL is not configured', async () => {
+    const get = vi.spyOn(https, 'get');
+    const logs: string[] = [];
+    const log = (msg: string) => logs.push(msg);
+
+    await printVersionInfo(log, null);
+
+    expect(logs).toHaveLength(1);
+    expect(logs[0]).toMatch(/^  Beacon v/);
+    expect(get).not.toHaveBeenCalled();
   });
 });

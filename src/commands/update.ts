@@ -16,10 +16,15 @@ import { PLATFORMS, getPlatformSkillsDir, type Platform } from '../core/platform
 import { hasCodegraphProjectIndex, installCodegraph } from '../core/codegraph.js';
 import type { InstallScope } from '../core/types.js';
 import { printVersionInfo } from '../core/version.js';
+import {
+  buildBeaconLatestMetadataUrl,
+  buildRegistryNpmArgs,
+  loadSupplyChainConfig,
+  type SupplyChainConfig,
+} from '../core/supply-chain.js';
 import { t, type TranslationKey } from './i18n.js';
 
 const PACKAGE_NAME = 'beacon';
-const OFFICIAL_REGISTRY = 'https://registry.npmjs.org';
 
 interface UpdateOptions {
   json?: boolean;
@@ -159,14 +164,20 @@ async function detectBeaconPackageScope(
   return 'global';
 }
 
-function buildNpmUpdateArgs(scope: InstallScope): string[] {
-  return scope === 'global'
-    ? ['install', '-g', `${PACKAGE_NAME}@latest`, '--registry', OFFICIAL_REGISTRY]
-    : ['install', `${PACKAGE_NAME}@latest`, '--registry', OFFICIAL_REGISTRY];
+function buildNpmUpdateArgs(
+  scope: InstallScope,
+  beaconSource: Pick<SupplyChainConfig['beacon'], 'packageName' | 'registry'>,
+): string[] {
+  const packageSpec = `${beaconSource.packageName}@latest`;
+  const args = scope === 'global' ? ['install', '-g', packageSpec] : ['install', packageSpec];
+  return buildRegistryNpmArgs(args, beaconSource.registry);
 }
 
-function formatNpmUpdateCommand(scope: InstallScope): string {
-  return ['npm', ...buildNpmUpdateArgs(scope)].join(' ');
+function formatNpmUpdateCommand(
+  scope: InstallScope,
+  beaconSource: Pick<SupplyChainConfig['beacon'], 'packageName' | 'registry'>,
+): string {
+  return ['npm', ...buildNpmUpdateArgs(scope, beaconSource)].join(' ');
 }
 
 function formatSkillUpdateCommand(
@@ -185,10 +196,11 @@ function getNpmExecutable(): string {
 async function updateBeaconNpmPackage(
   scope: InstallScope,
   projectPath: string,
+  beaconSource: Pick<SupplyChainConfig['beacon'], 'packageName' | 'registry'>,
   log: (message: string) => void,
   jsonMode = false,
 ): Promise<boolean> {
-  const args = buildNpmUpdateArgs(scope);
+  const args = buildNpmUpdateArgs(scope, beaconSource);
   const cwd = scope === 'global' ? process.cwd() : projectPath;
 
   return new Promise((resolve) => {
@@ -206,8 +218,11 @@ async function updateBeaconNpmPackage(
     });
     child.on('exit', (code) => {
       if (code !== 0) {
+        const source = beaconSource.registry
+          ? `registry at ${beaconSource.registry}`
+          : 'the configured npm default registry';
         log(
-          `  npm package: update failed (exit code ${code}). Unable to reach the official npm registry at ${OFFICIAL_REGISTRY}.`,
+          `  npm package: update failed (exit code ${code}). Unable to update ${beaconSource.packageName} from ${source}.`,
         );
         log(`  Check your network connection or firewall settings and try again.`);
       }
@@ -232,12 +247,13 @@ export async function updateCommand(
 ): Promise<void> {
   const projectPath = path.resolve(targetPath);
   const log = options.json ? () => undefined : console.log;
+  const supplyChain = await loadSupplyChainConfig(projectPath);
 
   const lang = options.language ?? 'en';
 
   log(`\n  ${t(lang, 'updateTitle')}`);
   if (!options.json) {
-    await printVersionInfo(log);
+    await printVersionInfo(log, buildBeaconLatestMetadataUrl(supplyChain));
   }
   log('');
 
@@ -245,16 +261,17 @@ export async function updateCommand(
   let npmStatus: 'updated' | 'failed' | 'skipped' = 'skipped';
   if (!options.skipNpm) {
     log(`  ${t(lang, 'updatingNpmPackage')} (${packageScope} scope)...`);
-    log(`    $ ${formatNpmUpdateCommand(packageScope)}`);
+    log(`    $ ${formatNpmUpdateCommand(packageScope, supplyChain.beacon)}`);
     const npmUpdated = await updateBeaconNpmPackage(
       packageScope,
       projectPath,
+      supplyChain.beacon,
       log,
       options.json === true,
     );
     if (npmUpdated) {
       npmStatus = 'updated';
-      log(`  ${t(lang, 'npmPackageUpdated')} ${PACKAGE_NAME}`);
+      log(`  ${t(lang, 'npmPackageUpdated')} ${supplyChain.beacon.packageName}`);
     } else {
       npmStatus = 'failed';
       log(`  ${t(lang, 'npmPackageFailed')}`);
@@ -273,7 +290,9 @@ export async function updateCommand(
             npm: {
               scope: options.skipNpm ? 'skipped' : packageScope,
               status: npmStatus,
-              command: options.skipNpm ? null : formatNpmUpdateCommand(packageScope),
+              command: options.skipNpm
+                ? null
+                : formatNpmUpdateCommand(packageScope, supplyChain.beacon),
             },
             skills: { totalCopied: 0, targets: [] },
             rules: { totalCopied: 0 },
@@ -397,7 +416,9 @@ export async function updateCommand(
           npm: {
             scope: options.skipNpm ? 'skipped' : packageScope,
             status: npmStatus,
-            command: options.skipNpm ? null : formatNpmUpdateCommand(packageScope),
+            command: options.skipNpm
+              ? null
+              : formatNpmUpdateCommand(packageScope, supplyChain.beacon),
           },
           skills: {
             totalCopied,

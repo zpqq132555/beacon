@@ -4,6 +4,7 @@ import path from 'path';
 import os from 'os';
 import { select } from '@inquirer/prompts';
 import type { Platform } from '../../src/core/platforms.js';
+import type { SupplyChainConfig } from '../../src/core/supply-chain.js';
 import {
   buildNpmUpdateArgs,
   detectBeaconPackageScope,
@@ -19,6 +20,22 @@ vi.mock('@inquirer/prompts', () => ({
   select: vi.fn().mockResolvedValue(false),
 }));
 
+vi.mock('child_process', () => ({
+  spawn: vi.fn(() => {
+    const handlers: Record<string, Array<(value?: unknown) => void>> = {};
+    const child = {
+      on: vi.fn((event: string, handler: (value?: unknown) => void) => {
+        handlers[event] = [...(handlers[event] ?? []), handler];
+        return child;
+      }),
+    };
+    setTimeout(() => {
+      for (const handler of handlers.exit ?? []) handler(0);
+    }, 0);
+    return child;
+  }),
+}));
+
 const mockedSelect = vi.mocked(select);
 
 const claudePlatform: Platform = {
@@ -26,6 +43,12 @@ const claudePlatform: Platform = {
   name: 'Claude Code',
   skillsDir: '.claude',
   openspecToolId: 'claude',
+};
+
+const defaultBeaconSource: SupplyChainConfig['beacon'] = {
+  packageName: 'beacon',
+  registry: null,
+  latestMetadataUrl: null,
 };
 
 describe('update command helpers', () => {
@@ -173,28 +196,38 @@ describe('update command helpers', () => {
     await expect(detectBeaconPackageScope(projectDir, tmpDir)).resolves.toBe('global');
   });
 
-  it('builds npm update args preserving package install scope with official registry', () => {
-    expect(buildNpmUpdateArgs('global')).toEqual([
+  it('builds npm update args from configured beacon package source', () => {
+    expect(buildNpmUpdateArgs('global', defaultBeaconSource)).toEqual([
       'install',
       '-g',
       'beacon@latest',
-      '--registry',
-      'https://registry.npmjs.org',
     ]);
-    expect(buildNpmUpdateArgs('project')).toEqual([
+    expect(
+      buildNpmUpdateArgs('project', {
+        packageName: '@internal/beacon',
+        registry: 'https://npm.internal.example',
+        latestMetadataUrl: null,
+      }),
+    ).toEqual([
       'install',
-      'beacon@latest',
+      '@internal/beacon@latest',
       '--registry',
-      'https://registry.npmjs.org',
+      'https://npm.internal.example',
     ]);
   });
 
-  it('formats the npm update command for friendly console output', () => {
-    expect(formatNpmUpdateCommand('global')).toBe(
-      'npm install -g beacon@latest --registry https://registry.npmjs.org',
+  it('formats the npm update command from configured beacon package source', () => {
+    expect(formatNpmUpdateCommand('global', defaultBeaconSource)).toBe(
+      'npm install -g beacon@latest',
     );
-    expect(formatNpmUpdateCommand('project')).toBe(
-      'npm install beacon@latest --registry https://registry.npmjs.org',
+    expect(
+      formatNpmUpdateCommand('project', {
+        packageName: '@internal/beacon',
+        registry: 'https://npm.internal.example',
+        latestMetadataUrl: null,
+      }),
+    ).toBe(
+      'npm install @internal/beacon@latest --registry https://npm.internal.example',
     );
   });
 
@@ -252,6 +285,35 @@ describe('update command helpers', () => {
       platform: 'claude',
       language: 'en',
       source: 'skills',
+    });
+  });
+
+  it('prints configured npm update command in structured JSON', async () => {
+    await fs.mkdir(path.join(tmpDir, '.beacon'), { recursive: true });
+    await fs.writeFile(
+      path.join(tmpDir, '.beacon', 'config.yaml'),
+      [
+        'supply_chain.beacon.package: @internal/beacon',
+        'supply_chain.beacon.registry: https://npm.internal.example',
+        '',
+      ].join('\n'),
+      'utf-8',
+    );
+
+    const log = vi.spyOn(console, 'log').mockImplementation(() => undefined);
+    let json = '';
+    try {
+      await updateCommand(tmpDir, { json: true, scope: 'global' });
+      json = log.mock.calls.map((call) => call.join(' ')).join('\n');
+    } finally {
+      log.mockRestore();
+    }
+
+    const result = JSON.parse(json);
+    expect(result.npm).toMatchObject({
+      scope: 'global',
+      status: 'updated',
+      command: 'npm install -g @internal/beacon@latest --registry https://npm.internal.example',
     });
   });
 
