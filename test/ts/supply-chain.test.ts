@@ -1,0 +1,123 @@
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { promises as fs } from 'fs';
+import os from 'os';
+import path from 'path';
+
+import {
+  buildBeaconLatestMetadataUrl,
+  buildRegistryNpmArgs,
+  getSupplyChainSourceStatus,
+  loadSupplyChainConfig,
+} from '../../src/core/supply-chain.js';
+
+describe('supply chain config', () => {
+  let tmpDir: string;
+
+  beforeEach(async () => {
+    tmpDir = path.join(
+      os.tmpdir(),
+      `beacon-supply-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+    );
+    await fs.mkdir(tmpDir, { recursive: true });
+  });
+
+  afterEach(async () => {
+    await fs.rm(tmpDir, { recursive: true, force: true });
+  });
+
+  it('uses private-safe defaults without a public registry default', async () => {
+    const config = await loadSupplyChainConfig(tmpDir, {});
+
+    expect(config.beacon.packageName).toBe('beacon');
+    expect(config.beacon.registry).toBeNull();
+    expect(config.beacon.latestMetadataUrl).toBeNull();
+    expect(config.openspec.packageSpec).toBe('@fission-ai/openspec@latest');
+    expect(config.openspec.registry).toBeNull();
+    expect(config.superpowers.source).toBe('obra/superpowers');
+    expect(config.codegraph.packageSpec).toBe('@colbymchenry/codegraph');
+    expect(config.codegraph.registry).toBeNull();
+  });
+
+  it('reads project .beacon/config.yaml supply chain keys', async () => {
+    await fs.mkdir(path.join(tmpDir, '.beacon'), { recursive: true });
+    await fs.writeFile(
+      path.join(tmpDir, '.beacon', 'config.yaml'),
+      [
+        'supply_chain.beacon.package: @internal/beacon',
+        'supply_chain.beacon.registry: https://npm.internal.example',
+        'supply_chain.beacon.latest_metadata_url: https://npm.internal.example/beacon/latest',
+        'supply_chain.openspec.package: @internal/openspec@latest',
+        'supply_chain.openspec.registry: https://npm.internal.example',
+        'supply_chain.superpowers.source: internal/superpowers',
+        'supply_chain.codegraph.package: @internal/codegraph',
+        'supply_chain.codegraph.registry: https://npm.internal.example',
+        '',
+      ].join('\n'),
+      'utf-8',
+    );
+
+    const config = await loadSupplyChainConfig(tmpDir, {});
+
+    expect(config.beacon.packageName).toBe('@internal/beacon');
+    expect(config.beacon.registry).toBe('https://npm.internal.example');
+    expect(config.beacon.latestMetadataUrl).toBe('https://npm.internal.example/beacon/latest');
+    expect(config.openspec.packageSpec).toBe('@internal/openspec@latest');
+    expect(config.openspec.registry).toBe('https://npm.internal.example');
+    expect(config.superpowers.source).toBe('internal/superpowers');
+    expect(config.codegraph.packageSpec).toBe('@internal/codegraph');
+    expect(config.codegraph.registry).toBe('https://npm.internal.example');
+  });
+
+  it('lets environment variables override project config', async () => {
+    await fs.mkdir(path.join(tmpDir, '.beacon'), { recursive: true });
+    await fs.writeFile(
+      path.join(tmpDir, '.beacon', 'config.yaml'),
+      [
+        'supply_chain.beacon.registry: https://file.example',
+        'supply_chain.superpowers.source: file/superpowers',
+        '',
+      ].join('\n'),
+      'utf-8',
+    );
+
+    const config = await loadSupplyChainConfig(tmpDir, {
+      BEACON_NPM_REGISTRY: 'https://env.example',
+      BEACON_SUPERPOWERS_SOURCE: 'env/superpowers',
+    });
+
+    expect(config.beacon.registry).toBe('https://env.example');
+    expect(config.superpowers.source).toBe('env/superpowers');
+  });
+
+  it('builds npm args with registry only when configured', () => {
+    expect(buildRegistryNpmArgs(['install', '-g', 'beacon@latest'], null)).toEqual([
+      'install',
+      '-g',
+      'beacon@latest',
+    ]);
+    expect(
+      buildRegistryNpmArgs(['install', '-g', 'beacon@latest'], 'https://npm.internal.example'),
+    ).toEqual(['install', '-g', 'beacon@latest', '--registry', 'https://npm.internal.example']);
+  });
+
+  it('returns null latest metadata URL when no private metadata source is configured', async () => {
+    const config = await loadSupplyChainConfig(tmpDir, {});
+
+    expect(buildBeaconLatestMetadataUrl(config)).toBeNull();
+  });
+
+  it('reports missing private sources as non-fatal with user-facing guidance', async () => {
+    const config = await loadSupplyChainConfig(tmpDir, {});
+
+    const status = getSupplyChainSourceStatus(config, 'beacon.latestMetadataUrl');
+
+    expect(status.ok).toBe(false);
+    expect(status.fatal).toBe(false);
+    expect(status.message).toBe(
+      'Beacon latest metadata source is not configured; skipping private version check.',
+    );
+    expect(status.hint).toBe(
+      'Set supply_chain.beacon.latest_metadata_url in .beacon/config.yaml or BEACON_LATEST_METADATA_URL.',
+    );
+  });
+});
