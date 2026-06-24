@@ -85,13 +85,25 @@ const MISSING_SOURCE_MESSAGES: Record<SupplyChainSourceKey, SupplyChainSourceSta
   },
 };
 
+const configuredSourceKeys = new WeakMap<SupplyChainConfig, Set<SupplyChainSourceKey>>();
+
 function cloneDefaultConfig(): SupplyChainConfig {
-  return {
+  const config = {
     beacon: { ...DEFAULT_CONFIG.beacon },
     openspec: { ...DEFAULT_CONFIG.openspec },
     superpowers: { ...DEFAULT_CONFIG.superpowers },
     codegraph: { ...DEFAULT_CONFIG.codegraph },
   };
+  configuredSourceKeys.set(config, new Set());
+  return config;
+}
+
+function unquoteYamlValue(value: string): string {
+  const quote = value[0];
+  if ((quote === '"' || quote === "'") && value.endsWith(quote) && value.length >= 2) {
+    return value.slice(1, -1);
+  }
+  return value;
 }
 
 function readFlatYamlValue(content: string, key: string): string | undefined {
@@ -104,7 +116,7 @@ function readFlatYamlValue(content: string, key: string): string | undefined {
 
     const raw = match[2].trim();
     if (!raw || raw === 'null') return undefined;
-    return raw.replace(/^['"]|['"]$/g, '');
+    return unquoteYamlValue(raw);
   }
 
   return undefined;
@@ -123,12 +135,28 @@ function applyValue(config: SupplyChainConfig, key: string, value: string | unde
   if (key === 'supply_chain.codegraph.registry') config.codegraph.registry = value;
 }
 
+function toSourceKey(configKey: string): SupplyChainSourceKey | undefined {
+  if (configKey === 'supply_chain.beacon.registry') return 'beacon.registry';
+  if (configKey === 'supply_chain.beacon.latest_metadata_url') return 'beacon.latestMetadataUrl';
+  if (configKey === 'supply_chain.openspec.registry') return 'openspec.registry';
+  if (configKey === 'supply_chain.superpowers.source') return 'superpowers.source';
+  if (configKey === 'supply_chain.codegraph.registry') return 'codegraph.registry';
+  return undefined;
+}
+
+function markConfiguredSource(
+  config: SupplyChainConfig,
+  configKey: string,
+  value: string | undefined,
+): void {
+  if (!value) return;
+  const sourceKey = toSourceKey(configKey);
+  if (!sourceKey) return;
+  configuredSourceKeys.get(config)?.add(sourceKey);
+}
+
 function hasConfiguredSource(config: SupplyChainConfig, key: SupplyChainSourceKey): boolean {
-  if (key === 'beacon.registry') return Boolean(config.beacon.registry);
-  if (key === 'beacon.latestMetadataUrl') return Boolean(config.beacon.latestMetadataUrl);
-  if (key === 'openspec.registry') return Boolean(config.openspec.registry);
-  if (key === 'superpowers.source') return Boolean(config.superpowers.source);
-  return Boolean(config.codegraph.registry);
+  return configuredSourceKeys.get(config)?.has(key) ?? false;
 }
 
 /**
@@ -144,21 +172,41 @@ export async function loadSupplyChainConfig(
   try {
     const content = await fs.readFile(configPath, 'utf-8');
     for (const key of CONFIG_KEYS) {
-      applyValue(config, key, readFlatYamlValue(content, key));
+      const value = readFlatYamlValue(content, key);
+      applyValue(config, key, value);
+      markConfiguredSource(config, key, value);
     }
   } catch {
     // Missing project config is valid; private-safe defaults apply.
   }
 
   if (env.BEACON_PACKAGE_NAME) config.beacon.packageName = env.BEACON_PACKAGE_NAME;
-  if (env.BEACON_NPM_REGISTRY) config.beacon.registry = env.BEACON_NPM_REGISTRY;
-  if (env.BEACON_LATEST_METADATA_URL)
+  if (env.BEACON_NPM_REGISTRY) {
+    config.beacon.registry = env.BEACON_NPM_REGISTRY;
+    markConfiguredSource(config, 'supply_chain.beacon.registry', env.BEACON_NPM_REGISTRY);
+  }
+  if (env.BEACON_LATEST_METADATA_URL) {
     config.beacon.latestMetadataUrl = env.BEACON_LATEST_METADATA_URL;
+    markConfiguredSource(
+      config,
+      'supply_chain.beacon.latest_metadata_url',
+      env.BEACON_LATEST_METADATA_URL,
+    );
+  }
   if (env.BEACON_OPENSPEC_PACKAGE) config.openspec.packageSpec = env.BEACON_OPENSPEC_PACKAGE;
-  if (env.BEACON_OPENSPEC_REGISTRY) config.openspec.registry = env.BEACON_OPENSPEC_REGISTRY;
-  if (env.BEACON_SUPERPOWERS_SOURCE) config.superpowers.source = env.BEACON_SUPERPOWERS_SOURCE;
+  if (env.BEACON_OPENSPEC_REGISTRY) {
+    config.openspec.registry = env.BEACON_OPENSPEC_REGISTRY;
+    markConfiguredSource(config, 'supply_chain.openspec.registry', env.BEACON_OPENSPEC_REGISTRY);
+  }
+  if (env.BEACON_SUPERPOWERS_SOURCE) {
+    config.superpowers.source = env.BEACON_SUPERPOWERS_SOURCE;
+    markConfiguredSource(config, 'supply_chain.superpowers.source', env.BEACON_SUPERPOWERS_SOURCE);
+  }
   if (env.BEACON_CODEGRAPH_PACKAGE) config.codegraph.packageSpec = env.BEACON_CODEGRAPH_PACKAGE;
-  if (env.BEACON_CODEGRAPH_REGISTRY) config.codegraph.registry = env.BEACON_CODEGRAPH_REGISTRY;
+  if (env.BEACON_CODEGRAPH_REGISTRY) {
+    config.codegraph.registry = env.BEACON_CODEGRAPH_REGISTRY;
+    markConfiguredSource(config, 'supply_chain.codegraph.registry', env.BEACON_CODEGRAPH_REGISTRY);
+  }
 
   return config;
 }

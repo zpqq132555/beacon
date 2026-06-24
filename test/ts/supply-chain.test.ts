@@ -68,6 +68,19 @@ describe('supply chain config', () => {
     expect(config.codegraph.registry).toBe('https://npm.internal.example');
   });
 
+  it('unquotes project .beacon/config.yaml supply chain values', async () => {
+    await fs.mkdir(path.join(tmpDir, '.beacon'), { recursive: true });
+    await fs.writeFile(
+      path.join(tmpDir, '.beacon', 'config.yaml'),
+      'supply_chain.beacon.registry: "https://npm.internal.example"\n',
+      'utf-8',
+    );
+
+    const config = await loadSupplyChainConfig(tmpDir, {});
+
+    expect(config.beacon.registry).toBe('https://npm.internal.example');
+  });
+
   it('lets environment variables override project config', async () => {
     await fs.mkdir(path.join(tmpDir, '.beacon'), { recursive: true });
     await fs.writeFile(
@@ -119,5 +132,38 @@ describe('supply chain config', () => {
     expect(status.hint).toBe(
       'Set supply_chain.beacon.latest_metadata_url in .beacon/config.yaml or BEACON_LATEST_METADATA_URL.',
     );
+  });
+
+  it('reports the default Superpowers source as an unconfigured private source', async () => {
+    const config = await loadSupplyChainConfig(tmpDir, {});
+
+    const status = getSupplyChainSourceStatus(config, 'superpowers.source');
+
+    expect(status.ok).toBe(false);
+    expect(status.fatal).toBe(false);
+    expect(status.message).toBe(
+      'Superpowers skill source is not configured; skipping private skill source override.',
+    );
+  });
+
+  it('reports Superpowers source as configured when loaded from project config', async () => {
+    await fs.mkdir(path.join(tmpDir, '.beacon'), { recursive: true });
+    await fs.writeFile(
+      path.join(tmpDir, '.beacon', 'config.yaml'),
+      'supply_chain.superpowers.source: internal/superpowers\n',
+      'utf-8',
+    );
+
+    const config = await loadSupplyChainConfig(tmpDir, {});
+
+    expect(getSupplyChainSourceStatus(config, 'superpowers.source').ok).toBe(true);
+  });
+
+  it('reports Superpowers source as configured when loaded from the environment', async () => {
+    const config = await loadSupplyChainConfig(tmpDir, {
+      BEACON_SUPERPOWERS_SOURCE: 'env/superpowers',
+    });
+
+    expect(getSupplyChainSourceStatus(config, 'superpowers.source').ok).toBe(true);
   });
 });
