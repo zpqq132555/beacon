@@ -195,12 +195,8 @@ async function ensureOpenSpecCli(
   }
 }
 
-function formatOpenSpecManualInstallCommand(
-  scope: InstallScope,
-  source: SupplyChainConfig['openspec'],
-): string {
-  const npmArgs =
-    scope === 'global' ? ['install', '-g', source.packageSpec] : ['install', source.packageSpec];
+function formatOpenSpecManualInstallCommand(source: SupplyChainConfig['openspec']): string {
+  const npmArgs = ['install', '-g', source.packageSpec];
   return ['npm', ...buildRegistryNpmArgs(npmArgs, source.registry)].join(' ');
 }
 
@@ -214,7 +210,7 @@ async function installOpenSpec(
   const cliStatus = await ensureOpenSpecCli(scope, projectPath, shouldInstallCli, source);
   if (cliStatus === 'failed') {
     console.error(
-      `    OpenSpec CLI not available. Install manually: ${formatOpenSpecManualInstallCommand(scope, source)}`,
+      `    OpenSpec CLI not available. Install manually: ${formatOpenSpecManualInstallCommand(source)}`,
     );
     return 'failed';
   }

@@ -61,8 +61,11 @@ function formatNpmInstallCommand(args: string[], registry: string | null): strin
 }
 
 function formatMissingOpenSpecMessage(supplyChain: SupplyChainConfig): string {
-  const sourceStatus = getSupplyChainSourceStatus(supplyChain, 'openspec.registry');
-  if (!sourceStatus.ok) {
+  const hasPrivateSource =
+    supplyChain.configuredSources.includes('openspec.package') ||
+    supplyChain.configuredSources.includes('openspec.registry');
+  if (!hasPrivateSource) {
+    const sourceStatus = getSupplyChainSourceStatus(supplyChain, 'openspec.registry');
     return `not installed — no private OpenSpec registry configured; ${sourceStatus.hint}`;
   }
 
@@ -73,8 +76,11 @@ function formatMissingOpenSpecMessage(supplyChain: SupplyChainConfig): string {
 }
 
 function formatMissingCodegraphMessage(supplyChain: SupplyChainConfig): string {
-  const sourceStatus = getSupplyChainSourceStatus(supplyChain, 'codegraph.registry');
-  if (!sourceStatus.ok) {
+  const hasPrivateSource =
+    supplyChain.configuredSources.includes('codegraph.package') ||
+    supplyChain.configuredSources.includes('codegraph.registry');
+  if (!hasPrivateSource) {
+    const sourceStatus = getSupplyChainSourceStatus(supplyChain, 'codegraph.registry');
     return `not installed — no private CodeGraph registry configured; ${sourceStatus.hint}`;
   }
 

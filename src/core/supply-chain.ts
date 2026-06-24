@@ -31,8 +31,10 @@ export interface SupplyChainSourceStatus {
 export type SupplyChainSourceKey =
   | 'beacon.registry'
   | 'beacon.latestMetadataUrl'
+  | 'openspec.package'
   | 'openspec.registry'
   | 'superpowers.source'
+  | 'codegraph.package'
   | 'codegraph.registry';
 
 const DEFAULT_CONFIG: SupplyChainConfig = {
@@ -73,6 +75,12 @@ const MISSING_SOURCE_MESSAGES: Record<SupplyChainSourceKey, SupplyChainSourceSta
     message: 'OpenSpec npm registry is not configured; using npm default registry behavior.',
     hint: 'Set supply_chain.openspec.registry in .beacon/config.yaml or BEACON_OPENSPEC_REGISTRY.',
   },
+  'openspec.package': {
+    ok: false,
+    fatal: false,
+    message: 'OpenSpec package source is not configured; using the built-in package name.',
+    hint: 'Set supply_chain.openspec.package in .beacon/config.yaml or BEACON_OPENSPEC_PACKAGE.',
+  },
   'superpowers.source': {
     ok: false,
     fatal: false,
@@ -84,6 +92,12 @@ const MISSING_SOURCE_MESSAGES: Record<SupplyChainSourceKey, SupplyChainSourceSta
     fatal: false,
     message: 'CodeGraph npm registry is not configured; using npm default registry behavior.',
     hint: 'Set supply_chain.codegraph.registry in .beacon/config.yaml or BEACON_CODEGRAPH_REGISTRY.',
+  },
+  'codegraph.package': {
+    ok: false,
+    fatal: false,
+    message: 'CodeGraph package source is not configured; using the built-in package name.',
+    hint: 'Set supply_chain.codegraph.package in .beacon/config.yaml or BEACON_CODEGRAPH_PACKAGE.',
   },
 };
 
@@ -137,8 +151,10 @@ function applyValue(config: SupplyChainConfig, key: string, value: string | unde
 function toSourceKey(configKey: string): SupplyChainSourceKey | undefined {
   if (configKey === 'supply_chain.beacon.registry') return 'beacon.registry';
   if (configKey === 'supply_chain.beacon.latest_metadata_url') return 'beacon.latestMetadataUrl';
+  if (configKey === 'supply_chain.openspec.package') return 'openspec.package';
   if (configKey === 'supply_chain.openspec.registry') return 'openspec.registry';
   if (configKey === 'supply_chain.superpowers.source') return 'superpowers.source';
+  if (configKey === 'supply_chain.codegraph.package') return 'codegraph.package';
   if (configKey === 'supply_chain.codegraph.registry') return 'codegraph.registry';
   return undefined;
 }
@@ -206,7 +222,10 @@ export async function loadSupplyChainConfig(
       env.BEACON_LATEST_METADATA_URL,
     );
   }
-  if (env.BEACON_OPENSPEC_PACKAGE) config.openspec.packageSpec = env.BEACON_OPENSPEC_PACKAGE;
+  if (env.BEACON_OPENSPEC_PACKAGE) {
+    config.openspec.packageSpec = env.BEACON_OPENSPEC_PACKAGE;
+    markConfiguredSource(config, 'supply_chain.openspec.package', env.BEACON_OPENSPEC_PACKAGE);
+  }
   if (env.BEACON_OPENSPEC_REGISTRY) {
     config.openspec.registry = env.BEACON_OPENSPEC_REGISTRY;
     markConfiguredSource(config, 'supply_chain.openspec.registry', env.BEACON_OPENSPEC_REGISTRY);
@@ -215,7 +234,10 @@ export async function loadSupplyChainConfig(
     config.superpowers.source = env.BEACON_SUPERPOWERS_SOURCE;
     markConfiguredSource(config, 'supply_chain.superpowers.source', env.BEACON_SUPERPOWERS_SOURCE);
   }
-  if (env.BEACON_CODEGRAPH_PACKAGE) config.codegraph.packageSpec = env.BEACON_CODEGRAPH_PACKAGE;
+  if (env.BEACON_CODEGRAPH_PACKAGE) {
+    config.codegraph.packageSpec = env.BEACON_CODEGRAPH_PACKAGE;
+    markConfiguredSource(config, 'supply_chain.codegraph.package', env.BEACON_CODEGRAPH_PACKAGE);
+  }
   if (env.BEACON_CODEGRAPH_REGISTRY) {
     config.codegraph.registry = env.BEACON_CODEGRAPH_REGISTRY;
     markConfiguredSource(config, 'supply_chain.codegraph.registry', env.BEACON_CODEGRAPH_REGISTRY);

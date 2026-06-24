@@ -185,4 +185,70 @@ describe('doctor command', () => {
       'no private CodeGraph registry configured',
     );
   });
+
+  it('uses configured OpenSpec package without a registry in missing dependency remediation', async () => {
+    await fs.mkdir(path.join(tmpDir, '.beacon'), { recursive: true });
+    await fs.writeFile(
+      path.join(tmpDir, '.beacon', 'config.yaml'),
+      ['supply_chain.openspec.package: @internal/openspec@latest', ''].join('\n'),
+    );
+
+    vi.doMock('../../src/core/openspec.js', () => ({
+      isCommandAvailable: () => false,
+    }));
+    vi.doMock('../../src/core/codegraph.js', () => ({
+      hasCodegraphProjectIndex: () => true,
+      resolveCodegraphCommand: () => null,
+    }));
+
+    const log = vi.spyOn(console, 'log').mockImplementation(() => undefined);
+    let json = '';
+    try {
+      const { doctorCommand } = await import('../../src/commands/doctor.js');
+      await doctorCommand(tmpDir, { json: true, scope: 'project' });
+      json = log.mock.calls.map((call) => call.join(' ')).join('\n');
+    } finally {
+      log.mockRestore();
+    }
+
+    const results = JSON.parse(json).results as Array<{ check: string; message: string }>;
+    const openSpecMessage = results.find((result) => result.check === 'openspec CLI')?.message;
+
+    expect(openSpecMessage).toContain('npm install -g @internal/openspec@latest');
+    expect(openSpecMessage).not.toContain('--registry');
+    expect(openSpecMessage).not.toContain('no private OpenSpec registry configured');
+  });
+
+  it('uses configured CodeGraph package without a registry in missing dependency remediation', async () => {
+    await fs.mkdir(path.join(tmpDir, '.beacon'), { recursive: true });
+    await fs.writeFile(
+      path.join(tmpDir, '.beacon', 'config.yaml'),
+      ['supply_chain.codegraph.package: @internal/codegraph', ''].join('\n'),
+    );
+
+    vi.doMock('../../src/core/openspec.js', () => ({
+      isCommandAvailable: () => true,
+    }));
+    vi.doMock('../../src/core/codegraph.js', () => ({
+      hasCodegraphProjectIndex: () => false,
+      resolveCodegraphCommand: () => null,
+    }));
+
+    const log = vi.spyOn(console, 'log').mockImplementation(() => undefined);
+    let json = '';
+    try {
+      const { doctorCommand } = await import('../../src/commands/doctor.js');
+      await doctorCommand(tmpDir, { json: true, scope: 'global' });
+      json = log.mock.calls.map((call) => call.join(' ')).join('\n');
+    } finally {
+      log.mockRestore();
+    }
+
+    const results = JSON.parse(json).results as Array<{ check: string; message: string }>;
+    const codegraphMessage = results.find((result) => result.check === 'CodeGraph CLI')?.message;
+
+    expect(codegraphMessage).toContain('npm install -g @internal/codegraph');
+    expect(codegraphMessage).not.toContain('--registry');
+    expect(codegraphMessage).not.toContain('no private CodeGraph registry configured');
+  });
 });

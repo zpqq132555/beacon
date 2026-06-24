@@ -152,13 +152,37 @@ describe('openspec', () => {
       expect(result).toBe('failed');
       expect(errorSpy).toHaveBeenCalledWith(
         expect.stringContaining(
-          'Install manually: npm install @internal/openspec@latest --registry https://npm.internal.example',
+          'Install manually: npm install -g @internal/openspec@latest --registry https://npm.internal.example',
         ),
       );
       expect(errorSpy).toHaveBeenCalledWith(
         expect.stringContaining('npm ERR! request to registry.npmjs.org failed'),
       );
       expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining('npm notice retrying request'));
+      errorSpy.mockRestore();
+    });
+
+    it('uses global install in manual recovery hints for project scope', async () => {
+      mockedExecFileSync.mockImplementationOnce(() => {
+        throw new Error('not found');
+      });
+      mockedExecFileSync.mockImplementationOnce(() => {
+        throw new Error('npm failed');
+      });
+
+      const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const { installOpenSpec } = await import('../../src/core/openspec.js');
+      const result = await installOpenSpec('/tmp/test', ['claude'], 'project', true, {
+        packageSpec: '@internal/openspec@latest',
+        registry: 'https://npm.internal.example',
+      });
+
+      expect(result).toBe('failed');
+      expect(errorSpy).toHaveBeenCalledWith(
+        expect.stringContaining(
+          'Install manually: npm install -g @internal/openspec@latest --registry https://npm.internal.example',
+        ),
+      );
       errorSpy.mockRestore();
     });
 
