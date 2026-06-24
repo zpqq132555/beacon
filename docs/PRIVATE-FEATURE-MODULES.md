@@ -27,8 +27,8 @@
 | -------------------------- | -------------------------------------------------- | ---------------------------------------------------- | ---------- |
 | M02-F01 `beacon init`      | 初始化项目或全局 Beacon 工作流                     | `src/commands/init.ts`                               | 部分定制   |
 | M02-F02 `beacon status`    | 查看活跃 change、阶段和下一步命令                  | `src/commands/status.ts`                             | 已定制     |
-| M02-F03 `beacon doctor`    | 诊断安装、依赖、目录、skills 和状态文件            | `src/commands/doctor.ts`                             | 部分定制   |
-| M02-F04 `beacon update`    | 更新 Beacon 包和已安装 skill 资产                  | `src/commands/update.ts`                             | 部分定制   |
+| M02-F03 `beacon doctor`    | 诊断安装、依赖、目录、skills 和状态文件            | `src/commands/doctor.ts`                             | 已定制     |
+| M02-F04 `beacon update`    | 更新 Beacon 包和已安装 skill 资产                  | `src/commands/update.ts`                             | 已定制     |
 | M02-F05 `beacon uninstall` | 移除 Beacon 管理的 skills、rules、hooks 和工作目录 | `src/commands/uninstall.ts`, `src/core/uninstall.ts` | 部分定制   |
 | M02-F06 `--json` 输出      | 为自动化集成提供结构化输出                         | `src/commands/*.ts`                                  | 部分定制   |
 | M02-F07 命令错误展示       | 清理并输出外部命令失败详情                         | `src/core/command-error.ts`                          | 未定制     |
@@ -37,7 +37,7 @@
 
 | 功能项                        | 具体作用                           | 主要位置                                       | 私有化状态 |
 | ----------------------------- | ---------------------------------- | ---------------------------------------------- | ---------- |
-| M03-F01 CLI 文案翻译          | 为 CLI 提示和结果提供中英文文本    | `src/commands/i18n.ts`                         | 部分定制   |
+| M03-F01 CLI 文案翻译          | 为 CLI 提示和结果提供中英文文本    | `src/commands/i18n.ts`                         | 已定制     |
 | M03-F02 初始化语言选择        | 选择安装英文或中文 Beacon skills   | `src/commands/init.ts`, `assets/manifest.json` | 部分定制   |
 | M03-F03 更新语言检测          | 根据已安装内容判断刷新哪个语言版本 | `src/commands/update.ts`                       | 部分定制   |
 | M03-F04 Workflow 输出语言规则 | 让工作流产物跟随用户语言           | `assets/skills*/beacon*/SKILL.md`              | 已定制     |
@@ -204,13 +204,13 @@
 
 | 功能项                     | 具体作用                      | 主要位置                                          | 私有化状态 |
 | -------------------------- | ----------------------------- | ------------------------------------------------- | ---------- |
-| M16-F01 OpenSpec CLI 检测  | 判断 OpenSpec 是否可用        | `src/core/openspec.ts`, `src/commands/doctor.ts`  | 未定制     |
-| M16-F02 OpenSpec 安装/升级 | 可选安装或升级 OpenSpec CLI   | `src/core/openspec.ts`, `src/commands/init.ts`    | 部分定制   |
+| M16-F01 OpenSpec CLI 检测  | 判断 OpenSpec 是否可用        | `src/core/openspec.ts`, `src/commands/doctor.ts`  | 已定制     |
+| M16-F02 OpenSpec 安装/升级 | 可选安装或升级 OpenSpec CLI   | `src/core/openspec.ts`, `src/commands/init.ts`    | 已定制     |
 | M16-F03 OpenSpec 初始化    | 将 OpenSpec 配置到所选平台    | `src/core/openspec.ts`                            | 部分定制   |
-| M16-F04 Superpowers 安装   | 可选安装 Superpowers skills   | `src/core/superpowers.ts`, `src/commands/init.ts` | 部分定制   |
+| M16-F04 Superpowers 安装   | 可选安装 Superpowers skills   | `src/core/superpowers.ts`, `src/commands/init.ts` | 已定制     |
 | M16-F05 Superpowers 检测   | 检测已有 Superpowers 安装来源 | `src/core/detect.ts`                              | 部分定制   |
-| M16-F06 CodeGraph 检测     | 检测 CodeGraph CLI 或项目索引 | `src/core/codegraph.ts`, `src/commands/doctor.ts` | 未定制     |
-| M16-F07 CodeGraph 安装     | 可选安装并初始化 CodeGraph    | `src/core/codegraph.ts`, `src/commands/init.ts`   | 部分定制   |
+| M16-F06 CodeGraph 检测     | 检测 CodeGraph CLI 或项目索引 | `src/core/codegraph.ts`, `src/commands/doctor.ts` | 已定制     |
+| M16-F07 CodeGraph 安装     | 可选安装并初始化 CodeGraph    | `src/core/codegraph.ts`, `src/commands/init.ts`   | 已定制     |
 
 ## M17. OpenSpec Bridge Schema
 
@@ -231,7 +231,7 @@
 | -------------------------------- | ------------------------------------------ | ----------------------------- | ---------- |
 | M18-F01 README                   | 说明安装、命令、平台和工作流               | `README.md`                   | 已定制     |
 | M18-F02 中文 README 副本         | 历史中文 README 语言副本，已合并到标准入口 | 已移除                        | 已定制     |
-| M18-F03 NEWS                     | 记录版本亮点                               | `NEWS.md`                     | 部分定制   |
+| M18-F03 NEWS                     | 记录版本亮点                               | `NEWS.md`                     | 已定制     |
 | M18-F04 CHANGELOG                | 记录版本变更                               | `CHANGELOG.md`                | 部分定制   |
 | M18-F05 Auto transition 文档     | 解释自动衔接机制                           | `docs/AUTO-TRANSITION.md`     | 部分定制   |
 | M18-F06 Context compression 文档 | 解释上下文压缩和 benchmark                 | `docs/CONTEXT-COMPRESSION.md` | 部分定制   |
@@ -260,7 +260,7 @@
 | M20-F02 ESLint            | 检查源码质量                     | `eslint.config.js`, `pnpm lint`    | 未定制     |
 | M20-F03 Prettier          | 格式化源码                       | `.prettierrc`, `pnpm format:check` | 未定制     |
 | M20-F04 Husky pre-commit  | 提交前格式化暂存源文件           | `.husky/`, `package.json`          | 部分定制   |
-| M20-F05 Prepublish 检查   | 发布前检查包状态和敏感内容       | `scripts/prepublish-check.js`      | 部分定制   |
+| M20-F05 Prepublish 检查   | 发布前检查包状态和敏感内容       | `scripts/prepublish-check.js`      | 已定制     |
 | M20-F06 Postinstall       | 安装后处理                       | `scripts/postinstall.js`           | 待确认     |
 | M20-F07 GitHub CI         | 在 CI 中运行测试、构建和格式检查 | `.github/workflows/`               | 部分定制   |
 | M20-F08 PR title lint     | 检查 PR 标题规范                 | `.github/workflows/`               | 部分定制   |
@@ -285,7 +285,7 @@
 | M22-F03 Path traversal 防护 | 防止状态字段或任务文件越界访问  | `beacon-state.sh`, `beacon-guard.sh`                | 已定制     |
 | M22-F04 命令注入防护        | 限制配置命令中的危险 shell 字符 | `beacon-guard.sh`                                   | 已定制     |
 | M22-F05 Secret 文件忽略     | 避免密钥和凭据进入版本控制      | `.gitignore`                                        | 未定制     |
-| M22-F06 发布前敏感检查      | 发布前扫描风险文件              | `scripts/prepublish-check.js`                       | 部分定制   |
+| M22-F06 发布前敏感检查      | 发布前扫描风险文件              | `scripts/prepublish-check.js`                       | 已定制     |
 
 ## M23. 私有化管理与治理
 

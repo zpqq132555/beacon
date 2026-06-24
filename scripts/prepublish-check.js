@@ -18,9 +18,64 @@ const SECRET_PATTERNS = [
   { pattern: /AKIA[0-9A-Z]{16}/, name: 'AWS access key' },
 ];
 
+export const PRIVATE_SUPPLY_CHAIN_FORBIDDEN_PATTERNS = [
+  {
+    pattern: new RegExp(`https://registry\\.npmjs\\.org`),
+    name: 'public npm registry',
+  },
+  {
+    pattern: new RegExp(`(^|\\n)\\s*npm install -g ${'beacon'}(?:@latest)?\\s*(\\r?\\n|$)`),
+    name: 'public Beacon install command',
+  },
+  {
+    pattern: new RegExp(`npx skills add ${'rpamis/beacon'}`),
+    name: 'public Beacon skills source',
+  },
+  {
+    pattern: new RegExp(
+      [`第 ${29} 个支持平台`, `覆盖 ${29} 个平台`, `${29} platforms`].join('|'),
+    ),
+    name: 'former public platform matrix',
+  },
+  {
+    pattern: new RegExp([`自动检测 ${7} 个支持平台`, `${7} supported platforms`].join('|')),
+    name: 'former CodeGraph platform matrix',
+  },
+  {
+    pattern: new RegExp([`强制走${'官方源'}`, `official registry as ${'default'}`].join('|')),
+    name: 'public registry default narrative',
+  },
+  {
+    pattern: new RegExp(`npm registry 是否有${'新版本'}`),
+    name: 'public npm latest-version narrative',
+  },
+];
+
 const SKIP_DIRS = new Set(['node_modules', '.git', 'dist']);
 const TEXT_EXTENSIONS = new Set(['.js', '.ts', '.json', '.md', '.txt', '.yml', '.yaml', '.toml']);
 const README_IMAGE_PATTERN = /\b(?:src|srcset)=["'](?:\.\/)?img\//;
+
+function normalizePath(filePath) {
+  return filePath.replace(/\\/g, '/').replace(/^\.\//, '');
+}
+
+function shouldSkipHistoricalContent(filePath) {
+  const normalized = normalizePath(filePath);
+  return normalized === 'CHANGELOG.md' || normalized.startsWith('openspec/changes/archive/');
+}
+
+function shouldScanSupplyChain(filePath) {
+  const normalized = normalizePath(filePath);
+  return (
+    normalized === 'README.md' ||
+    normalized === 'NEWS.md' ||
+    normalized === 'package.json' ||
+    normalized.startsWith('src/') ||
+    normalized.startsWith('scripts/') ||
+    normalized.startsWith('assets/') ||
+    normalized.startsWith('docs/')
+  );
+}
 
 function* walkFiles(dir) {
   for (const entry of readdirSync(dir)) {
@@ -41,6 +96,7 @@ let found = 0;
 for (const filePath of walkFiles('.')) {
   const ext = extname(filePath);
   if (!TEXT_EXTENSIONS.has(ext)) continue;
+  if (shouldSkipHistoricalContent(filePath)) continue;
 
   let content;
   try {
@@ -61,6 +117,15 @@ for (const filePath of walkFiles('.')) {
       `[PACKAGE] npm README images must use absolute URLs, not local img/ paths: ${filePath}`,
     );
     found++;
+  }
+
+  if (shouldScanSupplyChain(filePath)) {
+    for (const { pattern, name } of PRIVATE_SUPPLY_CHAIN_FORBIDDEN_PATTERNS) {
+      if (pattern.test(content)) {
+        console.error(`[SUPPLY-CHAIN] Forbidden ${name} found in ${filePath}`);
+        found++;
+      }
+    }
   }
 }
 
