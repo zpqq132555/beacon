@@ -156,7 +156,17 @@ describe('supply chain config', () => {
 
     const config = await loadSupplyChainConfig(tmpDir, {});
 
+    expect(config).toMatchObject({ configuredSources: ['superpowers.source'] });
     expect(getSupplyChainSourceStatus(config, 'superpowers.source').ok).toBe(true);
+  });
+
+  it('keeps configured source provenance after cloning the config object', async () => {
+    const config = await loadSupplyChainConfig(tmpDir, {
+      BEACON_SUPERPOWERS_SOURCE: 'env/superpowers',
+    });
+    const clonedConfig = { ...config, superpowers: { ...config.superpowers } };
+
+    expect(getSupplyChainSourceStatus(clonedConfig, 'superpowers.source').ok).toBe(true);
   });
 
   it('reports Superpowers source as configured when loaded from the environment', async () => {
@@ -165,5 +175,14 @@ describe('supply chain config', () => {
     });
 
     expect(getSupplyChainSourceStatus(config, 'superpowers.source').ok).toBe(true);
+  });
+
+  it('rejects when .beacon/config.yaml exists but cannot be read as a file', async () => {
+    const configDirPath = path.join(tmpDir, '.beacon', 'config.yaml');
+    await fs.mkdir(configDirPath, { recursive: true });
+
+    await expect(loadSupplyChainConfig(tmpDir, {})).rejects.toThrow(
+      `Unable to read Beacon supply chain config at ${configDirPath}`,
+    );
   });
 });

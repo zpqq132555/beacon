@@ -2,6 +2,7 @@ import { promises as fs } from 'fs';
 import path from 'path';
 
 export interface SupplyChainConfig {
+  configuredSources: SupplyChainSourceKey[];
   beacon: {
     packageName: string;
     registry: string | null;
@@ -35,6 +36,7 @@ export type SupplyChainSourceKey =
   | 'codegraph.registry';
 
 const DEFAULT_CONFIG: SupplyChainConfig = {
+  configuredSources: [],
   beacon: { packageName: 'beacon', registry: null, latestMetadataUrl: null },
   openspec: { packageSpec: '@fission-ai/openspec@latest', registry: null },
   superpowers: { source: 'obra/superpowers' },
@@ -85,17 +87,14 @@ const MISSING_SOURCE_MESSAGES: Record<SupplyChainSourceKey, SupplyChainSourceSta
   },
 };
 
-const configuredSourceKeys = new WeakMap<SupplyChainConfig, Set<SupplyChainSourceKey>>();
-
 function cloneDefaultConfig(): SupplyChainConfig {
-  const config = {
+  return {
+    configuredSources: [...DEFAULT_CONFIG.configuredSources],
     beacon: { ...DEFAULT_CONFIG.beacon },
     openspec: { ...DEFAULT_CONFIG.openspec },
     superpowers: { ...DEFAULT_CONFIG.superpowers },
     codegraph: { ...DEFAULT_CONFIG.codegraph },
   };
-  configuredSourceKeys.set(config, new Set());
-  return config;
 }
 
 function unquoteYamlValue(value: string): string {
@@ -152,11 +151,19 @@ function markConfiguredSource(
   if (!value) return;
   const sourceKey = toSourceKey(configKey);
   if (!sourceKey) return;
-  configuredSourceKeys.get(config)?.add(sourceKey);
+  if (!config.configuredSources.includes(sourceKey)) {
+    config.configuredSources.push(sourceKey);
+  }
 }
 
 function hasConfiguredSource(config: SupplyChainConfig, key: SupplyChainSourceKey): boolean {
-  return configuredSourceKeys.get(config)?.has(key) ?? false;
+  return config.configuredSources.includes(key);
+}
+
+function isNotFoundError(err: unknown): boolean {
+  return (
+    typeof err === 'object' && err !== null && (err as NodeJS.ErrnoException).code === 'ENOENT'
+  );
 }
 
 /**
@@ -176,7 +183,13 @@ export async function loadSupplyChainConfig(
       applyValue(config, key, value);
       markConfiguredSource(config, key, value);
     }
-  } catch {
+  } catch (err) {
+    if (!isNotFoundError(err)) {
+      throw new Error(
+        `Unable to read Beacon supply chain config at ${configPath}: ${(err as Error).message}`,
+        { cause: err },
+      );
+    }
     // Missing project config is valid; private-safe defaults apply.
   }
 
