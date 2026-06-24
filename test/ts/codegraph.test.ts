@@ -82,4 +82,41 @@ describe('codegraph', () => {
       expect.arrayContaining([shimPath, ['install', '--yes']]),
     );
   });
+
+  it('installs CodeGraph from the configured supply chain source', async () => {
+    mockedExecFileSync.mockImplementation((command: unknown, args?: unknown) => {
+      const cmd = String(command);
+      const cmdArgs = Array.isArray(args) ? args.map(String) : [];
+      if ((cmd === 'where' || cmd === 'which') && cmdArgs[0] === 'codegraph') {
+        throw new Error('not on PATH');
+      }
+      if ((cmd === 'pnpm' || cmd === 'pnpm.cmd') && cmdArgs.join(' ') === 'bin -g') {
+        return '\n';
+      }
+      if ((cmd === 'npm' || cmd === 'npm.cmd') && cmdArgs[0] === 'install') {
+        return Buffer.from('installed');
+      }
+      return Buffer.from('ok');
+    });
+
+    const { installCodegraph } = await import('../../src/core/codegraph.js');
+    const result = await installCodegraph(tmpDir, 'global', true, {
+      packageSpec: '@internal/codegraph',
+      registry: 'https://npm.internal.example',
+    });
+
+    expect(result).toBe('failed');
+    expect(mockedExecFileSync.mock.calls).toContainEqual(
+      expect.arrayContaining([
+        process.platform === 'win32' ? 'npm.cmd' : 'npm',
+        [
+          'install',
+          '-g',
+          '@internal/codegraph',
+          '--registry',
+          'https://npm.internal.example',
+        ],
+      ]),
+    );
+  });
 });

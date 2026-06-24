@@ -7,6 +7,12 @@ import { isCommandAvailable } from '../core/openspec.js';
 import { hasCodegraphProjectIndex, resolveCodegraphCommand } from '../core/codegraph.js';
 import { readManifest, getAssetsDir } from '../core/skills.js';
 import { PLATFORMS, getPlatformSkillsDirs } from '../core/platforms.js';
+import {
+  buildRegistryNpmArgs,
+  getSupplyChainSourceStatus,
+  loadSupplyChainConfig,
+  type SupplyChainConfig,
+} from '../core/supply-chain.js';
 import type { InstallScope } from '../core/types.js';
 
 interface CheckResult {
@@ -50,12 +56,40 @@ function collectTopLevelYamlKeys(yamlContent: string): string[] {
   return topLevelKeys;
 }
 
-async function checkOpenSpecCli(): Promise<CheckResult> {
+function formatNpmInstallCommand(args: string[], registry: string | null): string {
+  return ['npm', ...buildRegistryNpmArgs(args, registry)].join(' ');
+}
+
+function formatMissingOpenSpecMessage(supplyChain: SupplyChainConfig): string {
+  const sourceStatus = getSupplyChainSourceStatus(supplyChain, 'openspec.registry');
+  if (!sourceStatus.ok) {
+    return `not installed — no private OpenSpec registry configured; ${sourceStatus.hint}`;
+  }
+
+  return `not installed — install with: ${formatNpmInstallCommand(
+    ['install', '-g', supplyChain.openspec.packageSpec],
+    supplyChain.openspec.registry,
+  )}`;
+}
+
+function formatMissingCodegraphMessage(supplyChain: SupplyChainConfig): string {
+  const sourceStatus = getSupplyChainSourceStatus(supplyChain, 'codegraph.registry');
+  if (!sourceStatus.ok) {
+    return `not installed — no private CodeGraph registry configured; ${sourceStatus.hint}`;
+  }
+
+  return `not installed — install with: ${formatNpmInstallCommand(
+    ['install', '-g', supplyChain.codegraph.packageSpec],
+    supplyChain.codegraph.registry,
+  )}`;
+}
+
+async function checkOpenSpecCli(supplyChain: SupplyChainConfig): Promise<CheckResult> {
   if (!isCommandAvailable('openspec')) {
     return {
       check: 'openspec CLI',
       status: 'warn',
-      message: 'not installed — install with: npm install -g @fission-ai/openspec@latest',
+      message: formatMissingOpenSpecMessage(supplyChain),
     };
   }
   try {
@@ -216,7 +250,11 @@ async function checkBeaconYamlValidity(projectPath: string): Promise<CheckResult
   return results;
 }
 
-async function checkCodegraph(projectPath: string, scope: DoctorScope): Promise<CheckResult> {
+async function checkCodegraph(
+  projectPath: string,
+  scope: DoctorScope,
+  supplyChain: SupplyChainConfig,
+): Promise<CheckResult> {
   if (scope !== 'global' && hasCodegraphProjectIndex(projectPath)) {
     return { check: 'CodeGraph', status: 'pass', message: 'initialized (.codegraph/ present)' };
   }
@@ -225,7 +263,7 @@ async function checkCodegraph(projectPath: string, scope: DoctorScope): Promise<
     return {
       check: 'CodeGraph CLI',
       status: 'warn',
-      message: 'not installed — install with: npm install -g @colbymchenry/codegraph',
+      message: formatMissingCodegraphMessage(supplyChain),
     };
   }
 
@@ -246,14 +284,15 @@ async function checkCodegraph(projectPath: string, scope: DoctorScope): Promise<
 }
 
 async function collectResults(projectPath: string, scope: DoctorScope): Promise<CheckResult[]> {
+  const supplyChain = await loadSupplyChainConfig(projectPath);
   const results: CheckResult[] = [];
-  results.push(await checkOpenSpecCli());
+  results.push(await checkOpenSpecCli(supplyChain));
   if (scope !== 'global') {
     results.push(await checkWorkingDirs(projectPath));
   }
   results.push(...(await checkSkillCompleteness(projectPath, scope)));
   results.push(await checkScriptsPresent());
-  results.push(await checkCodegraph(projectPath, scope));
+  results.push(await checkCodegraph(projectPath, scope, supplyChain));
   results.push(...(await checkBeaconYamlValidity(projectPath)));
   return results;
 }

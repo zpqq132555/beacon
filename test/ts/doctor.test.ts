@@ -2,7 +2,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { promises as fs } from 'fs';
 import os from 'os';
 import path from 'path';
-import { doctorCommand } from '../../src/commands/doctor.js';
 
 describe('doctor command', () => {
   let tmpDir: string;
@@ -14,6 +13,9 @@ describe('doctor command', () => {
 
   afterEach(async () => {
     await fs.rm(tmpDir, { recursive: true, force: true });
+    vi.resetModules();
+    vi.doUnmock('../../src/core/openspec.js');
+    vi.doUnmock('../../src/core/codegraph.js');
   });
 
   it('accepts current beacon state fields in JSON output', async () => {
@@ -41,6 +43,7 @@ describe('doctor command', () => {
     const log = vi.spyOn(console, 'log').mockImplementation(() => undefined);
     let json = '';
     try {
+      const { doctorCommand } = await import('../../src/commands/doctor.js');
       await doctorCommand(tmpDir, { json: true, scope: 'project' });
       json = log.mock.calls.map((call) => call.join(' ')).join('\n');
     } finally {
@@ -84,6 +87,7 @@ describe('doctor command', () => {
     const log = vi.spyOn(console, 'log').mockImplementation(() => undefined);
     let json = '';
     try {
+      const { doctorCommand } = await import('../../src/commands/doctor.js');
       await doctorCommand(tmpDir, { json: true, scope: 'project' });
       json = log.mock.calls.map((call) => call.join(' ')).join('\n');
     } finally {
@@ -100,5 +104,85 @@ describe('doctor command', () => {
       status: 'fail',
       message: expect.stringContaining('unknown_root_field'),
     });
+  });
+
+  it('uses configured supply chain sources in missing dependency remediation', async () => {
+    await fs.mkdir(path.join(tmpDir, '.beacon'), { recursive: true });
+    await fs.writeFile(
+      path.join(tmpDir, '.beacon', 'config.yaml'),
+      [
+        'supply_chain.openspec.package: @internal/openspec@latest',
+        'supply_chain.openspec.registry: https://npm.internal.example',
+        'supply_chain.codegraph.package: @internal/codegraph',
+        'supply_chain.codegraph.registry: https://npm.internal.example',
+        '',
+      ].join('\n'),
+    );
+
+    vi.doMock('../../src/core/openspec.js', () => ({
+      isCommandAvailable: () => false,
+    }));
+    vi.doMock('../../src/core/codegraph.js', () => ({
+      hasCodegraphProjectIndex: () => false,
+      resolveCodegraphCommand: () => null,
+    }));
+
+    const log = vi.spyOn(console, 'log').mockImplementation(() => undefined);
+    let json = '';
+    try {
+      const { doctorCommand } = await import('../../src/commands/doctor.js');
+      await doctorCommand(tmpDir, { json: true, scope: 'global' });
+      json = log.mock.calls.map((call) => call.join(' ')).join('\n');
+    } finally {
+      log.mockRestore();
+    }
+
+    const results = JSON.parse(json).results as Array<{
+      check: string;
+      status: string;
+      message: string;
+    }>;
+
+    expect(results.find((result) => result.check === 'openspec CLI')).toMatchObject({
+      status: 'warn',
+      message: expect.stringContaining(
+        'npm install -g @internal/openspec@latest --registry https://npm.internal.example',
+      ),
+    });
+    expect(results.find((result) => result.check === 'CodeGraph CLI')).toMatchObject({
+      status: 'warn',
+      message: expect.stringContaining(
+        'npm install -g @internal/codegraph --registry https://npm.internal.example',
+      ),
+    });
+  });
+
+  it('explains when private dependency sources are not configured', async () => {
+    vi.doMock('../../src/core/openspec.js', () => ({
+      isCommandAvailable: () => false,
+    }));
+    vi.doMock('../../src/core/codegraph.js', () => ({
+      hasCodegraphProjectIndex: () => false,
+      resolveCodegraphCommand: () => null,
+    }));
+
+    const log = vi.spyOn(console, 'log').mockImplementation(() => undefined);
+    let json = '';
+    try {
+      const { doctorCommand } = await import('../../src/commands/doctor.js');
+      await doctorCommand(tmpDir, { json: true, scope: 'global' });
+      json = log.mock.calls.map((call) => call.join(' ')).join('\n');
+    } finally {
+      log.mockRestore();
+    }
+
+    const results = JSON.parse(json).results as Array<{ check: string; message: string }>;
+
+    expect(results.find((result) => result.check === 'openspec CLI')?.message).toContain(
+      'no private OpenSpec registry configured',
+    );
+    expect(results.find((result) => result.check === 'CodeGraph CLI')?.message).toContain(
+      'no private CodeGraph registry configured',
+    );
   });
 });

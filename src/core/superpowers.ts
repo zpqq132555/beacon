@@ -17,6 +17,7 @@ function buildSuperpowersInstallCommand(
   _projectPath: string,
   scope: InstallScope,
   platformIds: string[],
+  source = 'obra/superpowers',
 ): { command: string; args: string[] } {
   const unknownIds = platformIds.filter((id) => !VALID_PLATFORM_IDS.has(id));
   if (unknownIds.length > 0) {
@@ -29,7 +30,7 @@ function buildSuperpowersInstallCommand(
     throw new Error(`No skills CLI agent names resolved for platforms: ${platformIds.join(', ')}`);
   }
 
-  const args = ['skills', 'add', 'obra/superpowers', '-y'];
+  const args = ['skills', 'add', source, '-y'];
   if (scope === 'global') {
     args.push('-g');
   }
@@ -48,12 +49,13 @@ async function installSuperpowersForPlatforms(
   scope: InstallScope,
   platformIds: string[],
   shouldInstall = true,
+  source = 'obra/superpowers',
 ): Promise<'installed' | 'failed' | 'skipped'> {
   if (!shouldInstall) {
     return 'skipped';
   }
 
-  const command = buildSuperpowersInstallCommand(projectPath, scope, platformIds);
+  const command = buildSuperpowersInstallCommand(projectPath, scope, platformIds, source);
 
   try {
     execFileSync(command.command, command.args, {

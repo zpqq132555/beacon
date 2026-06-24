@@ -418,7 +418,12 @@ export async function updateCommand(
 
     if (shouldInstallCodegraph) {
       log(`\n  ${t(lang, 'installingCG')}`);
-      codegraphStatus = await installCodegraph(projectPath, primaryScope, true);
+      codegraphStatus = await installCodegraph(
+        projectPath,
+        primaryScope,
+        true,
+        supplyChain.codegraph,
+      );
       log(`  CodeGraph: ${codegraphStatus}`);
     } else {
       log(`\n  CodeGraph: ${t(lang, 'cgSkippedByUser')}`);

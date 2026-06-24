@@ -89,6 +89,28 @@ describe('openspec', () => {
       expect(mockedExecFileSync).toHaveBeenCalledTimes(4);
     });
 
+    it('installs OpenSpec from the configured supply chain source', async () => {
+      mockedExecFileSync.mockReturnValueOnce(Buffer.from('/usr/bin/openspec'));
+      mockedExecFileSync.mockReturnValueOnce(Buffer.from('upgraded'));
+      mockedExecFileSync.mockReturnValueOnce(Buffer.from('/usr/bin/openspec'));
+      mockedExecFileSync.mockReturnValueOnce(Buffer.from('ok'));
+
+      const { installOpenSpec } = await import('../../src/core/openspec.js');
+      const result = await installOpenSpec('/tmp/test', ['claude'], 'global', true, {
+        packageSpec: '@internal/openspec@latest',
+        registry: 'https://npm.internal.example',
+      });
+
+      expect(result).toBe('installed');
+      expect(mockedExecFileSync.mock.calls[1][1]).toEqual([
+        'install',
+        '-g',
+        '@internal/openspec@latest',
+        '--registry',
+        'https://npm.internal.example',
+      ]);
+    });
+
     it('returns failed when openspec CLI is not available', async () => {
       mockedExecFileSync.mockImplementationOnce(() => {
         throw new Error('not found');
@@ -122,9 +144,17 @@ describe('openspec', () => {
 
       const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
       const { installOpenSpec } = await import('../../src/core/openspec.js');
-      const result = await installOpenSpec('/tmp/test', ['claude'], 'project');
+      const result = await installOpenSpec('/tmp/test', ['claude'], 'project', true, {
+        packageSpec: '@internal/openspec@latest',
+        registry: 'https://npm.internal.example',
+      });
 
       expect(result).toBe('failed');
+      expect(errorSpy).toHaveBeenCalledWith(
+        expect.stringContaining(
+          'Install manually: npm install @internal/openspec@latest --registry https://npm.internal.example',
+        ),
+      );
       expect(errorSpy).toHaveBeenCalledWith(
         expect.stringContaining('npm ERR! request to registry.npmjs.org failed'),
       );

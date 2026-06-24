@@ -4,10 +4,15 @@ import os from 'os';
 import path from 'path';
 import { PLATFORMS } from './platforms.js';
 import { printCommandErrorDetails } from './command-error.js';
+import { buildRegistryNpmArgs, type SupplyChainConfig } from './supply-chain.js';
 
 import type { InstallScope } from './types.js';
 
 const VALID_TOOL_IDS = new Set(PLATFORMS.map((p) => p.openspecToolId));
+const DEFAULT_OPENSPEC_SOURCE: SupplyChainConfig['openspec'] = {
+  packageSpec: '@fission-ai/openspec@latest',
+  registry: null,
+};
 const ALL_OPENSPEC_WORKFLOWS = [
   'propose',
   'explore',
@@ -159,6 +164,7 @@ async function ensureOpenSpecCli(
   scope: InstallScope,
   projectPath: string,
   shouldInstall = true,
+  source: SupplyChainConfig['openspec'] = DEFAULT_OPENSPEC_SOURCE,
 ): Promise<'ready' | 'missing' | 'failed'> {
   const alreadyInstalled = isCommandAvailable('openspec');
   if (!shouldInstall) {
@@ -168,10 +174,8 @@ async function ensureOpenSpecCli(
   console.warn(`    ${label} OpenSpec CLI...`);
   try {
     const npmArgs =
-      scope === 'global'
-        ? ['install', '-g', '@fission-ai/openspec@latest']
-        : ['install', '@fission-ai/openspec@latest'];
-    execFileSync(getNpmExecutable(), npmArgs, {
+      scope === 'global' ? ['install', '-g', source.packageSpec] : ['install', source.packageSpec];
+    execFileSync(getNpmExecutable(), buildRegistryNpmArgs(npmArgs, source.registry), {
       cwd: projectPath,
       stdio: 'inherit',
       timeout: 120_000,
@@ -191,16 +195,26 @@ async function ensureOpenSpecCli(
   }
 }
 
+function formatOpenSpecManualInstallCommand(
+  scope: InstallScope,
+  source: SupplyChainConfig['openspec'],
+): string {
+  const npmArgs =
+    scope === 'global' ? ['install', '-g', source.packageSpec] : ['install', source.packageSpec];
+  return ['npm', ...buildRegistryNpmArgs(npmArgs, source.registry)].join(' ');
+}
+
 async function installOpenSpec(
   projectPath: string,
   toolIds: string[],
   scope: InstallScope,
   shouldInstallCli = true,
+  source: SupplyChainConfig['openspec'] = DEFAULT_OPENSPEC_SOURCE,
 ): Promise<'installed' | 'failed' | 'skipped'> {
-  const cliStatus = await ensureOpenSpecCli(scope, projectPath, shouldInstallCli);
+  const cliStatus = await ensureOpenSpecCli(scope, projectPath, shouldInstallCli, source);
   if (cliStatus === 'failed') {
     console.error(
-      `    OpenSpec CLI not available. Install manually: npm install -g @fission-ai/openspec@latest`,
+      `    OpenSpec CLI not available. Install manually: ${formatOpenSpecManualInstallCommand(scope, source)}`,
     );
     return 'failed';
   }

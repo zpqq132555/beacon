@@ -397,7 +397,13 @@ export async function initCommand(targetPath: string, options: InitOptions = {})
   let osGlobalStatus: InstallStatus = 'skipped';
   if (osToolIds.length > 0) {
     log(`\n  ${t(lang, 'installingOS')} ${osToolIds.join(', ')}`);
-    osGlobalStatus = await installOpenSpec(projectPath, osToolIds, scope, shouldInstallOpenSpecCli);
+    osGlobalStatus = await installOpenSpec(
+      projectPath,
+      osToolIds,
+      scope,
+      shouldInstallOpenSpecCli,
+      supplyChain.openspec,
+    );
     if (osGlobalStatus === 'skipped' && !shouldInstallOpenSpecCli) {
       log(`  OpenSpec: ${t(lang, 'osSkippedNoCli')}`);
     } else {
@@ -419,6 +425,7 @@ export async function initCommand(targetPath: string, options: InitOptions = {})
         scope,
         spPlatformIds,
         true,
+        supplyChain.superpowers.source,
       );
       log(`  Superpowers: ${spGlobalStatus}`);
     }
@@ -488,7 +495,7 @@ export async function initCommand(targetPath: string, options: InitOptions = {})
 
   if (shouldInstallCodegraph) {
     log(`\n  ${t(lang, 'installingCG')}`);
-    const cgGlobalStatus = await installCodegraph(projectPath, scope, true);
+    const cgGlobalStatus = await installCodegraph(projectPath, scope, true, supplyChain.codegraph);
     log(`  CodeGraph: ${cgGlobalStatus}`);
     for (const r of results) {
       r.codegraph = cgGlobalStatus;

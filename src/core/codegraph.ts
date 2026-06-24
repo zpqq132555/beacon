@@ -3,8 +3,14 @@ import fs from 'fs';
 import path from 'path';
 import { isCommandAvailable, getNpmExecutable } from './openspec.js';
 import { printCommandErrorDetails } from './command-error.js';
+import { buildRegistryNpmArgs, type SupplyChainConfig } from './supply-chain.js';
 
 import type { InstallScope } from './types.js';
+
+const DEFAULT_CODEGRAPH_SOURCE: SupplyChainConfig['codegraph'] = {
+  packageSpec: '@colbymchenry/codegraph',
+  registry: null,
+};
 
 function getPnpmExecutable(platform: NodeJS.Platform = process.platform): string {
   return platform === 'win32' ? 'pnpm.cmd' : 'pnpm';
@@ -54,6 +60,7 @@ function resolveCodegraphCommand(): string | null {
 async function ensureCodegraphCli(
   projectPath: string,
   shouldInstall = true,
+  source: SupplyChainConfig['codegraph'] = DEFAULT_CODEGRAPH_SOURCE,
 ): Promise<string | null> {
   const existingCommand = resolveCodegraphCommand();
   if (existingCommand) return existingCommand;
@@ -61,7 +68,8 @@ async function ensureCodegraphCli(
 
   console.log('    Installing CodeGraph CLI...');
   try {
-    execFileSync(getNpmExecutable(), ['install', '-g', '@colbymchenry/codegraph'], {
+    const npmArgs = buildRegistryNpmArgs(['install', '-g', source.packageSpec], source.registry);
+    execFileSync(getNpmExecutable(), npmArgs, {
       cwd: projectPath,
       stdio: 'inherit',
       timeout: 180_000,
@@ -75,24 +83,32 @@ async function ensureCodegraphCli(
   }
 }
 
+function formatCodegraphManualInstallCommand(source: SupplyChainConfig['codegraph']): string {
+  return [
+    'npm',
+    ...buildRegistryNpmArgs(['install', '-g', source.packageSpec], source.registry),
+  ].join(' ');
+}
+
 async function installCodegraph(
   projectPath: string,
   scope: InstallScope,
   shouldInstallCli = true,
+  source: SupplyChainConfig['codegraph'] = DEFAULT_CODEGRAPH_SOURCE,
 ): Promise<'installed' | 'failed' | 'skipped'> {
   if (hasCodegraphProjectIndex(projectPath)) {
     console.log('    CodeGraph: existing .codegraph index detected');
     return 'skipped';
   }
 
-  const codegraphCommand = await ensureCodegraphCli(projectPath, shouldInstallCli);
+  const codegraphCommand = await ensureCodegraphCli(projectPath, shouldInstallCli, source);
   if (!codegraphCommand) {
     if (!shouldInstallCli) {
       console.log('    CodeGraph CLI not installed, skipping setup');
       return 'skipped';
     }
     console.error(
-      '    CodeGraph CLI not available. Install manually: npm install -g @colbymchenry/codegraph',
+      `    CodeGraph CLI not available. Install manually: ${formatCodegraphManualInstallCommand(source)}`,
     );
     return 'failed';
   }

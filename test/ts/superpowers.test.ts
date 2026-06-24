@@ -72,10 +72,24 @@ describe('superpowers', () => {
       const { buildSuperpowersInstallCommand } = await import('../../src/core/superpowers.js');
 
       expect(
-        buildSuperpowersInstallCommand('/tmp/test', 'project', ['claude', 'cursor']),
+        buildSuperpowersInstallCommand(
+          '/tmp/test',
+          'project',
+          ['claude', 'cursor'],
+          'internal/superpowers',
+        ),
       ).toEqual({
         command: process.platform === 'win32' ? 'npx.cmd' : 'npx',
-        args: ['skills', 'add', 'obra/superpowers', '-y', '--agent', 'claude-code', '--agent', 'cursor'],
+        args: [
+          'skills',
+          'add',
+          'internal/superpowers',
+          '-y',
+          '--agent',
+          'claude-code',
+          '--agent',
+          'cursor',
+        ],
       });
     });
 
@@ -91,9 +105,16 @@ describe('superpowers', () => {
       mockedExecFileSync.mockReturnValueOnce(Buffer.from('installed'));
 
       const { installSuperpowersForPlatforms } = await import('../../src/core/superpowers.js');
-      await installSuperpowersForPlatforms('/tmp/test', 'global', ['claude']);
+      await installSuperpowersForPlatforms(
+        '/tmp/test',
+        'global',
+        ['claude'],
+        true,
+        'internal/superpowers',
+      );
 
       const args = mockedExecFileSync.mock.calls[0][1] as string[];
+      expect(args).toContain('internal/superpowers');
       expect(args).toContain('-g');
     });
 

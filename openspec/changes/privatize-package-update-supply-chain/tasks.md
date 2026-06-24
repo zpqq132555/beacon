@@ -13,10 +13,10 @@
 
 ## 3. 外部能力包安装来源
 
-- [ ] 3.1 将 OpenSpec CLI 安装、升级和手动恢复提示接入供应链策略。
-- [ ] 3.2 将 Superpowers `skills add` 来源接入供应链策略，并保留四平台 agent 映射。
-- [ ] 3.3 将 CodeGraph CLI 安装和手动恢复提示接入供应链策略。
-- [ ] 3.4 更新 OpenSpec、Superpowers、CodeGraph、doctor 相关测试。
+- [x] 3.1 将 OpenSpec CLI 安装、升级和手动恢复提示接入供应链策略。
+- [x] 3.2 将 Superpowers `skills add` 来源接入供应链策略，并保留四平台 agent 映射。
+- [x] 3.3 将 CodeGraph CLI 安装和手动恢复提示接入供应链策略。
+- [x] 3.4 更新 OpenSpec、Superpowers、CodeGraph、doctor 相关测试。
 
 ## 4. 用户说明与防回退护栏
 
