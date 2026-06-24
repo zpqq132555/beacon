@@ -24,7 +24,7 @@ import {
 } from '../core/supply-chain.js';
 import { t, type TranslationKey } from './i18n.js';
 
-const PACKAGE_NAME = 'beacon';
+const DEFAULT_PACKAGE_NAME = 'beacon';
 
 interface UpdateOptions {
   json?: boolean;
@@ -44,6 +44,11 @@ interface InstalledBeaconTarget {
 interface DetectTargetsOptions {
   scopes?: InstallScope[];
   globalBaseDir?: string;
+}
+
+interface DetectBeaconPackageScopeOptions {
+  packageName?: string;
+  packageRoot?: string;
 }
 
 function languageToSkillsDir(language: string | undefined, fallback: SkillLanguage): string {
@@ -139,9 +144,18 @@ function isSameOrInside(childPath: string, parentPath: string): boolean {
 
 async function detectBeaconPackageScope(
   projectPath: string,
-  packageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..'),
+  options: DetectBeaconPackageScopeOptions | string = {},
 ): Promise<InstallScope> {
-  const localPackageRoot = path.join(projectPath, 'node_modules', 'beacon');
+  const packageName =
+    typeof options === 'string'
+      ? DEFAULT_PACKAGE_NAME
+      : (options.packageName ?? DEFAULT_PACKAGE_NAME);
+  const packageRoot =
+    typeof options === 'string'
+      ? options
+      : (options.packageRoot ??
+        path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..'));
+  const localPackageRoot = path.join(projectPath, 'node_modules', packageName);
   if (isSameOrInside(packageRoot, localPackageRoot)) return 'project';
 
   const packageJsonPath = path.join(projectPath, 'package.json');
@@ -153,9 +167,9 @@ async function detectBeaconPackageScope(
     }>(packageJsonPath);
 
     if (
-      pkg.dependencies?.[PACKAGE_NAME] ||
-      pkg.devDependencies?.[PACKAGE_NAME] ||
-      pkg.optionalDependencies?.[PACKAGE_NAME]
+      pkg.dependencies?.[packageName] ||
+      pkg.devDependencies?.[packageName] ||
+      pkg.optionalDependencies?.[packageName]
     ) {
       return 'project';
     }
@@ -257,7 +271,9 @@ export async function updateCommand(
   }
   log('');
 
-  const packageScope = options.scope ?? (await detectBeaconPackageScope(projectPath));
+  const packageScope =
+    options.scope ??
+    (await detectBeaconPackageScope(projectPath, { packageName: supplyChain.beacon.packageName }));
   let npmStatus: 'updated' | 'failed' | 'skipped' = 'skipped';
   if (!options.skipNpm) {
     log(`  ${t(lang, 'updatingNpmPackage')} (${packageScope} scope)...`);

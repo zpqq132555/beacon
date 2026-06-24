@@ -181,7 +181,8 @@ describe('printVersionInfo', () => {
 
     expect(logs[0]).toMatch(/^  Beacon v\d+\.\d+\.\d+$/);
     expect(logs[1]).toContain('99.99.99');
-    expect(logs[1]).toContain('npm update -g');
+    expect(logs[1]).toContain("Run 'beacon update' to upgrade.");
+    expect(logs[1]).not.toContain('npm update -g');
   });
 
   it('prints latest version confirmation when on latest', async () => {
@@ -208,15 +209,18 @@ describe('printVersionInfo', () => {
     expect(logs[0]).toMatch(/^  Beacon v/);
   });
 
-  it('prints only version when latest metadata URL is not configured', async () => {
+  it('prints a non-fatal skip result when latest metadata URL is not configured', async () => {
     const get = vi.spyOn(https, 'get');
     const logs: string[] = [];
     const log = (msg: string) => logs.push(msg);
 
     await printVersionInfo(log, null);
 
-    expect(logs).toHaveLength(1);
+    expect(logs).toHaveLength(2);
     expect(logs[0]).toMatch(/^  Beacon v/);
+    expect(logs[1]).toBe(
+      '  Private version metadata source not configured; skipping update check.',
+    );
     expect(get).not.toHaveBeenCalled();
   });
 });

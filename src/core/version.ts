@@ -4,8 +4,6 @@ import https from 'https';
 const require = createRequire(import.meta.url);
 const { version: CURRENT_VERSION } = require('../../package.json');
 
-const PACKAGE_NAME = 'beacon';
-
 export interface VersionCheckResult {
   currentVersion: string;
   latestVersion: string | null;
@@ -89,7 +87,7 @@ export function getLatestVersion(metadataUrl: string | null): Promise<string | n
 
 /**
  * Check for available updates.
- * Silently returns a "not checked" result if the metadata source is missing or unreachable.
+ * Returns a "not checked" result if the metadata source is missing or unreachable.
  */
 export async function checkForUpdate(metadataUrl: string | null): Promise<VersionCheckResult> {
   const currentVersion = getCurrentVersion();
@@ -125,14 +123,14 @@ export async function printVersionInfo(
   log(`  Beacon v${result.currentVersion}`);
 
   if (!result.checked) {
-    // Registry unreachable — skip silently per requirement #6
+    if (!metadataUrl) {
+      log('  Private version metadata source not configured; skipping update check.');
+    }
     return result;
   }
 
   if (result.hasUpdate) {
-    log(
-      `  New version v${result.latestVersion} available. Run 'npm update -g ${PACKAGE_NAME}' to upgrade.`,
-    );
+    log(`  New version v${result.latestVersion} available. Run 'beacon update' to upgrade.`);
   } else {
     log(`  You are on the latest version.`);
   }

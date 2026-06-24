@@ -177,6 +177,18 @@ describe('update command helpers', () => {
     await expect(detectBeaconPackageScope(projectDir, packageRoot)).resolves.toBe('project');
   });
 
+  it('detects project package scope from configured scoped node_modules install path', async () => {
+    const projectDir = path.join(tmpDir, 'project');
+    const packageRoot = path.join(projectDir, 'node_modules', '@internal', 'beacon');
+
+    await expect(
+      detectBeaconPackageScope(projectDir, {
+        packageName: '@internal/beacon',
+        packageRoot,
+      }),
+    ).resolves.toBe('project');
+  });
+
   it('detects project package scope from package.json dependencies', async () => {
     const projectDir = path.join(tmpDir, 'project');
     await fs.mkdir(projectDir, { recursive: true });
@@ -188,6 +200,26 @@ describe('update command helpers', () => {
 
     await expect(detectBeaconPackageScope(projectDir, tmpDir)).resolves.toBe('project');
   });
+
+  it.each(['dependencies', 'devDependencies', 'optionalDependencies'] as const)(
+    'detects project package scope from configured package.json %s',
+    async (field) => {
+      const projectDir = path.join(tmpDir, 'project');
+      await fs.mkdir(projectDir, { recursive: true });
+      await fs.writeFile(
+        path.join(projectDir, 'package.json'),
+        JSON.stringify({ [field]: { '@internal/beacon': '^0.2.4' } }),
+        'utf-8',
+      );
+
+      await expect(
+        detectBeaconPackageScope(projectDir, {
+          packageName: '@internal/beacon',
+          packageRoot: tmpDir,
+        }),
+      ).resolves.toBe('project');
+    },
+  );
 
   it('falls back to global package scope when no project install is found', async () => {
     const projectDir = path.join(tmpDir, 'project');
