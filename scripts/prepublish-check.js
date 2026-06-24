@@ -96,7 +96,6 @@ let found = 0;
 for (const filePath of walkFiles('.')) {
   const ext = extname(filePath);
   if (!TEXT_EXTENSIONS.has(ext)) continue;
-  if (shouldSkipHistoricalContent(filePath)) continue;
 
   let content;
   try {
@@ -119,7 +118,7 @@ for (const filePath of walkFiles('.')) {
     found++;
   }
 
-  if (shouldScanSupplyChain(filePath)) {
+  if (shouldScanSupplyChain(filePath) && !shouldSkipHistoricalContent(filePath)) {
     for (const { pattern, name } of PRIVATE_SUPPLY_CHAIN_FORBIDDEN_PATTERNS) {
       if (pattern.test(content)) {
         console.error(`[SUPPLY-CHAIN] Forbidden ${name} found in ${filePath}`);
