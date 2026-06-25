@@ -1,5 +1,15 @@
 # News
 
+## 0.4.4 - 2026-06-25
+
+### 项目级私有接入建议
+
+私有版 Beacon 推荐优先按项目级依赖接入，再执行 `npx beacon init --scope project --language zh` 完成初始化，并用 `beacon doctor` 做接入验收。首期只要求 Beacon 自身私有化；OpenSpec、Superpowers、CodeGraph 可以继续按团队现状保留为可选安装或管理员预装能力，不构成项目落地阻塞。
+
+### 项目升级与回滚路径
+
+后续继续更新时，先升级项目里的 Beacon 依赖版本，再执行 `beacon update` 刷新已经安装到平台目录中的 Beacon skills / rules / hooks，最后运行 `beacon doctor` 确认项目级安装、工作目录和已部署资产状态正常。若需要回滚，则按同样顺序回退依赖版本后重新执行 `beacon update` 与 `beacon doctor`。
+
 ## 0.3.9 — 2026-06-16
 
 ### 阶段守护加固

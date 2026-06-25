@@ -6,10 +6,14 @@ All notable changes to beacon will be documented in this file.
 
 ### Changed
 
+- **项目级私有接入说明**: 在 `README.md` 与 `NEWS.md` 中补齐 Beacon 私有版的项目级依赖接入、最小 `.beacon/config.yaml` 三项来源配置、`init -> doctor` 验收顺序，以及“首期只私有化 Beacon 本身”的边界，避免团队落地时把全局安装或外部依赖误当成前置条件。
+
 - **私有供应链策略**: 将 Beacon 自身更新、OpenSpec CLI、Superpowers skill 安装和 CodeGraph CLI 安装统一接入可配置私有来源，避免把公开 npm/GitHub 路径作为私有化分发的默认假设。
 - **供应链提示与文档**: 更新 CLI 提示、doctor 修复建议、README、NEWS 和私有化功能模块台账，让缺失私有来源时的恢复路径保持非致命且可操作。
 
 ### Tests
+
+- **项目 rollout 文档回归**: 为 `README.md` 和 `NEWS.md` 增加项目级私有接入、手动升级/回滚路径、最小配置键与首期边界的回归断言，防止后续文档回退到“全局预装优先”或遗漏 `beacon update` / `beacon doctor`。
 
 - **供应链私有化覆盖**: 新增并更新供应链配置、版本检查、update、OpenSpec、Superpowers、CodeGraph、doctor、README 与 prepublish 检查测试，固定私有来源优先级、package-only 来源和公开源默认路径回归防护。
 

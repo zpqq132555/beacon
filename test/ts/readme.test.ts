@@ -9,8 +9,8 @@ describe('README assets', () => {
   const formerKimiMatrix = `第 ${29} 个支持平台`;
   const formerUninstallMatrix = `覆盖 ${29} 个平台`;
   const formerCodegraphMatrix = `自动检测 ${7} 个支持平台`;
-  const publicRegistryDefault = `强制走${'官方源'}`;
-  const publicLatestVersionNarrative = `npm registry 是否有${'新版本'}`;
+  const publicRegistryDefault = `强制走 ${'官方源'}`;
+  const publicLatestVersionNarrative = `npm registry 是否有 ${'新版本'}`;
 
   it('uses npm-friendly absolute image URLs in README.md', async () => {
     const content = await fs.readFile('README.md', 'utf-8');
@@ -41,6 +41,40 @@ describe('README assets', () => {
     expect(news).not.toContain(formerCodegraphMatrix);
     expect(news).not.toContain(publicRegistryDefault);
     expect(news).not.toContain(publicLatestVersionNarrative);
+  });
+
+  it('documents project-scope beacon install and onboarding commands', async () => {
+    const content = await fs.readFile('README.md', 'utf-8');
+
+    expect(content).toContain(
+      'npm install -D beacon --registry https://npm.internal.example',
+    );
+    expect(content).toContain('npx beacon init --scope project --language zh');
+    expect(content).toContain('npx beacon doctor');
+  });
+
+  it('documents the minimal beacon supply chain config keys', async () => {
+    const content = await fs.readFile('README.md', 'utf-8');
+
+    expect(content).toContain('supply_chain.beacon.package:');
+    expect(content).toContain('supply_chain.beacon.registry:');
+    expect(content).toContain('supply_chain.beacon.latest_metadata_url:');
+  });
+
+  it('keeps first-phase private rollout focused on the project dependency path', async () => {
+    const content = await fs.readFile('README.md', 'utf-8');
+
+    expect(content).toContain('首期只要求 Beacon 自身私有化');
+    expect(content).not.toContain('也可以由管理员预装 Beacon');
+  });
+
+  it('keeps NEWS aligned with the project-level private rollout workflow', async () => {
+    const content = await fs.readFile('NEWS.md', 'utf-8');
+
+    expect(content).toContain('npx beacon init --scope project --language zh');
+    expect(content).toContain('beacon update');
+    expect(content).toContain('beacon doctor');
+    expect(content).toContain('OpenSpec');
   });
 
   it('labels optional dependency sources as supply chain configured', () => {
