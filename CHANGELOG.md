@@ -2,6 +2,17 @@
 
 All notable changes to beacon will be documented in this file.
 
+## What's Changed [0.4.4] - 2026-06-25
+
+### Changed
+
+- **私有供应链策略**: 将 Beacon 自身更新、OpenSpec CLI、Superpowers skill 安装和 CodeGraph CLI 安装统一接入可配置私有来源，避免把公开 npm/GitHub 路径作为私有化分发的默认假设。
+- **供应链提示与文档**: 更新 CLI 提示、doctor 修复建议、README、NEWS 和私有化功能模块台账，让缺失私有来源时的恢复路径保持非致命且可操作。
+
+### Tests
+
+- **供应链私有化覆盖**: 新增并更新供应链配置、版本检查、update、OpenSpec、Superpowers、CodeGraph、doctor、README 与 prepublish 检查测试，固定私有来源优先级、package-only 来源和公开源默认路径回归防护。
+
 ## What's Changed [0.4.3] - 2026-06-23
 
 ### Changed

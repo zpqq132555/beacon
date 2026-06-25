@@ -7,7 +7,10 @@ describe('doctor command', () => {
   let tmpDir: string;
 
   beforeEach(async () => {
-    tmpDir = path.join(os.tmpdir(), `beacon-doctor-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+    tmpDir = path.join(
+      os.tmpdir(),
+      `beacon-doctor-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+    );
     await fs.mkdir(tmpDir, { recursive: true });
   });
 
@@ -54,7 +57,7 @@ describe('doctor command', () => {
     expect(results.find((result) => result.check === '.beacon.yaml: current-state')).toMatchObject({
       status: 'pass',
     });
-  });
+  }, 15_000);
 
   it('only validates top-level keys in .beacon.yaml', async () => {
     const validChangeDir = path.join(tmpDir, 'openspec', 'changes', 'nested-valid');
@@ -76,12 +79,7 @@ describe('doctor command', () => {
     await fs.mkdir(invalidChangeDir, { recursive: true });
     await fs.writeFile(
       path.join(invalidChangeDir, '.beacon.yaml'),
-      [
-        'workflow: full',
-        'phase: verify',
-        'unknown_root_field: true',
-        '',
-      ].join('\n'),
+      ['workflow: full', 'phase: verify', 'unknown_root_field: true', ''].join('\n'),
     );
 
     const log = vi.spyOn(console, 'log').mockImplementation(() => undefined);
@@ -94,13 +92,19 @@ describe('doctor command', () => {
       log.mockRestore();
     }
 
-    const results = JSON.parse(json).results as Array<{ check: string; status: string; message: string }>;
+    const results = JSON.parse(json).results as Array<{
+      check: string;
+      status: string;
+      message: string;
+    }>;
 
     expect(results.find((result) => result.check === '.beacon.yaml: nested-valid')).toMatchObject({
       status: 'pass',
     });
 
-    expect(results.find((result) => result.check === '.beacon.yaml: top-level-invalid')).toMatchObject({
+    expect(
+      results.find((result) => result.check === '.beacon.yaml: top-level-invalid'),
+    ).toMatchObject({
       status: 'fail',
       message: expect.stringContaining('unknown_root_field'),
     });

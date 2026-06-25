@@ -27,7 +27,7 @@
 
 ## 5. 验证
 
-- [ ] 5.1 运行 `cmd /c openspec validate --change "privatize-package-update-supply-chain"`。
-- [ ] 5.2 运行相关 targeted Vitest：`version`、`update`、`openspec`、`superpowers`、`codegraph`、`doctor`、`readme`。
-- [ ] 5.3 运行 `pnpm format:check`、`pnpm lint`、`pnpm build`。
-- [ ] 5.4 根据改动范围决定是否运行 `pnpm test`，并在验证报告中说明结果。
+- [x] 5.1 运行 `cmd /c openspec validate --change "privatize-package-update-supply-chain"`。
+- [x] 5.2 运行相关 targeted Vitest：`version`、`update`、`openspec`、`superpowers`、`codegraph`、`doctor`、`readme`。
+- [x] 5.3 运行 `pnpm format:check`、`pnpm lint`、`pnpm build`。
+- [x] 5.4 根据改动范围决定是否运行 `pnpm test`，并在验证报告中说明结果；本次已尝试全量 `pnpm test`，但 shell-heavy 测试批次在本地 15 分钟内未完成，目标测试与提交前检查已覆盖本次改动路径。
