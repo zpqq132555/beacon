@@ -153,12 +153,20 @@ Agents should not skip these decision points; other unambiguous phase transition
 | Command | Phase | Owner | Artifacts |
 |---------|-------|-------|-----------|
 | `/beacon-open` | 1. Open | OpenSpec | proposal.md, design.md, tasks.md |
+| `/beacon-init` | Auxiliary maintenance | Beacon | Project AGENTS tree maintenance (manual full maintenance / archive follow-up after confirmation) |
 | `/beacon-design` | 2. Deep Design | Superpowers | Design Doc, delta spec |
 | `/beacon-build` | 3. Plan and Build | Superpowers | Implementation plan, code commits |
 | `/beacon-verify` | 4. Verify and Close | Both | Verification report, branch handling |
 | `/beacon-archive` | 5. Archive | OpenSpec | delta→main spec sync, design doc markup, archive |
 | `/beacon-hotfix` | Preset path | Both | Quick fix (skip brainstorming) |
 | `/beacon-tweak` | Preset path | Both | Small change (skip brainstorming and full plan) |
+
+### AGENTS Tree Maintenance Entry
+
+- `/beacon-init` is the project-level AGENTS tree maintenance entrypoint and is not part of the five-phase main workflow.
+- When invoked manually, `/beacon-init` performs full maintenance against the current workspace.
+- Archive should involve `/beacon-init` only when `beacon/reference/agents-sedimentation.md` says the archived content deserves sedimentation, after a summary proposal and user confirmation.
+- Use `beacon/reference/agents-topology.md` for the layering rules that govern AGENTS nodes.
 
 ```
 /beacon

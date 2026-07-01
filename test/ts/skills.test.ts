@@ -1398,6 +1398,53 @@ describe('skills', () => {
     });
   });
 
+  describe('Beacon init skill entrypoint', () => {
+    it('ships the beacon-init skill and exposes it in runtime contracts', async () => {
+      const manifest = await readManifest();
+      expect(manifest.skills).toContain('beacon-init/SKILL.md');
+
+      const zhRoot = await fs.readFile(
+        path.resolve('assets', 'skills-zh', 'beacon', 'SKILL.md'),
+        'utf-8',
+      );
+      const enRoot = await fs.readFile(
+        path.resolve('assets', 'skills', 'beacon', 'SKILL.md'),
+        'utf-8',
+      );
+
+      expect(zhRoot).toContain('/beacon-init');
+      expect(enRoot).toContain('/beacon-init');
+    });
+
+    it('documents beacon-init topology and archive sedimentation contracts', async () => {
+      const zhInit = await fs.readFile(
+        path.resolve('assets', 'skills-zh', 'beacon-init', 'SKILL.md'),
+        'utf-8',
+      );
+      const zhArchive = await fs.readFile(
+        path.resolve('assets', 'skills-zh', 'beacon-archive', 'SKILL.md'),
+        'utf-8',
+      );
+      const enInit = await fs.readFile(
+        path.resolve('assets', 'skills', 'beacon-init', 'SKILL.md'),
+        'utf-8',
+      );
+      const enArchive = await fs.readFile(
+        path.resolve('assets', 'skills', 'beacon-archive', 'SKILL.md'),
+        'utf-8',
+      );
+
+      expect(zhInit).toContain('根 `AGENTS.md` 保持精简');
+      expect(zhInit).toContain('`CLAUDE.md` 只作为 shim');
+      expect(zhInit).toContain('beacon/reference/agents-topology.md');
+      expect(zhArchive).toContain('静默忽略');
+      expect(zhArchive).toContain('/beacon-init');
+      expect(enInit).toContain('beacon/reference/agents-topology.md');
+      expect(enArchive).toContain('silently ignore');
+      expect(enArchive).toContain('/beacon-init');
+    });
+  });
+
   describe('Beacon script discovery helper', () => {
     it('ships a shared script locator helper', async () => {
       const manifest = await readManifest();

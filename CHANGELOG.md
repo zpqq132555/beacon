@@ -2,6 +2,21 @@
 
 All notable changes to beacon will be documented in this file.
 
+## What's Changed [0.4.6] - 2026-07-01
+
+### Added
+
+- **beacon-init**: 新增独立 `/beacon-init` 技能，作为项目级 AGENTS 树维护入口，支持手动全量维护与归档确认后的后续转调。
+
+### Changed
+
+- **AGENTS 拓扑合同**: 新增中英文 AGENTS 拓扑参考，明确根 `AGENTS.md`、目录级 `AGENTS.md`、`[职责].md` 与更深层节点的职责边界。
+- **archive 沉淀协作**: `beacon-archive` 与根 `beacon` 技能补充“静默忽略 / 摘要建议 / 用户确认后转调 `/beacon-init`”的 AGENTS 沉淀流程，并将 `/beacon-init` 纳入运行时与 README 说明。
+
+### Tests
+
+- **skills/readme 回归**: 补充 `/beacon-init` 分发、AGENTS 拓扑引用、archive 协作合同与 README 入口说明的自动化断言。
+
 ## What's Changed [0.4.5] - 2026-06-30
 
 ### Changed

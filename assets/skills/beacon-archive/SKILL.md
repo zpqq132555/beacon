@@ -33,6 +33,15 @@ fi
 
 Proceed to Step 1 after verification passes. The script outputs specific failure reasons when verification fails.
 
+### 0a. AGENTS Sedimentation Check
+
+Before final archive confirmation, use `beacon/reference/agents-sedimentation.md` to decide whether the current archive deserves AGENTS sedimentation:
+- If the content is not reusable long term, Beacon must silently ignore AGENTS maintenance and avoid prompting the user about it.
+- If the content is suitable, first present a summary-level proposal covering affected documents, intended actions, and the reason it should be sedimented, then wait for confirmation.
+- After confirmation, transfer control to `/beacon-init` for the actual maintenance work.
+- If the project does not yet have an AGENTS tree, invoke `/beacon-init` as "full maintenance + current archive injection".
+- If the project already has an AGENTS tree, restrict `/beacon-init` to incremental maintenance for the current archive only.
+
 ### 1. Final Archive Confirmation (Blocking Point)
 
 After entry verification passes, **must follow the `beacon/reference/decision-point.md` protocol to pause and wait for the user to confirm whether to archive immediately**. Must not run `"$BEACON_BASH" "$BEACON_ARCHIVE" "<change-name>"` before user confirmation.

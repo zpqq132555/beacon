@@ -2,7 +2,10 @@
   "version": "0.4.0",
   "skills": [
     "beacon/SKILL.md",
+    "beacon-init/SKILL.md",
     "beacon/reference/auto-transition.md",
+    "beacon/reference/agents-topology.md",
+    "beacon/reference/agents-sedimentation.md",
     "beacon/reference/beacon-yaml-fields.md",
     "beacon/reference/context-recovery.md",
     "beacon/reference/debug-gate.md",

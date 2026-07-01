@@ -53,6 +53,15 @@ describe('README assets', () => {
     expect(content).toContain('npx beacon doctor');
   });
 
+  it('documents beacon-init as the AGENTS tree maintenance entrypoint', async () => {
+    const content = await fs.readFile('README.md', 'utf-8');
+
+    expect(content).toContain('/beacon-init');
+    expect(content).toContain('不属于五阶段主流程');
+    expect(content).toContain('手动全量维护');
+    expect(content).toContain('归档确认后增量沉淀');
+  });
+
   it('documents the minimal beacon supply chain config keys', async () => {
     const content = await fs.readFile('README.md', 'utf-8');
 

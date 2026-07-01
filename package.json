@@ -1,6 +1,6 @@
 {
   "name": "beacon",
-  "version": "0.4.5",
+  "version": "0.4.6",
   "description": "Private Beacon workflow automation for OpenSpec and Superpowers",
   "keywords": [
     "beacon",
