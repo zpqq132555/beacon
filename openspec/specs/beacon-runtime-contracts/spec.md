@@ -17,6 +17,10 @@ Beacon SHALL expose `beacon` as the only command-line entry point for the privat
 - **WHEN** package metadata is inspected
 - **THEN** the package MUST expose a `beacon` bin and MUST NOT expose a `comet` bin
 
+#### Scenario: Init banner uses Beacon-only branding
+- **WHEN** a user runs `beacon init`
+- **THEN** the banner and other user-visible branding output MUST use Beacon private distribution identity and MUST NOT show old Comet-era branding remnants
+
 ### Requirement: Beacon Installed Assets
 Beacon SHALL install skills, references, rules, hooks, and scripts using Beacon names and paths.
 
