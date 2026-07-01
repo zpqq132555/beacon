@@ -1,7 +1,7 @@
 # archive-agents-sedimentation Specification
 
 ## Purpose
-TBD - created by archiving change add-beacon-init-agents-maintenance-skill. Update Purpose after archive.
+Define when archive-phase learnings should be ignored, surfaced as summary-first suggestions, or routed through `/beacon-init` so only stable, high-value rules are sedimented into AGENTS.
 ## Requirements
 ### Requirement: Archive Trigger Is Silent by Default
 archive 阶段对于 AGENTS 沉淀 MUST 默认静默，仅在 AI 判断本次归档内容值得沉淀时才向用户暴露后续建议。
@@ -42,4 +42,3 @@ archive 阶段写入 AGENTS 的内容 MUST 只限于长期有效、对 AI 高价
 #### Scenario: 一次性背景不应沉淀
 - **WHEN** 某归档内容仅是一次性需求背景、临时 workaround 或只服务单次 feature 的说明
 - **THEN** Beacon MUST NOT 建议将其写入 AGENTS
-

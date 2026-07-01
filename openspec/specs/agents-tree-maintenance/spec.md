@@ -1,7 +1,7 @@
 # agents-tree-maintenance Specification
 
 ## Purpose
-TBD - created by archiving change add-beacon-init-agents-maintenance-skill. Update Purpose after archive.
+Define `/beacon-init` as the project-level entrypoint for full AGENTS tree maintenance, including manual full-workspace upkeep, summary-first confirmation, and conservative structural refactoring.
 ## Requirements
 ### Requirement: Manual Beacon Init Maintains the AGENTS Tree
 `/beacon-init` MUST 作为项目级 AGENTS 树维护入口，支持在用户手动调用时基于当前工作区现状创建或更新 AGENTS 体系。
@@ -39,4 +39,3 @@ TBD - created by archiving change add-beacon-init-agents-maintenance-skill. Upda
 #### Scenario: 删除动作包含在摘要建议中
 - **WHEN** 本次维护建议包含删除旧 AGENTS 文档
 - **THEN** 摘要中 MUST 明确列出待删除文件及其替代去向
-

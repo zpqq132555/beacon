@@ -2,6 +2,16 @@
 
 All notable changes to beacon will be documented in this file.
 
+## What's Changed [0.4.8] - 2026-07-01
+
+### Changed
+
+- **canonical spec Purpose 收口**: 回填 4 份主线 OpenSpec spec 的 Purpose，移除 archive 遗留占位，恢复 canonical 规范可读性与职责说明。
+
+### Tests
+
+- **canonical spec 完整性 guard**: 新增主线 `openspec/specs/**/spec.md` 占位扫描测试，阻止 `Purpose: TBD` 一类 archive 占位文案回流到主线规范。
+
 ## What's Changed [0.4.7] - 2026-07-01
 
 ### Changed

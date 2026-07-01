@@ -1,7 +1,7 @@
 # human-documentation-localization Specification
 
 ## Purpose
-TBD - created by archiving change consolidate-human-docs-to-zh. Update Purpose after archive.
+Define the contract that human-facing project documentation is maintained as Simplified Chinese canonical content, with AGENTS.md as the collaboration source of truth and runtime assets excluded from this cleanup scope.
 ## Requirements
 ### Requirement: 普通文档必须以中文 canonical 维护
 
@@ -77,4 +77,3 @@ TBD - created by archiving change consolidate-human-docs-to-zh. Update Purpose a
 
 - **WHEN** `CHANGELOG.md` 顶部版本被新增或复用
 - **THEN** `package.json` 的 `version` MUST 与该版本一致
-

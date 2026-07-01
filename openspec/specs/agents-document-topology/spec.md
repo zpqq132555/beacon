@@ -1,7 +1,7 @@
 # agents-document-topology Specification
 
 ## Purpose
-TBD - created by archiving change add-beacon-init-agents-maintenance-skill. Update Purpose after archive.
+Define how Beacon organizes root AGENTS.md, directory-level AGENTS.md, and supplemental responsibility documents so the AGENTS tree follows stable responsibility boundaries instead of raw directory depth.
 ## Requirements
 ### Requirement: Root AGENTS Stays Minimal
 项目根 `AGENTS.md` MUST 保持精简，只承载全局入口、关键命令、高价值全局注意事项和 AGENTS Map。
@@ -49,4 +49,3 @@ AGENTS 树 MUST 按职责边界分层，而不是机械按目录深度分层。
 #### Scenario: 不为深层而深层
 - **WHEN** 某下级目录并未形成清晰、长期稳定且明显不同的职责边界
 - **THEN** `/beacon-init` MUST NOT 仅因目录更深而继续创建新的 AGENTS 节点
-
