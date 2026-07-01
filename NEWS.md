@@ -4,7 +4,7 @@
 
 ### 项目级私有接入建议
 
-私有版 Beacon 推荐优先按项目级依赖接入，再执行 `npx beacon init --scope project --language zh` 完成初始化，并用 `beacon doctor` 做接入验收。首期只要求 Beacon 自身私有化；OpenSpec、Superpowers、CodeGraph 可以继续按团队现状保留为可选安装或管理员预装能力，不构成项目落地阻塞。
+私有版 Beacon 推荐优先按项目级依赖接入，再执行 `npx beacon init --scope project` 完成初始化，并用 `beacon doctor` 做接入验收。当前 `init` 会固定部署中文 Beacon 技能。首期只要求 Beacon 自身私有化；OpenSpec、Superpowers、CodeGraph 可以继续按团队现状保留为可选安装或管理员预装能力，不构成项目落地阻塞。
 
 ### 项目升级与回滚路径
 

@@ -119,9 +119,9 @@ describe('update command helpers', () => {
       globalBaseDir: globalDir,
     });
 
-    expect(targets.map((t) => `${t.scope}:${t.platform.id}:${t.language}`)).toEqual([
-      'project:claude:en',
-      'global:codex:zh',
+    expect(targets.map((t) => `${t.scope}:${t.platform.id}`)).toEqual([
+      'project:claude',
+      'global:codex',
     ]);
   });
 
@@ -263,12 +263,12 @@ describe('update command helpers', () => {
     );
   });
 
-  it('formats the skill update command with scope, platform, and language source', () => {
-    expect(formatSkillUpdateCommand('project', claudePlatform, 'skills-zh')).toBe(
+  it('formats the skill update command with the fixed Chinese skill source', () => {
+    expect(formatSkillUpdateCommand('project', claudePlatform)).toBe(
       'copy assets/skills-zh -> .claude/skills/ (project)',
     );
-    expect(formatSkillUpdateCommand('global', claudePlatform, 'skills')).toBe(
-      'copy assets/skills -> ~/.claude/skills/ (global)',
+    expect(formatSkillUpdateCommand('global', claudePlatform)).toBe(
+      'copy assets/skills-zh -> ~/.claude/skills/ (global)',
     );
   });
 
@@ -290,6 +290,7 @@ describe('update command helpers', () => {
     }
 
     expect(output).toContain('$ copy assets/skills-zh -> .claude/skills/ (project)');
+    expect(output).not.toContain('language:');
   });
 
   it('prints structured JSON when requested', async () => {
@@ -315,9 +316,9 @@ describe('update command helpers', () => {
     expect(result.skills.targets[0]).toMatchObject({
       scope: 'project',
       platform: 'claude',
-      language: 'en',
-      source: 'skills',
+      source: 'skills-zh',
     });
+    expect(result.skills.targets[0]).not.toHaveProperty('language');
   });
 
   it('prints configured npm update command in structured JSON', async () => {

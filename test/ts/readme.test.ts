@@ -49,7 +49,7 @@ describe('README assets', () => {
     expect(content).toContain(
       'npm install -D beacon --registry https://npm.internal.example',
     );
-    expect(content).toContain('npx beacon init --scope project --language zh');
+    expect(content).toContain('npx beacon init --scope project');
     expect(content).toContain('npx beacon doctor');
   });
 
@@ -71,7 +71,7 @@ describe('README assets', () => {
   it('keeps NEWS aligned with the project-level private rollout workflow', async () => {
     const content = await fs.readFile('NEWS.md', 'utf-8');
 
-    expect(content).toContain('npx beacon init --scope project --language zh');
+    expect(content).toContain('npx beacon init --scope project');
     expect(content).toContain('beacon update');
     expect(content).toContain('beacon doctor');
     expect(content).toContain('OpenSpec');

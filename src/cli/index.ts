@@ -24,7 +24,6 @@ program
   .option('--overwrite', 'Overwrite manifest-managed files')
   .option('--json', 'Output as JSON')
   .addOption(new Option('--scope <scope>', 'Install scope').choices(['global', 'project']))
-  .addOption(new Option('--language <lang>', 'Language for skills').choices(['en', 'zh']))
   .action(async (targetPath = '.', options) => {
     try {
       await initCommand(targetPath, options);
@@ -64,7 +63,6 @@ program
   .command('update [path]')
   .description('Update beacon skill files to latest version')
   .option('--json', 'Output as JSON')
-  .addOption(new Option('--language <lang>', 'Language for skills').choices(['en', 'zh']))
   .addOption(new Option('--scope <scope>', 'Install scope').choices(['global', 'project']))
   .addOption(new Option('--skip-npm', 'Skip npm package self-update').hideHelp())
   .action(async (targetPath = '.', options) => {

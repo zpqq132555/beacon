@@ -2,6 +2,16 @@
 
 All notable changes to beacon will be documented in this file.
 
+## What's Changed [0.4.5] - 2026-06-30
+
+### Changed
+
+- **init 中文单轨运行时**: `beacon init` / `beacon update` 移除 `--language` 参数与语言分发分支，固定部署中文 Beacon skills，并同步调整 banner、CLI 帮助、manifest 与更新输出，避免私有版后续继续维护多语言运行时。
+
+### Tests
+
+- **init/update 中文单轨覆盖**: 补充 init/update/skills/README 回归，覆盖中文单轨分发、JSON 输出、CLI 帮助收口与项目级工作目录创建行为。
+
 ## What's Changed [0.4.4] - 2026-06-25
 
 ### Changed

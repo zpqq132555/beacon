@@ -100,9 +100,10 @@ describe('beacon init E2E', () => {
 
     expect(result.projectPath).toBe(tmpDir);
     expect(result.scope).toBe('project');
-    expect(result.language).toBe('en');
+    expect(result).not.toHaveProperty('language');
     expect(result.selectedPlatforms).toContain('claude');
     expect(result.workingDirsCreated).toBe(true);
+    expect(result).not.toHaveProperty('agentContext');
 
     const claudeResult = (result.results as { platform: string; beacon: string }[]).find(
       (r) => r.platform === 'claude',
@@ -117,6 +118,8 @@ describe('beacon init E2E', () => {
 
     await expect(fs.stat(path.join(tmpDir, 'docs', 'superpowers', 'specs'))).resolves.toBeDefined();
     await expect(fs.stat(path.join(tmpDir, 'docs', 'superpowers', 'plans'))).resolves.toBeDefined();
+    await expect(fs.stat(path.join(tmpDir, 'AGENTS.md'))).rejects.toThrow();
+    await expect(fs.stat(path.join(tmpDir, 'CLAUDE.md'))).rejects.toThrow();
   }, 20_000);
 
   it('installs Beacon skills at global scope', async () => {
@@ -243,37 +246,6 @@ describe('beacon init E2E', () => {
     ).rejects.toThrow();
   }, 20_000);
 
-  it('passes English platform summary labels to the platform selection prompt', async () => {
-    mockExternalSuccess();
-    await fs.mkdir(path.join(tmpDir, '.codex'), { recursive: true });
-    mockedCheckbox.mockResolvedValue([]);
-    platformSelectPromptMock.mockResolvedValue(['codex']);
-
-    const { initCommand } = await import('../../src/commands/init.js');
-    const result = await captureJsonOutput(() =>
-      initCommand(tmpDir, { json: true, scope: 'project', language: 'en' }),
-    );
-
-    expect(result.selectedPlatforms).toEqual(['codex']);
-    expect(platformSelectPromptMock).toHaveBeenCalledWith(
-      expect.objectContaining({
-        message: 'Select platforms to set up:',
-        selectedLabel: 'Selected:',
-        emptyLabel: 'none',
-        required: true,
-        requiredErrorLabel: 'Select at least one platform.',
-        choices: expect.arrayContaining([
-          expect.objectContaining({
-            name: 'Codex (detected)',
-            summaryName: 'Codex',
-            value: 'codex',
-            checked: true,
-          }),
-        ]),
-      }),
-    );
-  }, 20_000);
-
   it('passes Chinese platform summary labels to the platform selection prompt', async () => {
     mockExternalSuccess();
     await fs.mkdir(path.join(tmpDir, '.codex'), { recursive: true });
@@ -281,9 +253,7 @@ describe('beacon init E2E', () => {
     platformSelectPromptMock.mockResolvedValue(['codex']);
 
     const { initCommand } = await import('../../src/commands/init.js');
-    const result = await captureJsonOutput(() =>
-      initCommand(tmpDir, { json: true, scope: 'project', language: 'zh' }),
-    );
+    const result = await captureJsonOutput(() => initCommand(tmpDir, { json: true, scope: 'project' }));
 
     expect(result.selectedPlatforms).toEqual(['codex']);
     expect(platformSelectPromptMock).toHaveBeenCalledWith(

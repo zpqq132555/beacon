@@ -1,24 +1,24 @@
-import path from 'path';
 import os from 'os';
+import path from 'path';
 import { checkbox, select } from '@inquirer/prompts';
-import { PLATFORMS, getPlatformSkillsDir, type Platform } from '../core/platforms.js';
-import { detectPlatforms, hasSkills, getBaseDir, type InstallScope } from '../core/detect.js';
-import {
-  copyBeaconSkillsForPlatform,
-  copyBeaconRulesForPlatform,
-  installBeaconHooksForPlatform,
-  createWorkingDirs,
-  type LanguageConfig,
-} from '../core/skills.js';
-import { installOpenSpec, isCommandAvailable } from '../core/openspec.js';
-import { installSuperpowersForPlatforms } from '../core/superpowers.js';
+
 import {
   hasCodegraphProjectIndex,
   installCodegraph,
   resolveCodegraphCommand,
 } from '../core/codegraph.js';
-import { printVersionInfo } from '../core/version.js';
+import { detectPlatforms, getBaseDir, hasSkills, type InstallScope } from '../core/detect.js';
+import { installOpenSpec, isCommandAvailable } from '../core/openspec.js';
+import { PLATFORMS, getPlatformSkillsDir, type Platform } from '../core/platforms.js';
 import { buildBeaconLatestMetadataUrl, loadSupplyChainConfig } from '../core/supply-chain.js';
+import { installSuperpowersForPlatforms } from '../core/superpowers.js';
+import {
+  copyBeaconRulesForPlatform,
+  copyBeaconSkillsForPlatform,
+  createWorkingDirs,
+  installBeaconHooksForPlatform,
+} from '../core/skills.js';
+import { printVersionInfo } from '../core/version.js';
 import { t, type TranslationKey } from './i18n.js';
 import { platformSelectPrompt } from './platform-select-prompt.js';
 
@@ -28,12 +28,12 @@ type InitOptions = {
   overwrite?: boolean;
   json?: boolean;
   scope?: InstallScope;
-  language?: string;
 };
 
 type InstallStatus = 'installed' | 'skipped' | 'failed';
 type ComponentAction = 'overwrite' | 'skip' | 'install';
 type BulkOverwriteChoice = 'overwrite-all' | 'skip-all' | 'choose';
+type NpmDepId = 'openspec' | 'superpowers' | 'codegraph';
 
 interface PlatformResult {
   platform: Platform;
@@ -43,26 +43,34 @@ interface PlatformResult {
   codegraph: InstallStatus;
 }
 
+interface NpmDepState {
+  id: NpmDepId;
+  installed: boolean;
+}
+
 type ComponentPlan = {
   osAction: ComponentAction;
   spAction: ComponentAction;
   cmAction: ComponentAction;
 };
 
-const LANGUAGES: LanguageConfig[] = [
-  { id: 'en', name: 'English', skillsDir: 'skills' },
-  { id: 'zh', name: '中文', skillsDir: 'skills-zh' },
-];
+type PlatformPlan = ComponentPlan & {
+  platform: Platform;
+  hasOS: boolean;
+  hasSP: boolean;
+  hasCM: boolean;
+};
+
+const RUNTIME_SKILLS_DIR = 'skills-zh';
 
 const BEACON_BANNER = [
-  `   ██████╗ ██████╗ ███╗   ███╗███████╗████████╗`,
-  `  ██╔════╝██╔═══██╗████╗ ████║██╔════╝╚══██╔══╝`,
-  `  ██║     ██║   ██║██╔████╔██║█████╗     ██║   `,
-  `  ██║     ██║   ██║██║╚██╔╝██║██╔══╝     ██║   `,
-  `  ╚██████╗╚██████╔╝██║ ╚═╝ ██║███████╗   ██║   `,
-  `   ╚═════╝ ╚═════╝ ╚═╝     ╚═╝╚══════╝   ╚═╝   `,
-  `       Agent Skill Harness Phase-Guarded Automation`,
-  `               From Idea To Archive                `,
+  ' ____  _____    _    ____ ___  _   _ ',
+  '| __ )| ____|  / \\  / ___/ _ \\| \\ | |',
+  '|  _ \\|  _|   / _ \\| |  | | | |  \\| |',
+  '| |_) | |___ / ___ \\ |__| |_| | |\\  |',
+  '|____/|_____/_/   \\_\\____\\___/|_| \\_|',
+  'Agent Skill Harness Phase-Guarded Automation',
+  'From Idea To Archive',
 ].join('\n');
 
 async function selectScope(options: InitOptions, lang: string): Promise<InstallScope> {
@@ -78,35 +86,21 @@ async function selectScope(options: InitOptions, lang: string): Promise<InstallS
   });
 }
 
-async function selectLanguage(options: InitOptions): Promise<LanguageConfig> {
-  if (options.language) {
-    return LANGUAGES.find((l) => l.id === options.language) ?? LANGUAGES[0];
-  }
-  if (options.yes) return LANGUAGES[0];
-
-  const langId = await select({
-    message: t('en', 'languagePrompt'),
-    choices: LANGUAGES.map((lang) => ({ name: lang.name, value: lang.id })),
-  });
-
-  return LANGUAGES.find((l) => l.id === langId) ?? LANGUAGES[0];
-}
-
 async function selectPlatforms(
   detected: Set<string>,
   options: InitOptions,
   lang: string,
 ): Promise<string[]> {
-  const choices = PLATFORMS.map((p) => ({
-    name: `${p.name}${detected.has(p.id) ? ` (${t(lang, 'detected')})` : ''}`,
-    summaryName: p.name,
-    value: p.id,
-    checked: detected.has(p.id),
+  const choices = PLATFORMS.map((platform) => ({
+    name: `${platform.name}${detected.has(platform.id) ? ` (${t(lang, 'detected')})` : ''}`,
+    summaryName: platform.name,
+    value: platform.id,
+    checked: detected.has(platform.id),
   }));
 
   if (options.yes) {
     const selected = [...detected];
-    return selected.length > 0 ? selected : PLATFORMS.map((p) => p.id);
+    return selected.length > 0 ? selected : PLATFORMS.map((platform) => platform.id);
   }
 
   return platformSelectPrompt({
@@ -156,6 +150,7 @@ function applyBulkOverwriteChoice<T extends ComponentPlan>(
   const action = choice === 'overwrite-all' ? 'overwrite' : 'skip';
   const shouldApply = (actionState: ComponentAction, exists?: boolean) =>
     actionState === 'install' && (hasExisting === undefined || exists === true);
+
   return {
     ...plan,
     osAction: shouldApply(plan.osAction, hasExisting?.os) ? action : plan.osAction,
@@ -173,13 +168,6 @@ function resolveAction(
   if (options.skipExisting) return 'skip';
   if (options.yes) return 'skip';
   return 'install';
-}
-
-type NpmDepId = 'openspec' | 'superpowers' | 'codegraph';
-
-interface NpmDepState {
-  id: NpmDepId;
-  installed: boolean;
 }
 
 async function selectNpmDeps(
@@ -230,7 +218,7 @@ async function selectNpmDeps(
   });
 
   if (options.yes) {
-    return new Set(states.filter((s) => !s.installed).map((s) => s.id));
+    return new Set(states.filter((state) => !state.installed).map((state) => state.id));
   }
 
   const selected = await checkbox({
@@ -246,38 +234,44 @@ function displaySummary(results: PlatformResult[], scope: InstallScope, lang: st
   console.log(`\n  ${t(lang, 'setupComplete')} (scope: ${scopeLabel})\n`);
 
   const installed = results.filter(
-    (r) =>
-      r.openspec === 'installed' ||
-      r.superpowers === 'installed' ||
-      r.beacon === 'installed' ||
-      r.codegraph === 'installed',
+    (result) =>
+      result.openspec === 'installed' ||
+      result.superpowers === 'installed' ||
+      result.beacon === 'installed' ||
+      result.codegraph === 'installed',
   );
   const skipped = results.filter(
-    (r) =>
-      r.openspec === 'skipped' &&
-      r.superpowers === 'skipped' &&
-      r.beacon === 'skipped' &&
-      r.codegraph === 'skipped',
+    (result) =>
+      result.openspec === 'skipped' &&
+      result.superpowers === 'skipped' &&
+      result.beacon === 'skipped' &&
+      result.codegraph === 'skipped',
   );
   const failed = results.filter(
-    (r) =>
-      r.openspec === 'failed' ||
-      r.superpowers === 'failed' ||
-      r.beacon === 'failed' ||
-      r.codegraph === 'failed',
+    (result) =>
+      result.openspec === 'failed' ||
+      result.superpowers === 'failed' ||
+      result.beacon === 'failed' ||
+      result.codegraph === 'failed',
   );
 
   if (installed.length > 0) {
     console.log(`  ${t(lang, 'installed')}`);
-    for (const r of installed) {
-      console.log(`    ${r.platform.name} -> ${getPlatformSkillsDir(r.platform, scope)}/skills/`);
+    for (const result of installed) {
+      console.log(
+        `    ${result.platform.name} -> ${getPlatformSkillsDir(result.platform, scope)}/skills/`,
+      );
     }
   }
   if (skipped.length > 0) {
-    console.log(`  ${t(lang, 'skippedLabel')} ${skipped.map((r) => r.platform.name).join(', ')}`);
+    console.log(
+      `  ${t(lang, 'skippedLabel')} ${skipped.map((result) => result.platform.name).join(', ')}`,
+    );
   }
   if (failed.length > 0) {
-    console.log(`  ${t(lang, 'failedLabel')} ${failed.map((r) => r.platform.name).join(', ')}`);
+    console.log(
+      `  ${t(lang, 'failedLabel')} ${failed.map((result) => result.platform.name).join(', ')}`,
+    );
   }
 
   if (scope === 'project') {
@@ -292,6 +286,7 @@ function displaySummary(results: PlatformResult[], scope: InstallScope, lang: st
 
 export async function initCommand(targetPath: string, options: InitOptions = {}): Promise<void> {
   const projectPath = path.resolve(targetPath);
+  const lang = 'zh';
   const log = options.json ? () => undefined : console.log;
   const supplyChain = await loadSupplyChainConfig(projectPath);
 
@@ -300,15 +295,12 @@ export async function initCommand(targetPath: string, options: InitOptions = {})
     await printVersionInfo(log, buildBeaconLatestMetadataUrl(supplyChain));
   }
 
-  const language = await selectLanguage(options);
-  const lang = language.id;
-
   log(`  ${t(lang, 'settingUp')} ${projectPath}\n`);
 
   const detected = await detectPlatforms(projectPath);
   const scope = await selectScope(options, lang);
-
   const selectedPlatformIds = await selectPlatforms(detected, options, lang);
+
   if (selectedPlatformIds.length === 0) {
     if (options.json) {
       console.log(
@@ -316,7 +308,6 @@ export async function initCommand(targetPath: string, options: InitOptions = {})
           {
             projectPath,
             scope,
-            language: language.id,
             selectedPlatforms: [],
             results: [],
           },
@@ -330,16 +321,10 @@ export async function initCommand(targetPath: string, options: InitOptions = {})
     return;
   }
 
-  const selectedPlatforms = PLATFORMS.filter((p) => selectedPlatformIds.includes(p.id));
+  const selectedPlatforms = PLATFORMS.filter((platform) =>
+    selectedPlatformIds.includes(platform.id),
+  );
   const baseDir = getBaseDir(scope, projectPath);
-
-  type PlatformPlan = ComponentPlan & {
-    platform: Platform;
-    hasOS: boolean;
-    hasSP: boolean;
-    hasCM: boolean;
-  };
-
   const plans: PlatformPlan[] = [];
 
   for (const platform of selectedPlatforms) {
@@ -384,10 +369,11 @@ export async function initCommand(targetPath: string, options: InitOptions = {})
   }
 
   const osToolIds = plans
-    .filter((p) => p.osAction !== 'skip')
-    .map((p) => p.platform.openspecToolId);
-
-  const spPlatformIds = plans.filter((p) => p.spAction !== 'skip').map((p) => p.platform.id);
+    .filter((plan) => plan.osAction !== 'skip')
+    .map((plan) => plan.platform.openspecToolId);
+  const spPlatformIds = plans
+    .filter((plan) => plan.spAction !== 'skip')
+    .map((plan) => plan.platform.id);
 
   const selectedNpmDeps = await selectNpmDeps(projectPath, spPlatformIds, options, lang);
   const shouldInstallOpenSpecCli = selectedNpmDeps.has('openspec');
@@ -414,7 +400,6 @@ export async function initCommand(targetPath: string, options: InitOptions = {})
   }
 
   let spGlobalStatus: InstallStatus = 'skipped';
-
   if (spPlatformIds.length > 0) {
     if (!shouldInstallSuperpowers) {
       log(`\n  Superpowers: ${t(lang, 'spSkippedByUser')}`);
@@ -434,51 +419,53 @@ export async function initCommand(targetPath: string, options: InitOptions = {})
   }
 
   const results: PlatformResult[] = [];
-
   for (const plan of plans) {
-    const { platform, cmAction } = plan;
-    const platformSkillsDir = getPlatformSkillsDir(platform, scope);
+    const platformSkillsDir = getPlatformSkillsDir(plan.platform, scope);
     const skillsPath = `${scope === 'global' ? '~/' : ''}${platformSkillsDir}/skills/`;
 
     let cmStatus: InstallStatus = 'skipped';
-    if (cmAction !== 'skip') {
+    if (plan.cmAction !== 'skip') {
       const { copied } = await copyBeaconSkillsForPlatform(
         baseDir,
-        platform,
-        cmAction === 'overwrite',
-        language.skillsDir,
+        plan.platform,
+        plan.cmAction === 'overwrite',
+        RUNTIME_SKILLS_DIR,
         scope,
       );
       cmStatus = copied > 0 ? 'installed' : 'skipped';
-      log(`  Beacon -> ${platform.name}: ${cmStatus} (${copied} files) -> ${skillsPath}`);
+      log(`  Beacon -> ${plan.platform.name}: ${cmStatus} (${copied} files) -> ${skillsPath}`);
     } else {
-      log(`  Beacon -> ${platform.name}: skipped (${t(lang, 'alreadyExists')})`);
+      log(`  Beacon -> ${plan.platform.name}: skipped (${t(lang, 'alreadyExists')})`);
     }
 
-    if (cmAction !== 'skip') {
+    if (plan.cmAction !== 'skip') {
       const { copied: ruleCopied } = await copyBeaconRulesForPlatform(
         baseDir,
-        platform,
-        cmAction === 'overwrite',
+        plan.platform,
+        plan.cmAction === 'overwrite',
         scope,
       );
       if (ruleCopied > 0) {
-        log(`  Beacon rules -> ${platform.name}: ${ruleCopied} ${t(lang, 'rulesInstalled')}`);
+        log(`  Beacon rules -> ${plan.platform.name}: ${ruleCopied} ${t(lang, 'rulesInstalled')}`);
       }
     }
 
-    if (cmAction !== 'skip' && platform.supportsHooks) {
-      const { installed, reason } = await installBeaconHooksForPlatform(baseDir, platform, scope);
+    if (plan.cmAction !== 'skip' && plan.platform.supportsHooks) {
+      const { installed, reason } = await installBeaconHooksForPlatform(
+        baseDir,
+        plan.platform,
+        scope,
+      );
       if (installed) {
-        log(`  Beacon hooks -> ${platform.name}: ${t(lang, 'hooksInstalled')}`);
+        log(`  Beacon hooks -> ${plan.platform.name}: ${t(lang, 'hooksInstalled')}`);
       } else if (reason) {
-        log(`  Beacon hooks -> ${platform.name}: ${t(lang, 'hooksSkipped')} (${reason})`);
+        log(`  Beacon hooks -> ${plan.platform.name}: ${t(lang, 'hooksSkipped')} (${reason})`);
       }
     }
 
     results.push({
-      platform,
-      openspec: osToolIds.includes(platform.openspecToolId) ? osGlobalStatus : 'skipped',
+      platform: plan.platform,
+      openspec: osToolIds.includes(plan.platform.openspecToolId) ? osGlobalStatus : 'skipped',
       superpowers: plan.spAction !== 'skip' ? spGlobalStatus : 'skipped',
       beacon: cmStatus,
       codegraph: 'skipped',
@@ -486,10 +473,6 @@ export async function initCommand(targetPath: string, options: InitOptions = {})
   }
 
   const codegraphAlreadyIndexed = hasCodegraphProjectIndex(projectPath);
-
-  // JSON mode never installs CodeGraph interactively (matches pre-i18n behavior).
-  // If the project already has a .codegraph/ index, skip.
-  // Otherwise, only install when the user selected codegraph in the npm-deps prompt.
   const shouldInstallCodegraph =
     !options.json && !codegraphAlreadyIndexed && shouldInstallCodegraphCli;
 
@@ -497,8 +480,8 @@ export async function initCommand(targetPath: string, options: InitOptions = {})
     log(`\n  ${t(lang, 'installingCG')}`);
     const cgGlobalStatus = await installCodegraph(projectPath, scope, true, supplyChain.codegraph);
     log(`  CodeGraph: ${cgGlobalStatus}`);
-    for (const r of results) {
-      r.codegraph = cgGlobalStatus;
+    for (const result of results) {
+      result.codegraph = cgGlobalStatus;
     }
   } else if (!options.json && codegraphAlreadyIndexed) {
     log('\n  CodeGraph: skipped (existing .codegraph index detected)');
@@ -516,7 +499,6 @@ export async function initCommand(targetPath: string, options: InitOptions = {})
         {
           projectPath,
           scope,
-          language: language.id,
           selectedPlatforms: selectedPlatformIds,
           results: results.map((result) => ({
             platform: result.platform.id,

@@ -1,34 +1,35 @@
-import path from 'path';
 import os from 'os';
+import path from 'path';
 import { promises as fs } from 'fs';
-import { fileURLToPath } from 'url';
 import { spawn } from 'child_process';
+import { fileURLToPath } from 'url';
 import { select } from '@inquirer/prompts';
-import { fileExists, readDir, readJson } from '../utils/file-system.js';
-import { getBaseDir } from '../core/detect.js';
-import {
-  copyBeaconSkillsForPlatform,
-  copyBeaconRulesForPlatform,
-  installBeaconHooksForPlatform,
-  getManifestSkills,
-} from '../core/skills.js';
-import { PLATFORMS, getPlatformSkillsDir, type Platform } from '../core/platforms.js';
+
 import { hasCodegraphProjectIndex, installCodegraph } from '../core/codegraph.js';
-import type { InstallScope } from '../core/types.js';
-import { printVersionInfo } from '../core/version.js';
+import { getBaseDir } from '../core/detect.js';
+import { PLATFORMS, getPlatformSkillsDir, type Platform } from '../core/platforms.js';
 import {
   buildBeaconLatestMetadataUrl,
   buildRegistryNpmArgs,
   loadSupplyChainConfig,
   type SupplyChainConfig,
 } from '../core/supply-chain.js';
+import {
+  copyBeaconRulesForPlatform,
+  copyBeaconSkillsForPlatform,
+  getManifestSkills,
+  installBeaconHooksForPlatform,
+} from '../core/skills.js';
+import type { InstallScope } from '../core/types.js';
+import { printVersionInfo } from '../core/version.js';
+import { fileExists, readDir, readJson } from '../utils/file-system.js';
 import { t, type TranslationKey } from './i18n.js';
 
 const DEFAULT_PACKAGE_NAME = 'beacon';
+const RUNTIME_SKILLS_DIR = 'skills-zh';
 
 interface UpdateOptions {
   json?: boolean;
-  language?: string;
   scope?: InstallScope;
   skipNpm?: boolean;
 }
@@ -49,10 +50,6 @@ interface DetectTargetsOptions {
 interface DetectBeaconPackageScopeOptions {
   packageName?: string;
   packageRoot?: string;
-}
-
-function languageToSkillsDir(language: string | undefined, fallback: SkillLanguage): string {
-  return (language ?? fallback) === 'zh' ? 'skills-zh' : 'skills';
 }
 
 function getScopedBaseDir(
@@ -103,9 +100,9 @@ async function detectInstalledBeaconLanguage(
 
       try {
         const content = await fs.readFile(skillPath, 'utf-8');
-        if (/[㐀-鿿]/u.test(content)) return 'zh';
+        if (/[一-龥]/u.test(content)) return 'zh';
       } catch {
-        // Fall through to the default English asset set if the file cannot be read.
+        // Ignore unreadable files and fall back to the default.
       }
     }
   }
@@ -194,13 +191,9 @@ function formatNpmUpdateCommand(
   return ['npm', ...buildNpmUpdateArgs(scope, beaconSource)].join(' ');
 }
 
-function formatSkillUpdateCommand(
-  scope: InstallScope,
-  platform: Platform,
-  languageSkillsDir: string,
-): string {
+function formatSkillUpdateCommand(scope: InstallScope, platform: Platform): string {
   const destPrefix = scope === 'global' ? '~/' : '';
-  return `copy assets/${languageSkillsDir} -> ${destPrefix}${getPlatformSkillsDir(platform, scope)}/skills/ (${scope})`;
+  return `copy assets/${RUNTIME_SKILLS_DIR} -> ${destPrefix}${getPlatformSkillsDir(platform, scope)}/skills/ (${scope})`;
 }
 
 function getNpmExecutable(): string {
@@ -218,16 +211,13 @@ async function updateBeaconNpmPackage(
   const cwd = scope === 'global' ? process.cwd() : projectPath;
 
   return new Promise((resolve) => {
-    // In JSON mode, discard npm's stdout/stderr so it cannot corrupt the JSON
-    // document emitted on stdout. 'ignore' avoids the pipe backpressure a
-    // verbose npm install could otherwise cause.
     const child = spawn(getNpmExecutable(), args, {
       cwd,
       stdio: jsonMode ? 'ignore' : 'inherit',
       shell: true,
     });
     child.on('error', (err) => {
-      log(`  npm package: failed to launch npm — ${err.message}`);
+      log(`  npm package: failed to launch npm - ${err.message}`);
       resolve(false);
     });
     child.on('exit', (code) => {
@@ -238,7 +228,7 @@ async function updateBeaconNpmPackage(
         log(
           `  npm package: update failed (exit code ${code}). Unable to update ${beaconSource.packageName} from ${source}.`,
         );
-        log(`  Check your network connection or firewall settings and try again.`);
+        log('  Check your network connection or firewall settings and try again.');
       }
       resolve(code === 0);
     });
@@ -260,10 +250,9 @@ export async function updateCommand(
   options: UpdateOptions = {},
 ): Promise<void> {
   const projectPath = path.resolve(targetPath);
+  const lang = 'zh';
   const log = options.json ? () => undefined : console.log;
   const supplyChain = await loadSupplyChainConfig(projectPath);
-
-  const lang = options.language ?? 'en';
 
   log(`\n  ${t(lang, 'updateTitle')}`);
   if (!options.json) {
@@ -327,11 +316,9 @@ export async function updateCommand(
 
   log(`\n  ${t(lang, 'updatingSkillsOnTargets')} ${targets.length} target(s):`);
   for (const target of targets) {
-    const language = options.language ?? target.language;
     const scopeLabel = target.scope === 'global' ? 'global' : `project (${projectPath})`;
-    const languageSkillsDir = languageToSkillsDir(options.language, target.language);
-    log(`    - ${target.platform.name} (${scopeLabel}, ${language})`);
-    log(`      $ ${formatSkillUpdateCommand(target.scope, target.platform, languageSkillsDir)}`);
+    log(`    - ${target.platform.name} (${scopeLabel})`);
+    log(`      $ ${formatSkillUpdateCommand(target.scope, target.platform)}`);
   }
 
   log(
@@ -342,14 +329,14 @@ export async function updateCommand(
   let totalRulesCopied = 0;
   let totalHooksInstalled = 0;
   const targetResults = [];
+
   for (const target of targets) {
     const baseDir = getBaseDir(target.scope, projectPath);
-    const languageSkillsDir = languageToSkillsDir(options.language, target.language);
     const { copied, skipped } = await copyBeaconSkillsForPlatform(
       baseDir,
       target.platform,
       true,
-      languageSkillsDir,
+      RUNTIME_SKILLS_DIR,
       target.scope,
     );
     totalCopied += copied;
@@ -357,14 +344,13 @@ export async function updateCommand(
       scope: target.scope,
       platform: target.platform.id,
       platformName: target.platform.name,
-      language: options.language ?? target.language,
-      source: languageSkillsDir,
+      source: RUNTIME_SKILLS_DIR,
       copied,
       skipped,
-      command: formatSkillUpdateCommand(target.scope, target.platform, languageSkillsDir),
+      command: formatSkillUpdateCommand(target.scope, target.platform),
     });
     log(
-      `  ${target.platform.name} (${target.scope}, ${languageSkillsDir}): ${copied} ${t(lang, 'skillsCopiedSkipped')} ${skipped} skipped`,
+      `  ${target.platform.name} (${target.scope}, ${RUNTIME_SKILLS_DIR}): ${copied} ${t(lang, 'skillsCopiedSkipped')} ${skipped} skipped`,
     );
 
     try {
@@ -456,14 +442,12 @@ export async function updateCommand(
     return;
   }
 
-  const languages = [...new Set(targetResults.map((target) => target.language))].join(', ');
   const scopes = [...new Set(targetResults.map((target) => target.scope))].join(', ');
   log(`\n  ${t(lang, 'summary')}`);
   log(`    ${t(lang, 'summaryNpm')} ${npmStatus}${options.skipNpm ? '' : ` (${packageScope})`}`);
   log(`    ${t(lang, 'summarySkills')} ${targets.length} target(s), ${totalCopied} files updated`);
   log(`    ${t(lang, 'summaryCodegraph')} ${codegraphStatus}`);
   log(`    ${t(lang, 'summaryScope')} ${scopes}`);
-  log(`    ${t(lang, 'summaryLanguage')} ${languages}`);
   log(`\n  ${t(lang, 'updateComplete')}\n`);
 }
 

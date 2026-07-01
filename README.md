@@ -121,7 +121,7 @@ supply_chain.beacon.latest_metadata_url: https://npm.internal.example/beacon/lat
 
 ```bash
 cd your-project
-npx beacon init --scope project --language zh
+npx beacon init --scope project
 npx beacon doctor
 ```
 
@@ -131,11 +131,10 @@ npx beacon doctor
 
 1. 提示你选择 AI 平台（自动检测已有配置）
 2. 选择安装范围：项目级（当前目录）或全局（用户主目录）
-3. 选择 Beacon 技能语言：English 或 中文
-4. 选择要安装/升级的可选依赖 —— OpenSpec CLI、Superpowers skills、CodeGraph CLI。依赖来源取自 Beacon 供应链配置；未检测到的依赖默认勾选，已存在的默认不勾，可自主选择是否按配置刷新。
-5. 安装选中的依赖并部署对应技能
-6. 将 Beacon 技能（你选择的语言）部署到所选平台
-7. 在项目级安装时创建 `docs/superpowers/specs/` 和 `docs/superpowers/plans/` 工作目录
+3. 选择要安装/升级的可选依赖 —— OpenSpec CLI、Superpowers skills、CodeGraph CLI。依赖来源取自 Beacon 供应链配置；未检测到的依赖默认勾选，已存在的默认不勾，可自主选择是否按配置刷新。
+4. 安装选中的依赖并部署对应技能
+5. 将中文 Beacon 技能部署到所选平台
+6. 在项目级安装时创建 `docs/superpowers/specs/` 和 `docs/superpowers/plans/`
 
 > [!TIP]
 > 推荐安装 Superpowers v6.0.0+ —— 相比旧版速度快约 2 倍，节省约 50% token。
@@ -170,7 +169,6 @@ npx skills add internal/beacon-skills
 | ------------------- | ---------------------------------------------------- |
 | `--yes`             | 非交互模式，自动选择已检测平台（未检测到则选择全部） |
 | `--scope <scope>`   | 安装范围：`project` 或 `global`                      |
-| `--language <lang>` | 技能语言：`en` 或 `zh`（跳过交互式语言选择）         |
 | `--skip-existing`   | 跳过已安装的组件                                     |
 | `--overwrite`       | 覆盖已安装的组件                                     |
 | `--json`            | 输出结构化 JSON                                      |
@@ -210,7 +208,6 @@ npx skills add internal/beacon-skills
 | 选项                | 描述                                     |
 | ------------------- | ---------------------------------------- |
 | `--json`            | 以 JSON 输出 npm 和 skill 更新结果       |
-| `--language <lang>` | 覆盖自动检测到的 skill 语言 (`en`, `zh`) |
 | `--scope <scope>`   | 仅更新 `global` 或 `project` 范围        |
 
 </details>

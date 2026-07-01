@@ -33,9 +33,5 @@
       "matcher": "Write|Edit",
       "description": "Block code writes in wrong Beacon phase (open/design/archive)"
     }
-  },
-  "languages": [
-    { "id": "en", "name": "English", "skillsDir": "skills" },
-    { "id": "zh", "name": "中文", "skillsDir": "skills-zh" }
-  ]
+  }
 }
