@@ -2,6 +2,16 @@
 
 All notable changes to beacon will be documented in this file.
 
+## What's Changed [0.4.7] - 2026-07-01
+
+### Changed
+
+- **skills 文案去重**: 压缩 `beacon`、`beacon-init`、`beacon-archive` 及其中英文镜像里重复的 AGENTS 维护说明，保留入口职责，把手动维护与 archive 沉淀细则统一收敛到引用文档，降低后续同步成本。
+
+### Tests
+
+- **skill 契约回归**: 收紧 `skills.test.ts` 断言，改为验证职责边界与引用关系，防止重复说明重新回流到技能入口文案。
+
 ## What's Changed [0.4.6] - 2026-07-01
 
 ### Added

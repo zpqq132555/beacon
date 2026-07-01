@@ -3,9 +3,7 @@
 ## Purpose
 
 Define Beacon's private fork runtime identity, installed asset naming, workflow state file, and compatibility boundaries after the Comet-to-Beacon rebrand.
-
 ## Requirements
-
 ### Requirement: Beacon CLI Identity
 Beacon SHALL expose `beacon` as the only command-line entry point for the private fork runtime contract.
 
@@ -30,7 +28,7 @@ Beacon SHALL install skills, references, rules, hooks, and scripts using Beacon 
 
 #### Scenario: Installed skill commands use Beacon prefix
 - **WHEN** Beacon skills are copied into a target platform
-- **THEN** the installed skill entry points MUST be `/beacon`, `/beacon-open`, `/beacon-design`, `/beacon-build`, `/beacon-verify`, `/beacon-archive`, `/beacon-hotfix`, and `/beacon-tweak`
+- **THEN** the installed skill entry points MUST be `/beacon`, `/beacon-init`, `/beacon-open`, `/beacon-design`, `/beacon-build`, `/beacon-verify`, `/beacon-archive`, `/beacon-hotfix`, and `/beacon-tweak`
 
 #### Scenario: Script paths use Beacon prefix
 - **WHEN** installed workflow scripts are referenced by skills, rules, hooks, or other scripts
@@ -80,3 +78,4 @@ Beacon SHALL document and verify Beacon runtime behavior while allowing Comet on
 #### Scenario: Historical Comet mentions are allowed
 - **WHEN** changelog, provenance, license, or source attribution text mentions Comet
 - **THEN** the mention MAY remain only if it is not an operational instruction or supported runtime contract
+

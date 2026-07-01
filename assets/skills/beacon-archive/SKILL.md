@@ -38,9 +38,7 @@ Proceed to Step 1 after verification passes. The script outputs specific failure
 Before final archive confirmation, use `beacon/reference/agents-sedimentation.md` to decide whether the current archive deserves AGENTS sedimentation:
 - If the content is not reusable long term, Beacon must silently ignore AGENTS maintenance and avoid prompting the user about it.
 - If the content is suitable, first present a summary-level proposal covering affected documents, intended actions, and the reason it should be sedimented, then wait for confirmation.
-- After confirmation, transfer control to `/beacon-init` for the actual maintenance work.
-- If the project does not yet have an AGENTS tree, invoke `/beacon-init` as "full maintenance + current archive injection".
-- If the project already has an AGENTS tree, restrict `/beacon-init` to incremental maintenance for the current archive only.
+- After confirmation, transfer control to `/beacon-init`; the exact maintenance mode follows `beacon/reference/agents-sedimentation.md`.
 
 ### 1. Final Archive Confirmation (Blocking Point)
 

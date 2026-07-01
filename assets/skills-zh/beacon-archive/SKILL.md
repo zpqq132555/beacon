@@ -38,9 +38,7 @@ fi
 按 `beacon/reference/agents-sedimentation.md` 先判断本次归档内容是否值得沉淀到 AGENTS：
 - 若不适合长期复用，必须静默忽略 AGENTS 维护步骤，不提示、不打断。
 - 若适合沉淀，先给出摘要级建议，说明受影响文档、拟执行动作和沉淀原因，再等待用户确认。
-- 用户确认后，转调 `/beacon-init` 执行对应维护。
-- 若项目尚无 AGENTS 体系，则按“全量维护 + 当前归档注入”调用 `/beacon-init`。
-- 若项目已有 AGENTS 体系，则只让 `/beacon-init` 处理与当前归档相关的增量维护。
+- 用户确认后，转调 `/beacon-init` 执行对应维护；具体采用全量引导还是增量维护，按 `beacon/reference/agents-sedimentation.md` 执行。
 
 ### 1. 归档前最终确认（阻塞点）
 

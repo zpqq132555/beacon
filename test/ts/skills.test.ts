@@ -1413,7 +1413,10 @@ describe('skills', () => {
       );
 
       expect(zhRoot).toContain('/beacon-init');
+      expect(zhRoot).toContain('beacon/reference/agents-topology.md');
       expect(enRoot).toContain('/beacon-init');
+      expect(enRoot).toContain('beacon/reference/agents-topology.md');
+      expect(enRoot).not.toContain('performs full maintenance against the current workspace');
     });
 
     it('documents beacon-init topology and archive sedimentation contracts', async () => {
@@ -1435,13 +1438,17 @@ describe('skills', () => {
       );
 
       expect(zhInit).toContain('根 `AGENTS.md` 保持精简');
-      expect(zhInit).toContain('`CLAUDE.md` 只作为 shim');
+      expect(zhInit).toContain('`CLAUDE.md`');
+      expect(zhInit).toContain('`@AGENTS.md`');
+      expect(zhInit).toContain('shim');
       expect(zhInit).toContain('beacon/reference/agents-topology.md');
       expect(zhArchive).toContain('静默忽略');
       expect(zhArchive).toContain('/beacon-init');
       expect(enInit).toContain('beacon/reference/agents-topology.md');
       expect(enArchive).toContain('silently ignore');
       expect(enArchive).toContain('/beacon-init');
+      expect(enArchive).not.toContain('full maintenance + current archive injection');
+      expect(enArchive).not.toContain('incremental maintenance for the current archive only');
     });
   });
 
