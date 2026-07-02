@@ -18,18 +18,18 @@ const SECRET_PATTERNS = [
   { pattern: /AKIA[0-9A-Z]{16}/, name: 'AWS access key' },
 ];
 
-export const PRIVATE_SUPPLY_CHAIN_FORBIDDEN_PATTERNS = [
+export const LEGACY_SUPPLY_CHAIN_FORBIDDEN_PATTERNS = [
   {
-    pattern: new RegExp(`https://registry\\.npmjs\\.org`),
-    name: 'public npm registry',
+    pattern: new RegExp(`https://npm\\.pkg\\.github\\.com`),
+    name: 'legacy GitHub Packages registry',
   },
   {
-    pattern: new RegExp(`(^|\\n)\\s*npm install -g ${'beacon'}(?:@latest)?\\s*(\\r?\\n|$)`),
-    name: 'public Beacon install command',
+    pattern: new RegExp(`@zpqq132555/beacon`),
+    name: 'legacy Beacon package scope',
   },
   {
     pattern: new RegExp(`npx skills add ${'rpamis/beacon'}`),
-    name: 'public Beacon skills source',
+    name: 'legacy Beacon skills source',
   },
   {
     pattern: new RegExp(
@@ -67,13 +67,14 @@ function shouldSkipHistoricalContent(filePath) {
 function shouldScanSupplyChain(filePath) {
   const normalized = normalizePath(filePath);
   return (
-    normalized === 'README.md' ||
-    normalized === 'NEWS.md' ||
-    normalized === 'package.json' ||
-    normalized.startsWith('src/') ||
-    normalized.startsWith('scripts/') ||
-    normalized.startsWith('assets/') ||
-    normalized.startsWith('docs/')
+    normalized !== 'scripts/prepublish-check.js' &&
+    (normalized === 'README.md' ||
+      normalized === 'NEWS.md' ||
+      normalized === 'package.json' ||
+      normalized.startsWith('src/') ||
+      normalized.startsWith('scripts/') ||
+      normalized.startsWith('assets/') ||
+      normalized.startsWith('docs/'))
   );
 }
 
@@ -119,7 +120,7 @@ for (const filePath of walkFiles('.')) {
   }
 
   if (shouldScanSupplyChain(filePath) && !shouldSkipHistoricalContent(filePath)) {
-    for (const { pattern, name } of PRIVATE_SUPPLY_CHAIN_FORBIDDEN_PATTERNS) {
+    for (const { pattern, name } of LEGACY_SUPPLY_CHAIN_FORBIDDEN_PATTERNS) {
       if (pattern.test(content)) {
         console.error(`[SUPPLY-CHAIN] Forbidden ${name} found in ${filePath}`);
         found++;

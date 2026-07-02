@@ -84,4 +84,62 @@ describe('prepublish check', () => {
       expect(result.output).toContain('[SECURITY] No secrets detected. Safe to publish.');
     });
   });
+
+  it('allows the current npmjs public release chain', async () => {
+    await withTempDir(async (dir) => {
+      await fs.writeFile(
+        path.join(dir, 'README.md'),
+        [
+          'npm install -g @oldpoint/beacon',
+          'supply_chain.beacon.registry: https://registry.npmjs.org',
+          '',
+        ].join('\n'),
+      );
+      await fs.writeFile(
+        path.join(dir, 'package.json'),
+        JSON.stringify({
+          name: '@oldpoint/beacon',
+          publishConfig: { access: 'public', registry: 'https://registry.npmjs.org' },
+        }),
+      );
+      await fs.mkdir(path.join(dir, 'src', 'core'), { recursive: true });
+      await fs.writeFile(
+        path.join(dir, 'src', 'core', 'supply-chain.ts'),
+        "export const DEFAULT_REGISTRY = 'https://registry.npmjs.org';\n",
+      );
+
+      const result = runPrepublishCheck(dir);
+
+      expect(result.exitCode).toBe(0);
+      expect(result.output).toContain('[SECURITY] No secrets detected. Safe to publish.');
+    });
+  });
+
+  it('blocks legacy GitHub Packages release references in publishable files', async () => {
+    await withTempDir(async (dir) => {
+      await fs.writeFile(
+        path.join(dir, 'README.md'),
+        'supply_chain.beacon.registry: https://npm.pkg.github.com\n',
+      );
+
+      const result = runPrepublishCheck(dir);
+
+      expect(result.exitCode).toBe(1);
+      expect(result.output).toContain(
+        '[SUPPLY-CHAIN] Forbidden legacy GitHub Packages registry found in README.md',
+      );
+    });
+  });
+
+  it('does not flag legacy supply-chain rules inside the prepublish checker itself', async () => {
+    await withTempDir(async (dir) => {
+      await fs.mkdir(path.join(dir, 'scripts'), { recursive: true });
+      await fs.copyFile(scriptPath, path.join(dir, 'scripts', 'prepublish-check.js'));
+
+      const result = runPrepublishCheck(dir);
+
+      expect(result.exitCode).toBe(0);
+      expect(result.output).toContain('[SECURITY] No secrets detected. Safe to publish.');
+    });
+  });
 });
