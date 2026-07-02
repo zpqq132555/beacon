@@ -1,8 +1,8 @@
 blank_issues_enabled: false
 contact_links:
-  - name: 📚 Beacon documentation
-    url: https://github.com/rpamis/beacon#readme
+  - name: Beacon documentation
+    url: https://github.com/zpqq132555/beacon#readme
     about: Read the installation guide, command reference, and workflow overview.
-  - name: 💬 Beacon discussions
-    url: https://github.com/rpamis/beacon/discussions
+  - name: Beacon discussions
+    url: https://github.com/zpqq132555/beacon/discussions
     about: Ask open-ended questions or discuss ideas that are not ready for an issue.

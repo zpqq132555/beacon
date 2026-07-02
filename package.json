@@ -1,6 +1,6 @@
 {
-  "name": "beacon",
-  "version": "0.4.8",
+  "name": "@zpqq132555/beacon",
+  "version": "0.4.9",
   "description": "Private Beacon workflow automation for OpenSpec and Superpowers",
   "keywords": [
     "beacon",
@@ -11,9 +11,10 @@
   ],
   "license": "MIT",
   "author": "benym",
+  "repository": "https://github.com/zpqq132555/beacon.git",
   "type": "module",
   "publishConfig": {
-    "access": "public"
+    "registry": "https://npm.pkg.github.com"
   },
   "bin": {
     "beacon": "./bin/beacon.js"

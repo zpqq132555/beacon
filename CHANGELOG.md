@@ -2,6 +2,22 @@
 
 All notable changes to beacon will be documented in this file.
 
+## What's Changed [0.4.9] - 2026-07-02
+
+### Added
+
+- **GitHub Packages 发布流**: 新增 `master` 分支发布到 GitHub Packages 的 GitHub Actions 工作流，并补充仓库级 `.npmrc`，让 `@zpqq132555/beacon` 可以直接按仓库约定发布与安装。
+
+### Changed
+
+- **Beacon 默认来源**: 将默认 Beacon 包名切换为 `@zpqq132555/beacon`，默认 registry 切换为 `https://npm.pkg.github.com`，让 `beacon update` 与初始化模板默认对齐 GitHub 私有分发链路。
+- **分支协作模型**: 贡献文档改为 `develop` 日常开发、`master` 发布的双分支流程，并同步更新 README、仓库地址、安装说明与 GitHub Packages 登录示例。
+- **CI 分支覆盖**: 持续集成改为同时覆盖 `master` 与 `develop`，匹配新的开发与发布节奏。
+
+### Tests
+
+- **GitHub 分发回归**: 更新 README、供应链与 update 相关测试断言，覆盖 GitHub 用户作用域包、默认 registry 与新的安装命令。
+
 ## What's Changed [0.4.8] - 2026-07-01
 
 ### Changed

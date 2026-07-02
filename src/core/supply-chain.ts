@@ -39,7 +39,11 @@ export type SupplyChainSourceKey =
 
 const DEFAULT_CONFIG: SupplyChainConfig = {
   configuredSources: [],
-  beacon: { packageName: 'beacon', registry: null, latestMetadataUrl: null },
+  beacon: {
+    packageName: '@zpqq132555/beacon',
+    registry: 'https://npm.pkg.github.com',
+    latestMetadataUrl: null,
+  },
   openspec: { packageSpec: '@fission-ai/openspec@latest', registry: null },
   superpowers: { source: 'obra/superpowers' },
   codegraph: { packageSpec: '@colbymchenry/codegraph', registry: null },
@@ -60,8 +64,9 @@ const MISSING_SOURCE_MESSAGES: Record<SupplyChainSourceKey, SupplyChainSourceSta
   'beacon.registry': {
     ok: false,
     fatal: false,
-    message: 'Beacon npm registry is not configured; using npm default registry behavior.',
-    hint: 'Set supply_chain.beacon.registry in .beacon/config.yaml or BEACON_NPM_REGISTRY.',
+    message:
+      'Beacon registry override is not configured; using the built-in GitHub Packages registry.',
+    hint: 'Set supply_chain.beacon.registry in .beacon/config.yaml or BEACON_NPM_REGISTRY to override it.',
   },
   'beacon.latestMetadataUrl': {
     ok: false,

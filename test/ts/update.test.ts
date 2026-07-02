@@ -46,8 +46,8 @@ const claudePlatform: Platform = {
 };
 
 const defaultBeaconSource: SupplyChainConfig['beacon'] = {
-  packageName: 'beacon',
-  registry: null,
+  packageName: '@zpqq132555/beacon',
+  registry: 'https://npm.pkg.github.com',
   latestMetadataUrl: null,
 };
 
@@ -172,7 +172,7 @@ describe('update command helpers', () => {
 
   it('detects project package scope from local node_modules install path', async () => {
     const projectDir = path.join(tmpDir, 'project');
-    const packageRoot = path.join(projectDir, 'node_modules', 'beacon');
+    const packageRoot = path.join(projectDir, 'node_modules', '@zpqq132555', 'beacon');
 
     await expect(detectBeaconPackageScope(projectDir, packageRoot)).resolves.toBe('project');
   });
@@ -194,7 +194,7 @@ describe('update command helpers', () => {
     await fs.mkdir(projectDir, { recursive: true });
     await fs.writeFile(
       path.join(projectDir, 'package.json'),
-      JSON.stringify({ devDependencies: { 'beacon': '^0.2.4' } }),
+      JSON.stringify({ devDependencies: { '@zpqq132555/beacon': '^0.4.9' } }),
       'utf-8',
     );
 
@@ -232,7 +232,9 @@ describe('update command helpers', () => {
     expect(buildNpmUpdateArgs('global', defaultBeaconSource)).toEqual([
       'install',
       '-g',
-      'beacon@latest',
+      '@zpqq132555/beacon@latest',
+      '--registry',
+      'https://npm.pkg.github.com',
     ]);
     expect(
       buildNpmUpdateArgs('project', {
@@ -250,7 +252,7 @@ describe('update command helpers', () => {
 
   it('formats the npm update command from configured beacon package source', () => {
     expect(formatNpmUpdateCommand('global', defaultBeaconSource)).toBe(
-      'npm install -g beacon@latest',
+      'npm install -g @zpqq132555/beacon@latest --registry https://npm.pkg.github.com',
     );
     expect(
       formatNpmUpdateCommand('project', {

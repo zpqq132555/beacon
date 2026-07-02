@@ -25,11 +25,11 @@ describe('supply chain config', () => {
     await fs.rm(tmpDir, { recursive: true, force: true });
   });
 
-  it('uses private-safe defaults without a public registry default', async () => {
+  it('uses GitHub Packages defaults for Beacon without requiring project config', async () => {
     const config = await loadSupplyChainConfig(tmpDir, {});
 
-    expect(config.beacon.packageName).toBe('beacon');
-    expect(config.beacon.registry).toBeNull();
+    expect(config.beacon.packageName).toBe('@zpqq132555/beacon');
+    expect(config.beacon.registry).toBe('https://npm.pkg.github.com');
     expect(config.beacon.latestMetadataUrl).toBeNull();
     expect(config.openspec.packageSpec).toBe('@fission-ai/openspec@latest');
     expect(config.openspec.registry).toBeNull();
@@ -103,14 +103,23 @@ describe('supply chain config', () => {
   });
 
   it('builds npm args with registry only when configured', () => {
-    expect(buildRegistryNpmArgs(['install', '-g', 'beacon@latest'], null)).toEqual([
+    expect(buildRegistryNpmArgs(['install', '-g', '@zpqq132555/beacon@latest'], null)).toEqual([
       'install',
       '-g',
-      'beacon@latest',
+      '@zpqq132555/beacon@latest',
     ]);
     expect(
-      buildRegistryNpmArgs(['install', '-g', 'beacon@latest'], 'https://npm.internal.example'),
-    ).toEqual(['install', '-g', 'beacon@latest', '--registry', 'https://npm.internal.example']);
+      buildRegistryNpmArgs(
+        ['install', '-g', '@zpqq132555/beacon@latest'],
+        'https://npm.internal.example',
+      ),
+    ).toEqual([
+      'install',
+      '-g',
+      '@zpqq132555/beacon@latest',
+      '--registry',
+      'https://npm.internal.example',
+    ]);
   });
 
   it('returns null latest metadata URL when no private metadata source is configured', async () => {

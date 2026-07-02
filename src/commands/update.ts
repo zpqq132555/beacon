@@ -25,7 +25,7 @@ import { printVersionInfo } from '../core/version.js';
 import { fileExists, readDir, readJson } from '../utils/file-system.js';
 import { t, type TranslationKey } from './i18n.js';
 
-const DEFAULT_PACKAGE_NAME = 'beacon';
+const DEFAULT_PACKAGE_NAME = '@zpqq132555/beacon';
 const RUNTIME_SKILLS_DIR = 'skills-zh';
 
 interface UpdateOptions {

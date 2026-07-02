@@ -16,7 +16,7 @@ describe('README assets', () => {
     const content = await fs.readFile('README.md', 'utf-8');
 
     expect(content).not.toMatch(/\b(?:src|srcset)=["'](?:\.\/)?img\//);
-    expect(content).toContain('https://github.com/rpamis/beacon/blob/master/img/');
+    expect(content).toContain('https://github.com/zpqq132555/beacon/blob/master/img/');
   });
 
   it('documents build_pause in README state examples and field descriptions', async () => {
@@ -47,7 +47,10 @@ describe('README assets', () => {
     const content = await fs.readFile('README.md', 'utf-8');
 
     expect(content).toContain(
-      'npm install -D beacon --registry https://npm.internal.example',
+      'npm install -D @zpqq132555/beacon --registry https://npm.pkg.github.com',
+    );
+    expect(content).toContain(
+      'npm login --scope=@zpqq132555 --auth-type=legacy --registry=https://npm.pkg.github.com',
     );
     expect(content).toContain('npx beacon init --scope project');
     expect(content).toContain('npx beacon doctor');
