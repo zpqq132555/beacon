@@ -91,4 +91,20 @@ describe('CI workflows', () => {
     expect(workflow).toContain('days-before-issue-stale: -1');
     expect(workflow).toContain('days-before-issue-close: -1');
   });
+
+  it('publishes releases to npmjs from master', async () => {
+    const workflow = (await fs.readFile('.github/workflows/publish-npmjs.yml', 'utf-8')).replace(
+      /\r\n/g,
+      '\n',
+    );
+
+    expect(workflow).toContain('name: Publish npm Package');
+    expect(workflow).toContain('branches: [master]');
+    expect(workflow).toContain('registry-url: https://registry.npmjs.org');
+    expect(workflow).toContain('NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}');
+    expect(workflow).toContain('- run: npm publish');
+    expect(workflow).not.toContain('packages: write');
+    expect(workflow).not.toContain('npm.pkg.github.com');
+    expect(workflow).not.toContain('GITHUB_TOKEN');
+  });
 });

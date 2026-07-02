@@ -95,25 +95,27 @@ git push --force-with-lease origin <topic>-take-2:<original-branch>
 1. 所有功能先合并到 `develop`。
 2. 准备发布时，确认 `CHANGELOG.md` 和 `package.json` 版本已经同步提升。
 3. 从 `develop` 向 `master` 发起发布 PR。
-4. PR 合并到 `master` 后，GitHub Actions 会按仓库配置发布 `@zpqq132555/beacon` 到 GitHub Packages。
+4. PR 合并到 `master` 后，GitHub Actions 会按仓库配置发布 `@oldpoint/beacon` 到 npmjs。
 5. 如果 `master` 上出现紧急 hotfix，修复后记得把对应变更同步回 `develop`。
 
-## GitHub Packages
+## npm Registry
 
-仓库默认发布包名为 `@zpqq132555/beacon`，目标 registry 为 `https://npm.pkg.github.com`。
+仓库默认发布包名为 `@oldpoint/beacon`，目标 registry 为 `https://registry.npmjs.org`。
 
 本地发布前建议先确认：
 
 ```bash
-npm whoami --registry=https://npm.pkg.github.com
+npm whoami
 npm publish
 ```
 
 如果未登录，可执行：
 
 ```bash
-npm login --scope=@zpqq132555 --auth-type=legacy --registry=https://npm.pkg.github.com
+npm login
 ```
+
+如果要让 GitHub Actions 自动发布，请在仓库 Secrets 中配置 `NPM_TOKEN`。
 
 ## 提交规范
 
@@ -130,7 +132,7 @@ npm login --scope=@zpqq132555 --auth-type=legacy --registry=https://npm.pkg.gith
 ```text
 docs: align release flow with develop branch
 fix: preserve scoped package update behavior
-ci: publish releases to github packages
+ci: publish releases to npmjs
 ```
 
 ## Skill 与脚本

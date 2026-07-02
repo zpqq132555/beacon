@@ -40,8 +40,8 @@ export type SupplyChainSourceKey =
 const DEFAULT_CONFIG: SupplyChainConfig = {
   configuredSources: [],
   beacon: {
-    packageName: '@zpqq132555/beacon',
-    registry: 'https://npm.pkg.github.com',
+    packageName: '@oldpoint/beacon',
+    registry: null,
     latestMetadataUrl: null,
   },
   openspec: { packageSpec: '@fission-ai/openspec@latest', registry: null },
@@ -64,14 +64,14 @@ const MISSING_SOURCE_MESSAGES: Record<SupplyChainSourceKey, SupplyChainSourceSta
   'beacon.registry': {
     ok: false,
     fatal: false,
-    message:
-      'Beacon registry override is not configured; using the built-in GitHub Packages registry.',
+    message: 'Beacon registry override is not configured; using npm default registry behavior.',
     hint: 'Set supply_chain.beacon.registry in .beacon/config.yaml or BEACON_NPM_REGISTRY to override it.',
   },
   'beacon.latestMetadataUrl': {
     ok: false,
     fatal: false,
-    message: 'Beacon latest metadata source is not configured; skipping private version check.',
+    message:
+      'Beacon latest metadata override is not configured; using the built-in npm registry endpoint when available.',
     hint: 'Set supply_chain.beacon.latest_metadata_url in .beacon/config.yaml or BEACON_LATEST_METADATA_URL.',
   },
   'openspec.registry': {
@@ -259,10 +259,19 @@ export function buildRegistryNpmArgs(args: string[], registry: string | null): s
 }
 
 /**
- * 返回 Beacon latest-version 元数据 URL；未配置私有元数据源时返回 `null`。
+ * 返回 Beacon latest-version 元数据 URL；未配置覆盖源时优先回退到 npmjs 默认 latest 端点。
  */
 export function buildBeaconLatestMetadataUrl(config: SupplyChainConfig): string | null {
-  return config.beacon.latestMetadataUrl;
+  if (config.beacon.latestMetadataUrl) {
+    return config.beacon.latestMetadataUrl;
+  }
+
+  const registry = config.beacon.registry?.replace(/\/+$/, '') ?? 'https://registry.npmjs.org';
+  if (registry !== 'https://registry.npmjs.org') {
+    return null;
+  }
+
+  return `${registry}/${encodeURIComponent(config.beacon.packageName)}/latest`;
 }
 
 /**

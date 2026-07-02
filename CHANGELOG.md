@@ -2,6 +2,21 @@
 
 All notable changes to beacon will be documented in this file.
 
+## What's Changed [0.4.10] - 2026-07-02
+
+### Added
+
+- **npmjs 发布流**: 将发布工作流切换为面向 npmjs 的公开包发布，并改用 `NPM_TOKEN` 作为 Actions 发布凭据，打通公开安装链路。
+
+### Changed
+
+- **Beacon 默认来源**: 将默认 Beacon 包更新来源切回 npm 官方 registry，`beacon update` 默认不再附带 GitHub Packages registry 参数，同时为公开包保留 npm metadata 版本检查。
+- **安装与协作文档**: 更新 README、贡献指南与发布说明，统一为 `npm install @oldpoint/beacon` / `npm install -g @oldpoint/beacon` 的公开分发方式，并保留私有供应链覆盖示例。
+
+### Tests
+
+- **npmjs 分发回归**: 更新 supply-chain、update、README 与 CI workflow 测试，覆盖 npmjs 默认源、公开安装命令和 npm 发布工作流配置。
+
 ## What's Changed [0.4.9] - 2026-07-02
 
 ### Added

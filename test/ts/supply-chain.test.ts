@@ -25,11 +25,11 @@ describe('supply chain config', () => {
     await fs.rm(tmpDir, { recursive: true, force: true });
   });
 
-  it('uses GitHub Packages defaults for Beacon without requiring project config', async () => {
+  it('uses npmjs defaults for Beacon without requiring project config', async () => {
     const config = await loadSupplyChainConfig(tmpDir, {});
 
-    expect(config.beacon.packageName).toBe('@zpqq132555/beacon');
-    expect(config.beacon.registry).toBe('https://npm.pkg.github.com');
+    expect(config.beacon.packageName).toBe('@oldpoint/beacon');
+    expect(config.beacon.registry).toBeNull();
     expect(config.beacon.latestMetadataUrl).toBeNull();
     expect(config.openspec.packageSpec).toBe('@fission-ai/openspec@latest');
     expect(config.openspec.registry).toBeNull();
@@ -103,29 +103,31 @@ describe('supply chain config', () => {
   });
 
   it('builds npm args with registry only when configured', () => {
-    expect(buildRegistryNpmArgs(['install', '-g', '@zpqq132555/beacon@latest'], null)).toEqual([
+    expect(buildRegistryNpmArgs(['install', '-g', '@oldpoint/beacon@latest'], null)).toEqual([
       'install',
       '-g',
-      '@zpqq132555/beacon@latest',
+      '@oldpoint/beacon@latest',
     ]);
     expect(
       buildRegistryNpmArgs(
-        ['install', '-g', '@zpqq132555/beacon@latest'],
+        ['install', '-g', '@oldpoint/beacon@latest'],
         'https://npm.internal.example',
       ),
     ).toEqual([
       'install',
       '-g',
-      '@zpqq132555/beacon@latest',
+      '@oldpoint/beacon@latest',
       '--registry',
       'https://npm.internal.example',
     ]);
   });
 
-  it('returns null latest metadata URL when no private metadata source is configured', async () => {
+  it('falls back to npmjs latest metadata URL when no override is configured', async () => {
     const config = await loadSupplyChainConfig(tmpDir, {});
 
-    expect(buildBeaconLatestMetadataUrl(config)).toBeNull();
+    expect(buildBeaconLatestMetadataUrl(config)).toBe(
+      'https://registry.npmjs.org/%40oldpoint%2Fbeacon/latest',
+    );
   });
 
   it('reports missing private sources as non-fatal with user-facing guidance', async () => {
@@ -136,7 +138,7 @@ describe('supply chain config', () => {
     expect(status.ok).toBe(false);
     expect(status.fatal).toBe(false);
     expect(status.message).toBe(
-      'Beacon latest metadata source is not configured; skipping private version check.',
+      'Beacon latest metadata override is not configured; using the built-in npm registry endpoint when available.',
     );
     expect(status.hint).toBe(
       'Set supply_chain.beacon.latest_metadata_url in .beacon/config.yaml or BEACON_LATEST_METADATA_URL.',

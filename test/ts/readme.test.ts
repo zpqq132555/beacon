@@ -27,7 +27,7 @@ describe('README assets', () => {
     expect(content).toContain('`plan-ready` 表示 plan 已生成');
   });
 
-  it('keeps current supply chain documentation private-source aware', async () => {
+  it('keeps current supply chain documentation public-by-default with override guidance', async () => {
     const readme = await fs.readFile('README.md', 'utf-8');
     const news = await fs.readFile('NEWS.md', 'utf-8');
 
@@ -46,12 +46,10 @@ describe('README assets', () => {
   it('documents project-scope beacon install and onboarding commands', async () => {
     const content = await fs.readFile('README.md', 'utf-8');
 
-    expect(content).toContain(
-      'npm install -D @zpqq132555/beacon --registry https://npm.pkg.github.com',
-    );
-    expect(content).toContain(
-      'npm login --scope=@zpqq132555 --auth-type=legacy --registry=https://npm.pkg.github.com',
-    );
+    expect(content).toContain('npm install -D @oldpoint/beacon');
+    expect(content).toContain('npm install -g @oldpoint/beacon');
+    expect(content).toContain('npm install -g @oldpoint/beacon@latest');
+    expect(content).toContain('npm uninstall -g @oldpoint/beacon');
     expect(content).toContain('npx beacon init --scope project');
     expect(content).toContain('npx beacon doctor');
   });
